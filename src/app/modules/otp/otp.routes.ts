@@ -1,17 +1,7 @@
 import { Router } from 'express';
-import { otpControllers } from './otp.controller';
-import validateRequest from '../../middleware/validateRequest';
-import { resentOtpValidations } from './otp.validation';
+import { otpControllers } from './otp.controller'; 
 export const otpRoutes = Router();
 
-otpRoutes.post(
-  '/verify-otp',
-  validateRequest(resentOtpValidations.verifyOtpZodSchema),
-  otpControllers.verifyOtp,
-)
-  .patch(
-    '/resend-otp',
-    // validateRequest(resentOtpValidations.resentOtpZodSchema),
-    otpControllers.resendOtp,
-  );
+
+  otpRoutes.patch('/resend-otp', otpControllers.resendOtp);
 

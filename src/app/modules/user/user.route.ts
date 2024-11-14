@@ -9,19 +9,12 @@ import fileUpload from '../../middleware/fileUpload';
 import { resentOtpValidations } from '../otp/otp.validation';
 const upload = fileUpload('./public/uploads/profile');
 
-export const userRoutes = Router();
-// const storage = memoryStorage();
-// const upload = multer({ storage });
+export const userRoutes = Router(); 
 
 userRoutes
   .post(
     '/create',
-    // upload.fields([
-    //   { name: 'image', maxCount: 1 },
-    //   { name: 'documents', maxCount: 2 },
-    // ]),
-    // parseData(),
-    validateRequest(userValidation?.guestValidationSchema),
+    validateRequest(userValidation?.userValidationSchema),
     userController.createUser,
   )
   .post(
@@ -32,7 +25,8 @@ userRoutes
   .get(
     '/my-profile',
     auth(
-      USER_ROLE.USER,
+      USER_ROLE.MENTEE,
+      USER_ROLE.MENTOR,
       USER_ROLE.ADMIN,
       USER_ROLE.SUB_ADMIN,
       USER_ROLE.SUPER_ADMIN,
@@ -47,7 +41,8 @@ userRoutes
   .patch(
     '/update-my-profile',
     auth(
-      USER_ROLE.USER,
+      USER_ROLE.MENTEE,
+      USER_ROLE.MENTOR,
       USER_ROLE.ADMIN,
       USER_ROLE.SUB_ADMIN,
       USER_ROLE.SUPER_ADMIN,
@@ -56,17 +51,11 @@ userRoutes
     parseData(),
     userController.updateMyProfile,
   )
-  .patch(
-    '/update/:id',
-    auth(USER_ROLE.ADMIN, USER_ROLE.SUB_ADMIN, USER_ROLE.SUPER_ADMIN),
-    upload.single('image'),
-    parseData(),
-    userController.updateUser,
-  )
   .delete(
     '/delete-my-account',
     auth(
-      USER_ROLE.USER,
+      USER_ROLE.MENTEE,
+      USER_ROLE.MENTOR,
       USER_ROLE.ADMIN,
       USER_ROLE.SUB_ADMIN,
       USER_ROLE.SUPER_ADMIN,
@@ -76,7 +65,7 @@ userRoutes
   .delete(
     '/:id',
     auth(USER_ROLE.ADMIN, USER_ROLE.SUB_ADMIN, USER_ROLE.SUPER_ADMIN),
-    userController.deleteUser,
+    userController.blockedUser,
   );
 
 // export default userRoutes;

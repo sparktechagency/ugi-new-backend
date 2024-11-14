@@ -1,44 +1,31 @@
- 
 import catchAsync from '../../utils/catchAsync';
 import { otpServices } from './otp.service';
 import sendResponse from '../../utils/sendResponse';
 import { Request, Response } from 'express';
-import httpStatus from '../../constants/httpStatus';
-
-const verifyOtp = catchAsync(async (req: Request, res: Response) => {
-  const token = req?.headers?.token;
-
-  // console.log(req?.headers?.create_user_token);
-  // console.log(req?.headers);
-  // console.log(token);
-  // console.log(req.body.otp);
-
-  // console.log("aaaaaaaaaaaaaaaa");
-
-  const result = await otpServices.verifyOtp(token as string, req.body.otp);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'OTP verified successfully',
-    data: result,
-  });
-});
+import AppError from '../../error/AppError';
+import { verifyToken } from '../../utils/tokenManage';
+import config from '../../config';
+import { generateOtp } from '../../utils/otpGenerator';
+import { TPurposeType } from './otp.interface';
+import moment from 'moment';
+import { otpSendEmail } from '../../utils/eamilNotifiacation';
+import httpStatus from 'http-status';
 
 const resendOtp = catchAsync(async (req: Request, res: Response) => {
-  const token = req?.headers?.token;
+  const token = req.headers?.token as string;
 
-  console.log('token', token);
+  console.log({ token });
 
-  const result = await otpServices.resendOtp(token as string);
+  await otpServices.resendOtpEmail({ token });
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'OTP sent successfully',
-    data: result,
+    message: 'OTP Resent successfully',
+    data: {},
   });
 });
 
 export const otpControllers = {
-  verifyOtp,
   resendOtp,
 };

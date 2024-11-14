@@ -8,31 +8,29 @@ import { USER_ROLE } from '../user/user.constants';
 export const authRoutes = Router();
 
 authRoutes
-  .post(
-    '/login',
-    // validateRequest(authValidation.loginZodValidationSchema),
-    authControllers.login,
-  )
+  .post('/login', authControllers.login)
   .post(
     '/refresh-token',
     validateRequest(authValidation.refreshTokenValidationSchema),
     authControllers.refreshToken,
   )
+  .post(
+    '/forgot-password-otp',
+    validateRequest(authValidation.forgetPasswordValidationSchema),
+    authControllers.forgotPassword,
+  )
   .patch(
     '/change-password',
     auth(
-      USER_ROLE.USER,
+      USER_ROLE.MENTEE,
+      USER_ROLE.MENTOR,
       USER_ROLE.ADMIN,
       USER_ROLE.SUB_ADMIN,
       USER_ROLE.SUPER_ADMIN,
     ),
     authControllers.changePassword,
   )
-  .patch(
-    '/forgot-password-otp',
-    validateRequest(authValidation.forgetPasswordValidationSchema),
-    authControllers.forgotPassword,
-  )
+
   .patch(
     '/forgot-password-otp-match',
     validateRequest(authValidation.otpMatchValidationSchema),

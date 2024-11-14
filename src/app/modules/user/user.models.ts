@@ -10,11 +10,7 @@ const userSchema = new Schema<TUser>(
       type: String,
       default: '/uploads/profile/default-user.jpg',
     },
-    firstName: {
-      type: String,
-      required: true,
-    },
-    lastName: {
+    fullName: {
       type: String,
       required: true,
     },
@@ -26,50 +22,31 @@ const userSchema = new Schema<TUser>(
     role: {
       type: String,
       enum: Role,
-      default: USER_ROLE.USER,
+      default: USER_ROLE.MENTEE,
     },
     password: {
       type: String,
       required: true,
       select: false,
     },
-    gender: {
+    phone: {
       type: String,
+      required: true,
     },
-    dob: {
+    about: {
       type: String,
+      required: false,
+      default: '',
     },
-    accountStatus: {
+    professional: {
       type: String,
-      enum: ['active', 'blocked'],
-      default: 'active',
+      required: false,
+      default: '',
     },
-    needsPasswordChange: {
+    isActive: {
       type: Boolean,
-      default: false,
+      default: true,
     },
-    passwordChangedAt: {
-      type: Date,
-    },
-
-    address: {
-      house: {
-        type: String,
-      },
-      area: {
-        type: String,
-      },
-      city: {
-        type: String,
-      },
-      state: {
-        type: String,
-      },
-      country: {
-        type: String,
-      },
-    },
-
     isDeleted: {
       type: Boolean,
       default: false,
@@ -130,7 +107,15 @@ userSchema.statics.isUserExist = async function (email: string) {
   return await User.findOne({ email: email }).select('+password');
 };
 
-userSchema.statics.IsUserExistId = async function (id: string) {
+userSchema.statics.isUserActive = async function (email: string) {
+  return await User.findOne({
+    email: email,
+    isDeleted: false,
+    isActive: true,
+  }).select('+password');
+};
+
+userSchema.statics.IsUserExistById = async function (id: string) {
   return await User.findById(id).select('+password');
 };
 

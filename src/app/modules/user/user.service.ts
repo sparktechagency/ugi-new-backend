@@ -4,10 +4,14 @@ import httpStatus from 'http-status';
 import AppError from '../../error/AppError';
 import { DeleteAccountPayload, TUser, TUserCreate } from './user.interface';
 import { User } from './user.models';
-import { userSearchableFields } from './user.constants';
-import jwt, { JwtPayload, Secret } from 'jsonwebtoken';
+import { USER_ROLE } from './user.constants';
 import config from '../../config';
 import QueryBuilder from '../../builder/QueryBuilder';
+import { otpServices } from '../otp/otp.service';
+import { generateOptAndExpireTime } from '../otp/otp.utils';
+import { TPurposeType } from '../otp/otp.interface';
+import { otpSendEmail } from '../../utils/eamilNotifiacation';
+import { createToken, verifyToken } from '../../utils/tokenManage';
 
 export type IFilter = {
   searchTerm?: string;
@@ -15,8 +19,136 @@ export type IFilter = {
   [key: string]: any;
 };
 
-const createUser = async (userData: TUserCreate) => {
-  const isExist = await User.isUserExist(userData.email as string);
+export interface OTPVerifyAndCreateUserProps {
+  otp: string;
+  token: string;
+}
+
+const createUserToken = async (payload: TUserCreate) => {
+  const { role, email, fullName, password, phone, about, professional } =
+    payload;
+
+  // user role check
+  if (!(role === USER_ROLE.MENTEE || role === USER_ROLE.MENTOR)) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'User data is not valid !!');
+  }
+
+  // user exist check
+  const userExist = await userService.getUserByEmail(email);
+
+  if (userExist) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'User already exist!!');
+  }
+
+  const { isExist, isExpireOtp } = await otpServices.checkOtpByEmail(email);
+
+  const { otp, expiredAt } = generateOptAndExpireTime();
+
+  let otpPurpose: TPurposeType = 'email-verification';
+
+  if (isExist && !isExpireOtp) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'otp-exist. Check your email.');
+  } else if (isExist && isExpireOtp) {
+    const otpUpdateData = {
+      otp,
+      expiredAt,
+    };
+
+    await otpServices.updateOtpByEmail(email, otpUpdateData);
+  } else if (!isExist) {
+    await otpServices.createOtp({
+      name: fullName,
+      sentTo: email,
+      receiverType: 'email',
+      purpose: otpPurpose,
+      otp,
+      expiredAt,
+    });
+  }
+
+  const otpBody: TUserCreate = {
+    email,
+    fullName,
+    password,
+    phone,
+    role,
+  };
+
+  if (about) {
+    otpBody.about = about;
+  }
+  if (professional) {
+    otpBody.professional = professional;
+  }
+
+  // send email
+  process.nextTick(async () => {
+    await otpSendEmail({
+      sentTo: email,
+      subject: 'Your one time otp for email  verification',
+      name: fullName,
+      otp,
+      expiredAt: expiredAt,
+    });
+  });
+
+  // crete token
+  const createUserToken = createToken({
+    payload: otpBody,
+    access_secret: config.jwt_access_secret as string,
+    expity_time: config.otp_token_expire_time as string | number,
+  });
+
+  return createUserToken;
+};
+
+const otpVerifyAndCreateUser = async ({
+  otp,
+  token,
+}: OTPVerifyAndCreateUserProps) => {
+  if (!token) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Token not found');
+  }
+
+  const decodeData = verifyToken({
+    token,
+    access_secret: config.jwt_access_secret as string,
+  });
+
+  if (!decodeData) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'You are not authorised');
+  }
+
+  const { password, email, fullName, role, phone, about, professional } =
+    decodeData;
+
+  const isOtpMatch = await otpServices.otpMatch(email, otp);
+
+  if (!isOtpMatch) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'OTP did not match');
+  }
+
+  process.nextTick(async () => {
+    await otpServices.updateOtpByEmail(email, {
+      status: 'verified',
+    });
+  });
+
+  if (!(role === USER_ROLE.MENTEE || role === USER_ROLE.MENTOR)) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'User data is not valid !!');
+  }
+
+  const userData = {
+    password,
+    email,
+    fullName,
+    role,
+    phone,
+    about,
+    professional,
+  };
+
+  const isExist = await User.isUserExist(email as string);
 
   if (isExist) {
     throw new AppError(
@@ -31,19 +163,22 @@ const createUser = async (userData: TUserCreate) => {
     throw new AppError(httpStatus.BAD_REQUEST, 'User creation failed');
   }
 
-  // const jwtPayload = {
-  //   email: user?.email,
-  //   role: user?.role,
-  //   userId: user?._id,
-  // };
-
-  // const accessToken = jwt.sign(jwtPayload, config.jwt_access_secret as Secret, {
-  //   expiresIn: config.jwt_access_expires_in,
-  // });
-
-  // return { user, accessToken };
   return user;
 };
+
+const updateUser = async (id: string, payload: Partial<TUser>) => {
+  const { role, email, ...rest } = payload;
+
+  const user = await User.findByIdAndUpdate(id, rest, { new: true });
+
+  if (!user) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'User updating failed');
+  }
+
+  return user;
+};
+
+// ............................rest
 
 const getAllUserQuery = async (query: Record<string, unknown>) => {
   const userQuery = new QueryBuilder(User.find({}), query)
@@ -63,39 +198,7 @@ const getAllUserCount = async () => {
   return allUserCount;
 };
 
-// const getAllUserRatio = async (year: number) => {
-//   const startOfYear = new Date(year, 0, 1); // January 1st of the given year
-//   const endOfYear = new Date(year + 1, 0, 1); // January 1st of the next year
 
-//   const userRatios = await User.aggregate([
-//     {
-//       $match: {
-//         createdAt: {
-//           $gte: startOfYear,
-//           $lt: endOfYear,
-//         },
-//       },
-//     },
-//     {
-//       $group: {
-//         _id: { $month: '$createdAt' }, // Group by month (1 = January, 12 = December)
-//         userCount: { $sum: 1 }, // Count users for each month
-//       },
-//     },
-//     {
-//       $sort: { _id: 1 }, // Sort by month in ascending order (1 = January, 12 = December)
-//     },
-//     {
-//       $project: {
-//         month: '$_id', // Rename the _id field to month
-//         userCount: 1,
-//         _id: 0,
-//       },
-//     },
-//   ]);
-
-//   return userRatios;
-// };
 
 const getAllUserRatio = async (year: number) => {
   const startOfYear = new Date(year, 0, 1); // January 1st of the given year
@@ -143,8 +246,6 @@ const getAllUserRatio = async (year: number) => {
   return fullUserRatios;
 };
 
-
-
 const getUserById = async (id: string) => {
   const result = await User.findById(id).populate({
     path: 'purchesPackageId', // First level population
@@ -165,25 +266,8 @@ const getUserByEmail = async (email: string) => {
   return result;
 };
 
-const updateUser = async (id: string, payload: Partial<TUser>) => {
-  const { role, email, ...rest } = payload;
-
-  console.log(id);
-  console.log('payload', payload);
-
-  const user = await User.findByIdAndUpdate(id, rest, { new: true });
-
-  console.log('Updated');
-  console.log(user);
-  if (!user) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'User updating failed');
-  }
-
-  return user;
-};
-
 const deleteMyAccount = async (id: string, payload: DeleteAccountPayload) => {
-  const user: TUser | null = await User.IsUserExistId(id);
+  const user: TUser | null = await User.IsUserExistById(id);
 
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found');
@@ -210,10 +294,10 @@ const deleteMyAccount = async (id: string, payload: DeleteAccountPayload) => {
   return userDeleted;
 };
 
-const deleteUser = async (id: string) => {
+const blockedUser = async (id: string) => {
   const user = await User.findByIdAndUpdate(
     id,
-    { isDeleted: true },
+    { isActive: false },
     { new: true },
   );
 
@@ -225,12 +309,13 @@ const deleteUser = async (id: string) => {
 };
 
 export const userService = {
-  createUser,
+  createUserToken,
+  otpVerifyAndCreateUser,
   getUserById,
   getUserByEmail,
   updateUser,
   deleteMyAccount,
-  deleteUser,
+  blockedUser,
   getAllUserQuery,
   getAllUserCount,
   getAllUserRatio,

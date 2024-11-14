@@ -1,4 +1,6 @@
-import { Model, ObjectId, Types } from 'mongoose';
+import { Model } from 'mongoose';
+
+import { USER_ROLE } from './user.constants';
 
 interface IAddress {
   house: string;
@@ -9,39 +11,30 @@ interface IAddress {
 }
 
 export interface TUserCreate {
-  firstName: string;
-  lastName: string;
+  fullName: string;
   email: string;
   password: string;
+  phone: string;
+  role: (typeof USER_ROLE)[keyof typeof USER_ROLE];
+  about?: string;
+  professional?: string;
+}
+
+export interface TUser extends TUserCreate {
+  _id: string;
+  image: string;
+  isActive: boolean;
+  isDeleted: boolean;
 }
 
 export interface DeleteAccountPayload {
   password: string;
 }
 
-export interface TUser {
-  _id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  image: string;
-  password: string;
-  role: string;
-  phoneNumber: string;
-  gender?: string;
-  dob?: string;
-  shopId?: string;
-  address?: IAddress;
-
-  accountStatus: 'active' | 'blocked';
-  needsPasswordChange?: boolean;
-  passwordChangedAt?: Date;
-  isDeleted: boolean;
-}
-
 export interface UserModel extends Model<TUser> {
   isUserExist(email: string): Promise<TUser>;
-  IsUserExistId(id: string): Promise<TUser>;
+  isUserActive(email: string): Promise<TUser>;
+  IsUserExistById(id: string): Promise<TUser>;
 
   isPasswordMatched(
     plainTextPassword: string,
