@@ -26,6 +26,24 @@ const getAllNotificationQuery = async (
   return { meta, result };
 };
 
+const getAllNotificationByAdminQuery = async (
+  query: Record<string, unknown>,
+) => {
+  const notificationQuery = new QueryBuilder(
+    Notification.find({ role: 'admin' }),
+    query,
+  )
+    .search([''])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await notificationQuery.modelQuery;
+  const meta = await notificationQuery.countTotal();
+  return { meta, result };
+};
+
 const getSingleNotification = async (id: string) => {
   const result = await Notification.findById(id);
   return result;
@@ -60,9 +78,28 @@ const deleteNotification = async (id: string, userId: string) => {
   return result;
 };
 
+const deleteAdminNotification = async (id: string) => {
+  const notification = await Notification.findById(id);
+  if (!notification) {
+    throw new AppError(404, 'Notification is not found!');
+  }
+
+  const result = await Notification.findOneAndDelete({
+    _id: id,
+    role: 'admin',
+  });
+  if (!result) {
+    throw new AppError(500, 'Error deleting SaveStory!');
+  }
+
+  return result;
+};
+
 export const notificationService = {
   createNotification,
   getAllNotificationQuery,
+  getAllNotificationByAdminQuery,
   deleteNotification,
   getSingleNotification,
+  deleteAdminNotification,
 };

@@ -2,11 +2,8 @@
 import catchAsync from '../../utils/catchAsync';
 import { Request, Response } from 'express';
 import sendResponse from '../../utils/sendResponse';
- 
-import { userService } from '../user/user.service';
-import AppError from '../../error/AppError';
 import { notificationService } from './notification.service';
-import httpStatus from '../../constants/httpStatus';
+import httpStatus from 'http-status';
 
 const createNotification = catchAsync(async (req: Request, res: Response) => {
   const result = await notificationService.createNotification(req.body);
@@ -35,6 +32,21 @@ const getAllNotificationByUser = catchAsync(async (req, res) => {
   });
 });
 
+
+const getAllNotificationByAdmin = catchAsync(async (req, res) => {
+  const result = await notificationService.getAllNotificationByAdminQuery(
+    req.query,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    meta: result.meta,
+    data: result.result,
+    message: 'Notification All are requered successful!!',
+  });
+});
+
 const getSingleNotification = catchAsync(
   async (req: Request, res: Response) => {
     const result = await notificationService.getSingleNotification(
@@ -49,6 +61,9 @@ const getSingleNotification = catchAsync(
     });
   },
 );
+
+
+
 
 const deletedNotification = catchAsync(async (req: Request, res: Response) => {
   const { userId } = req.user;
@@ -65,9 +80,26 @@ const deletedNotification = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const deletedAdminNotification = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await notificationService.deleteAdminNotification(
+      req.params.id,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      data: result,
+      message: 'Notification deleted successful',
+    });
+  },
+);
+
 export const NotificationController = {
   createNotification,
   getAllNotificationByUser,
-  deletedNotification,
+  getAllNotificationByAdmin,
   getSingleNotification,
+  deletedNotification,
+  deletedAdminNotification,
 };

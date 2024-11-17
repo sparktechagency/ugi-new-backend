@@ -13,6 +13,11 @@ const NotificationSchema = new Schema<TNotification>(
       type: String,
       required: true,
     },
+    role: {
+      type: String,
+      enum: ['mentee', 'mentor', 'admin'],
+      required: false,
+    },
     type: {
       type: String,
       enum: ['info', 'warning', 'error', 'success'],
