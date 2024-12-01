@@ -8,12 +8,12 @@ import { USER_ROLE } from '../user/user.constants';
 const paymentRouter = express.Router();
 
 paymentRouter
-  .post('/add-payment', auth(USER_ROLE.MENTEE), paymentController.addPayment)
+  .post('/add-payment', auth(USER_ROLE.USER), paymentController.addPayment)
   .get('/', auth(USER_ROLE.ADMIN), paymentController.getAllPayment)
   .get('/:id', paymentController.getSinglePayment)
   .get(
     '/mentor',
-    auth(USER_ROLE.MENTOR),
+    auth(USER_ROLE.USER),
     paymentController.getAllPaymentByMentor,
   )
   .delete(

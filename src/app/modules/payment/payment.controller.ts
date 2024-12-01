@@ -9,7 +9,6 @@ const {userId} = req.user;
   paymentData.menteeId = userId;
 
 
-
   const result = await paymentService.addPaymentService(req.body);
 
    if (result) {

@@ -4,11 +4,15 @@ import { TPayment } from './payment.interface';
 
 const paymentSchema = new Schema<TPayment>(
   {
-    mentorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    menteeId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    sheduleBookingId: {
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    serviceId: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'ServiceBooking',
+      required: true,
+    },
+    buisnessId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Buisness',
       required: true,
     },
     amount: { type: Number, required: true },

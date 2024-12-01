@@ -4,12 +4,13 @@ import { User } from "../user/user.models";
 import { TPayment } from "./payment.interface";
 import { Payment } from "./payment.model";
 import QueryBuilder from '../../builder/QueryBuilder';
+import ServiceBooking from "../serviceBooking/serviceBooking.model";
 
 const addPaymentService = async (payload:TPayment) => {
       const {
-        mentorId,
-        menteeId,
-        sheduleBookingId,
+        userId,
+        serviceId,
+        buisnessId,
         amount,
         method,
         bankDetails,
@@ -17,25 +18,25 @@ const addPaymentService = async (payload:TPayment) => {
         applePayDetails,
       } = payload;
     
-  const mentor = await User.findById(mentorId);
-  if (!mentor) {
-    throw new AppError(400, 'Mentor is not found!');
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError(400, 'User is not found!');
   }
 
-  if (mentor.role !== 'mentor') {
-     throw new AppError(400, 'User is not authorized as a Mentor!!');
+  if (user.role !== 'user') {
+    throw new AppError(400, 'User is not authorized as a User!!');
   }
-  //   const task = await Task.findById(sheduleBookingId);
-  //   if (!task) {
-  //     return next(new AppError(400, 'Task is not found!'));
-  //   }
-  const mentee = await User.findById(menteeId);
-  if (!mentee) {
-    throw new AppError(400, 'Mentee is not found!');
+ 
+  const buisness = await ServiceBooking.findById(buisnessId);
+  if (!buisness) {
+    throw new AppError(400, 'Buisness is not found!');
   }
-  if (mentee.role !== 'mentee') {
-     throw new AppError(400, 'User is not authorized as a Mentee');
+
+  const service = await ServiceBooking.findById(serviceId);
+  if (!service) {
+    throw new AppError(400, 'Service is not found!');
   }
+
 
 //   if (!task.provider.equals(providerId)) {
 //     return next(new AppError(400, 'Task Provider is not found!'));
@@ -84,7 +85,16 @@ const addPaymentService = async (payload:TPayment) => {
   }
 
     const result = await Payment.create(payload);
+    const bookingData = {
+      buisnessId: buisnessId,
+      serviceId: serviceId,
+      amount: amount,
+      method: method,
+      status: 'booking',
+      userId: user._id,   
+    }
 
+   await ServiceBooking.create(bookingData);
     return result;
 
 
