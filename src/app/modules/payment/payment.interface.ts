@@ -1,9 +1,9 @@
 import { Types } from 'mongoose';
 
 export type TPayment = {
-  mentorId: Types.ObjectId;
-  menteeId: Types.ObjectId;
-  sheduleBookingId: Types.ObjectId;
+  userId: Types.ObjectId;
+  serviceId: Types.ObjectId;
+  buisnessId: Types.ObjectId;
   amount: number;
   method: string;
   status: string;

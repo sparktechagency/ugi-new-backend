@@ -9,6 +9,8 @@ import paymentRouter from '../modules/payment/payment.route';
 import reviewRouter from '../modules/review/review.route';
 import walletRouter from '../modules/wallet/wallet.route';
 import withdrawRouter from '../modules/withdraw/withdraw.route';
+import cencelBookingRoutes from '../modules/cencelBooking/cencelBooking.route';
+import serviceBookingRoutes from '../modules/serviceBooking/serviceBooking.route';
 
 const router = Router();
 
@@ -50,6 +52,14 @@ const moduleRoutes = [
   {
     path: '/withdraw',
     route: withdrawRouter,
+  },
+  {
+    path: '/service-booking',
+    route: serviceBookingRoutes,
+  },
+  {
+    path: '/cencel-booking',
+    route: cencelBookingRoutes,
   },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
