@@ -16,8 +16,6 @@ export interface TUserCreate {
   password: string;
   phone: string;
   role: (typeof USER_ROLE)[keyof typeof USER_ROLE];
-  about?: string;
-  professional?: string;
 }
 
 export interface TUser extends TUserCreate {

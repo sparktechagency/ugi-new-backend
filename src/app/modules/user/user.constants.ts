@@ -2,8 +2,8 @@ export const USER_ROLE = {
   SUPER_ADMIN: 'super_admin',
   SUB_ADMIN: 'sub_admin',
   ADMIN: 'admin',
-  USER: 'user',
-  BUSINESS: 'business',      
+  CUSTOMER: 'customer',
+  BUSINESS: 'business',
 } as const;
 
 export const gender = ['Male', 'Female', 'Others'] as const;

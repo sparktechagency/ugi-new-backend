@@ -22,7 +22,7 @@ const userSchema = new Schema<TUser>(
     role: {
       type: String,
       enum: Role,
-      default: USER_ROLE.MENTEE,
+      required:true
     },
     password: {
       type: String,
@@ -32,16 +32,6 @@ const userSchema = new Schema<TUser>(
     phone: {
       type: String,
       required: true,
-    },
-    about: {
-      type: String,
-      required: false,
-      default: '',
-    },
-    professional: {
-      type: String,
-      required: false,
-      default: '',
     },
     isActive: {
       type: Boolean,

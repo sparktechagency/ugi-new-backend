@@ -16,14 +16,14 @@ serviceBookingRoutes
   )
   .get(
     '',
-    auth(USER_ROLE.USER),
+    auth(USER_ROLE.CUSTOMER),
     serviceBookingController.getAllServiceBookingByUser,
   )
 
   .get('/:id', serviceBookingController.getSingleServiceBooking)
   .patch(
     '/:id',
-    auth(USER_ROLE.USER),
+    // auth(USER_ROLE.CUSTOMER),
     serviceBookingController.cencelServiceBooking,
   );
 

@@ -11,9 +11,6 @@ const userValidationSchema = z.object({
     phone: z
       .string()
       .min(10, { message: 'Phone number must be at least 10 digits' }),
-    about: z.string().optional(),
-    professional: z.string().optional(),
-    role: z.string(),
     image: z.string().optional(),
   }),
 });

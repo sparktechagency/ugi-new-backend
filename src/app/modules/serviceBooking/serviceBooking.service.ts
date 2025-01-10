@@ -40,15 +40,17 @@ const getSingleServiceBooking = async (id: string) => {
   return result;
 };
 
+
+
 const cancelServiceBooking = async (id: string, userId: string) => {
   // Fetch the user by ID
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new AppError(404, 'User not found!');
-  }
+  // const user = await User.findById(userId);
+  // if (!user) {
+  //   throw new AppError(404, 'User not found!');
+  // }
 
   // Fetch the service booking by ID
-  const serviceBooking:any = await ServiceBooking.findById(id);
+  const serviceBooking: any = await ServiceBooking.findById(id);
   if (!serviceBooking) {
     throw new AppError(404, 'Booking Service not found!');
   }
@@ -63,42 +65,44 @@ const cancelServiceBooking = async (id: string, userId: string) => {
 
   // Calculate the time difference in hours
   const currentTime = new Date();
-  const bookingCreatedTime = serviceBooking.createdAt;
+  console.log({ currentTime });
+  const bookingTime = serviceBooking.createdAt;
+  console.log({ bookingTime });
   const timeDifferenceInHours =
-    (currentTime.getTime() - bookingCreatedTime.getTime()) / (1000 * 60 * 60);
+    (currentTime.getTime() - bookingTime.getTime()) / (1000 * 60 * 60);
+    console.log({ timeDifferenceInHours });
 
   let refundPercentage = 0;
-  let refundAmount = 0;
 
-  if (timeDifferenceInHours <= 12) {
-    refundPercentage = 0;
-  } else if (timeDifferenceInHours <= 24) {
-    refundPercentage = 25;
+  // Apply refund policy
+  if (timeDifferenceInHours <= 24) {
+    refundPercentage = 0; // No refund
+  } else if (timeDifferenceInHours <= 36) {
+    refundPercentage = 20; // Refund 20% of the deposit
   } else if (timeDifferenceInHours <= 48) {
-    refundPercentage = 75;
-  } 
+    refundPercentage = 75; // Refund 75% of the deposit
+  }
 
   // Calculate refund amount
-  refundAmount = (serviceBooking.amount * refundPercentage) / 100;
+  const refundAmount = (serviceBooking.amount * refundPercentage) / 100;
+
+  // Convert remaining amount into Uogi Token
+  const uogiTokenAmount = serviceBooking.amount - refundAmount;
 
   // Update booking status to 'cancel'
   serviceBooking.status = 'cancel';
   await serviceBooking.save();
-  const cancelBookingData ={
-    userId: user._id,
-  serviceId: serviceBooking._id,
-  status: 'pending',
-  amount: refundAmount
-  }
 
-  await CencelBooking.create(cancelBookingData);
 
-  // Return the refund amount and a meaningful message
+
+
   return {
-    message: `Booking cancelled successfully. Refund is ${refundPercentage}% of the amount.`,
+    message: `Booking cancelled successfully. Refund is ${refundPercentage}% of the deposit. Remaining ${uogiTokenAmount} converted to Uogi Tokens.`,
     refundAmount,
+    uogiTokenAmount,
   };
 };
+
 
 
 export const serviceBookingService = {

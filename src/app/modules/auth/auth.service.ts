@@ -23,8 +23,9 @@ import { OTPVerifyAndCreateUserProps, userService } from '../user/user.service';
 
 // Login
 const login = async (payload: TLogin) => {
+  console.log("payload", payload)
   const user = await User.isUserActive(payload?.email);
-
+console.log('user', user);
   if (!user) {
     throw new AppError(httpStatus.BAD_REQUEST, 'User not found');
   }
@@ -67,13 +68,11 @@ const login = async (payload: TLogin) => {
 // forgot Password
 const forgotPassword = async (email: string) => {
   const user: TUser | null = await User.isUserActive(email);
-
   if (!user) {
     throw new AppError(httpStatus.BAD_REQUEST, 'User not found');
   }
 
   const { isExist, isExpireOtp } = await otpServices.checkOtpByEmail(email);
-
   const { otp, expiredAt } = generateOptAndExpireTime();
 
   if (isExist && !isExpireOtp) {
@@ -86,6 +85,17 @@ const forgotPassword = async (email: string) => {
     };
 
     await otpServices.updateOtpByEmail(email, otpUpdateData);
+  } else {
+    const otpUpdateData:any = {
+      name: '',
+      sentTo: email,
+      receiverType: 'email',
+      purpose: 'forget-password',
+      otp,
+      expiredAt,
+    };
+
+    await otpServices.createOtp(otpUpdateData);
   }
 
   const jwtPayload = {
