@@ -28,26 +28,28 @@ const getSingleSubCategoryService = async (id: string) => {
 };
 
 const deletedSubCategoryService = async (id: string) => {
+     const existingSubCategory = await SubCategory.findById(id);
+     if (!existingSubCategory) {
+       throw new AppError(404, 'Sub Category not found!');
+     }
   const result = await SubCategory.findByIdAndDelete(id);
   return result;
 };
 
 const updateSubCategoryService = async (id: string, payload: TSubCategory) => {
-  console.log('id', id);
-  console.log('payload', { payload });
-  // Check if the document exists
+
   const existingSubCategory = await SubCategory.findById(id);
   if (!existingSubCategory) {
-    throw new AppError(404, 'SubCategory not found!');
+    throw new AppError(404, 'Sub Category not found!');
   }
   const result = await SubCategory.findByIdAndUpdate(id, payload, {
     new: true,
   });
-  console.log({ result });
+
   return result;
 };
 
-export const SubCategoryService = {
+export const subCategoryService = {
   createSubCategoryService,
   getAllSubCategoryService,
   getSingleSubCategoryService,

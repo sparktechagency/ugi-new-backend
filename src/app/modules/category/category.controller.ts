@@ -3,36 +3,18 @@ import catchAsync from '../../utils/catchAsync';
 import { Request, Response } from 'express';
 import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
-import { categoryService } from './category.service';
 import AppError from '../../error/AppError';
+import { categoryService } from './category.service';
 
 const createCategory = catchAsync(async (req: Request, res: Response) => {
-    console.log('hit hoise')
+  // console.log('hit hoise')
   const bodyData = req.body;
-  console.log({ bodyData });
-  
-    const files = req.files as {
-      [fieldname: string]: Express.Multer.File[];
-    };
- 
-    if (
-      !files ||
-      !files['image'] 
-      
-    ) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        'Category image files are required',
-      );
-    }
+  // console.log({ bodyData });
+   const files = req.files as {
+     [fieldname: string]: Express.Multer.File[];
+   };
 
-
-    const categoryImage = files['image'][0];
-if (categoryImage) {
-  bodyData.image = categoryImage.path.replace(/^public[\\/]/, '');
-}
-
-  const result = await categoryService.createCategoryService(bodyData);
+  const result = await categoryService.createCategoryService(files, bodyData);
 
   sendResponse(res, {
     success: true,
@@ -88,22 +70,19 @@ const deletedCategory = catchAsync(async (req: Request, res: Response) => {
 
 const updateCategory = catchAsync(async (req: Request, res: Response) => {
   const updateData = req.body;
-  console.log({ updateData });
+  // console.log({ updateData });
   const files = req.files as {
     [fieldname: string]: Express.Multer.File[];
   };
 
-  // Validate files and process image
-  if (files && files['image'] && files['image'][0]) {
-    const categoryImage = files['image'][0];
-    updateData.image = categoryImage.path.replace(/^public[\\/]/, '');
-  }
+ 
 
-  console.log('2', { updateData });
-  console.log('2', req.params.id);
+  // console.log('2', { updateData });
+  // console.log('2', req.params.id);
 
   const result = await categoryService.updateCategoryService(
     req.params.id,
+    files,
     updateData,
   );
 

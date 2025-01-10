@@ -23,13 +23,13 @@ categoryRouter
   .get('/:id', categoryController.getSingleCategory)
   .patch(
     '/:id',
-    //  auth(USER_ROLE.ADMIN),
+     auth(USER_ROLE.ADMIN),
     upload.fields([{ name: 'image', maxCount: 1 }]),
     categoryController.updateCategory,
   )
   .delete(
     '/:id',
-    // auth(USER_ROLE.ADMIN),
+    auth(USER_ROLE.ADMIN),
     categoryController.deletedCategory,
   );
 
