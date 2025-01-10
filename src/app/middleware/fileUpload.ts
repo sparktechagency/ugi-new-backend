@@ -22,29 +22,47 @@ const fileUpload = (uploadDirectory: string) => {
       );
     },
   });
-  const upload = multer({
-    storage: storage,
-    limits: {
-      fileSize: 5 * 1024 * 1024,
-    },
+  
+   const upload = multer({
+     storage,
+     limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB limit for video files
+     fileFilter: (req: Request, file, cb) => {
+       const allowedMimeTypes = [
+         'image/gif',
+         'image/png',
+         'image/jpg',
+         'image/jpeg',
+         'image/svg',
+         'image/webp',
+         'application/octet-stream',
+         'image/svg+xml',
+         'audio/mpeg',
+         'audio/wav',
+         'audio/ogg',
+         'audio/mp3',
+         'audio/aac',
+         'audio/x-wav',
+         'video/mp4',
+         'video/webm',
+         'video/avi',
+         'video/mov',
+         'video/mkv',
+         'application/pdf', // PDF files
+         'application/msword', // .doc files
+         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+       ];
+       if (allowedMimeTypes.includes(file.mimetype)) {
+         cb(null, true);
+       } else {
+         cb(
+           new Error(
+             'Only image and video formats like png, jpg, jpeg, svg, webp, mp4, avi, mov, and mkv are allowed',
+           ),
+         );
+       }
+     },
+   });
 
-    fileFilter: function (req: Request, file, cb) {
-      if (
-        file.mimetype === 'image/png' ||
-        file.mimetype === 'image/jpg' ||
-        file.mimetype === 'image/jpeg' ||
-        file.mimetype === 'image/svg' ||
-        file.mimetype === 'image/webp' ||
-        file.mimetype === 'application/octet-stream' ||
-        file.mimetype === 'image/svg+xml'
-      ) {
-        cb(null, true);
-      } else {
-        cb(null, false);
-        throw new Error('only png,jpg,jpeg,svg format allowed');
-      }
-    },
-  });
   return upload;
 };
 export default fileUpload;

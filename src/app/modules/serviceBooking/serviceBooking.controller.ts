@@ -6,9 +6,13 @@ import httpStatus from 'http-status';
 import { serviceBookingService } from './serviceBooking.service';
 
 const createServiceBooking = catchAsync(async (req: Request, res: Response) => {
+  console.log("sdafafaf")
     const bookingService = req.body;
-    const {userId} = req.user;
-    bookingService.userId = userId
+    // console.log('body1', req.body);
+    // const {userId} = req.user;
+    // bookingService.userId = userId
+    console.log("body2", req.body);
+    
   const result =
     await serviceBookingService.createServiceBooking(bookingService);
 
@@ -53,7 +57,8 @@ const getSingleServiceBooking = catchAsync(
 );
 
 const cencelServiceBooking = catchAsync(async (req: Request, res: Response) => {
-  const { userId } = req.user;
+  const  userId  = '64a1f32b3c9f536a2e9b1234';
+  // const { userId } = req.user;
   const result = await serviceBookingService.cancelServiceBooking(
     req.params.id,
     userId,

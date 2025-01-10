@@ -7,6 +7,7 @@ import { storeFile } from '../../utils/fileHelper';
 import httpStatus from 'http-status';
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
+  console.log("user body", req.body);
   const createUserToken = await userService.createUserToken(req.body);
 
   sendResponse(res, {

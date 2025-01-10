@@ -3,6 +3,7 @@ import util from 'util';
 const unlinkSync = util.promisify(fs.unlink);
 export const deleteFile = async (path: string) => {
   try {
+    console.log("deleting path",{path})
     if (fs.existsSync(`../public/${path}`)) {
       await unlinkSync(`../public/${path}`);
     } else {

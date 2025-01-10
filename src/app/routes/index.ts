@@ -11,6 +11,8 @@ import walletRouter from '../modules/wallet/wallet.route';
 import withdrawRouter from '../modules/withdraw/withdraw.route';
 import cencelBookingRoutes from '../modules/cencelBooking/cencelBooking.route';
 import serviceBookingRoutes from '../modules/serviceBooking/serviceBooking.route';
+import categoryRouter from '../modules/category/category.route';
+import subCategoryRouter from '../modules/subCategory/subCategory.route';
 
 const router = Router();
 
@@ -60,6 +62,14 @@ const moduleRoutes = [
   {
     path: '/cencel-booking',
     route: cencelBookingRoutes,
+  },
+  {
+    path: '/category',
+    route: categoryRouter,
+  },
+  {
+    path: '/sub-category',
+    route: subCategoryRouter,
   },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

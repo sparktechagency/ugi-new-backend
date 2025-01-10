@@ -22,8 +22,8 @@ authRoutes
   .patch(
     '/change-password',
     auth(
-      USER_ROLE.MENTEE,
-      USER_ROLE.MENTOR,
+      USER_ROLE.BUSINESS,
+      USER_ROLE.CUSTOMER,
       USER_ROLE.ADMIN,
       USER_ROLE.SUB_ADMIN,
       USER_ROLE.SUPER_ADMIN,

@@ -10,6 +10,7 @@ import httpStatus from 'http-status';
 
 // login
 const login = catchAsync(async (req: Request, res: Response) => {
+ 
   const result = await authServices.login(req.body);
 
   const cookieOptions: any = {

@@ -25,11 +25,11 @@ export interface OTPVerifyAndCreateUserProps {
 }
 
 const createUserToken = async (payload: TUserCreate) => {
-  const { role, email, fullName, password, phone, about, professional } =
+  const { role, email, fullName, password, phone} =
     payload;
 
   // user role check
-  if (!(role === USER_ROLE.MENTEE || role === USER_ROLE.MENTOR)) {
+  if (!(role === USER_ROLE.CUSTOMER || role === USER_ROLE.BUSINESS)) {
     throw new AppError(httpStatus.BAD_REQUEST, 'User data is not valid !!');
   }
 
@@ -74,12 +74,6 @@ const createUserToken = async (payload: TUserCreate) => {
     role,
   };
 
-  if (about) {
-    otpBody.about = about;
-  }
-  if (professional) {
-    otpBody.professional = professional;
-  }
 
   // send email
   process.nextTick(async () => {
@@ -134,7 +128,7 @@ const otpVerifyAndCreateUser = async ({
     });
   });
 
-  if (!(role === USER_ROLE.MENTEE || role === USER_ROLE.MENTOR)) {
+  if (!(role === USER_ROLE.CUSTOMER || role === USER_ROLE.BUSINESS)) {
     throw new AppError(httpStatus.BAD_REQUEST, 'User data is not valid !!');
   }
 

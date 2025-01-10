@@ -43,7 +43,7 @@ const getSingleCencelBooking = catchAsync(
       success: true,
       statusCode: httpStatus.OK,
       data: result,
-      message: 'Single Cencel Booking get successful',
+      message: 'Single Cencel Booking get successful!!',
     });
   },
 );
