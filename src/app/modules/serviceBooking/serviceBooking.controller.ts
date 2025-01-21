@@ -4,17 +4,24 @@ import { Request, Response } from 'express';
 import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
 import { serviceBookingService } from './serviceBooking.service';
+import moment from 'moment';
 
 const createServiceBooking = catchAsync(async (req: Request, res: Response) => {
   console.log("sdafafaf")
-    const bookingService = req.body;
+    const bodyData = req.body;
+      const { userId } = req.user; 
+      bodyData.customerId = userId;
+        const startTime = moment(bodyData.bookingStartTime, 'hh:mm A');
+        const endTime = startTime.clone().add(bodyData.duration - 1, 'minutes');
+        bodyData.bookingStartTime = startTime.format('hh:mm A');
+        bodyData.bookingEndTime = endTime.format('hh:mm A');
     // console.log('body1', req.body);
     // const {userId} = req.user;
     // bookingService.userId = userId
-    console.log("body2", req.body);
+    // console.log("body2", req.body);
+    // console.log({ bodyData });
     
-  const result =
-    await serviceBookingService.createServiceBooking(bookingService);
+  const result = await serviceBookingService.createServiceBooking(bodyData);
 
   sendResponse(res, {
     success: true,
@@ -57,8 +64,8 @@ const getSingleServiceBooking = catchAsync(
 );
 
 const cencelServiceBooking = catchAsync(async (req: Request, res: Response) => {
-  const  userId  = '64a1f32b3c9f536a2e9b1234';
-  // const { userId } = req.user;
+  // const  userId  = '64a1f32b3c9f536a2e9b1234';
+  const { userId } = req.user;
   const result = await serviceBookingService.cancelServiceBooking(
     req.params.id,
     userId,
@@ -73,10 +80,30 @@ const cencelServiceBooking = catchAsync(async (req: Request, res: Response) => {
 });
 
 
+const completeServiceBooking = catchAsync(
+  async (req: Request, res: Response) => {
+    // const userId = '64a1f32b3c9f536a2e9b1234';
+    const { userId } = req.user;
+    const result = await serviceBookingService.completeServiceBooking(
+      req.params.id,
+      userId,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      data: result,
+      message: 'Complete Service Booking successful',
+    });
+  },
+);
+
+
 
 export const serviceBookingController = {
   createServiceBooking,
   getAllServiceBookingByUser,
   getSingleServiceBooking,
   cencelServiceBooking,
+  completeServiceBooking,
 };

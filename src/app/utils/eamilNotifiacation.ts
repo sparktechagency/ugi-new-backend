@@ -14,6 +14,7 @@ const otpSendEmail = async ({
   otp,
   expiredAt,
 }: OtpSendEmailParams): Promise<void> => {
+  console.log({ sentTo , otp});
   await sendEmail(
     sentTo,
     subject,

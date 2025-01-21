@@ -1,23 +1,30 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { TServiceBooking } from './serviceBooking.interface';
 
 
-const bookingServiceSchema: Schema = new Schema<TServiceBooking>(
+const bookingServiceSchema = new Schema<TServiceBooking>(
   {
-    userId: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
+    customerId: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
     serviceId: { type: Schema.Types.ObjectId, required: true, ref: 'Service' },
-    buisnessId: {
+    businessId: {
       type: Schema.Types.ObjectId,
       required: true,
       ref: 'Business',
     },
+    bookingprice: { type: Number, required: true },
+    depositAmount: { type: Number, required: true },
+    dipositParsentage: { type: Number, required: true },
+    bookingDate: { type: Date, default: Date.now, required: true },
+    bookingStartTime: { type: String, required: true },
+    bookingEndTime: { type: String, required: true },
+    duration: { type: Number, required: true },
+    // customerCencelRefandPrice: { type: Number, required: false },
     status: {
       type: String,
       required: true,
-      enum: ['booking', 'cancel', 'complete'],
+      enum: ['booking', 'cencel', 'complete'],
+      default: 'booking',
     },
-    location: { type: String, required: true },
-    amount: { type: Number, required: true },
   },
   {
     timestamps: true,

@@ -1,58 +1,93 @@
-/* eslint-disable prefer-const */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import jwt from 'jsonwebtoken';
+import { Server, Socket } from 'socket.io';
+import config from './app/config';
+import { socketVerifyToken } from './app/helpers/socketVerifyToken';
+import { handleChatEvents } from './app/modules/socket/events/chatEvents';
+import { handleMessageEvents } from './app/modules/socket/events/messageEvents';
 
-import { Server as HttpServer } from 'http';
-import { Server } from 'socket.io';
-import getUserDetailsFromToken from './app/helpers/getUserDetailsFromToken';
-import AppError from './app/error/AppError';
-import httpStatus from 'http-status';
+const socketIO = (io: Server) => {
+  // Initialize an object to store the active users
+  let activeUsers: { [key: string]: any } = {};
 
-const initializeSocketIO = (server: HttpServer) => {
-  const io = new Server(server, {
-    cors: {
-      origin: '*',
-    },
-  });
+  // Middleware to handle JWT authentication
+  io.use(async (socket: Socket, next) => {
+    const token = socket.handshake.headers.authorization;
 
-  // Online users
-  const onlineUser = new Set();
+    if (!token) {
+      return next(new Error('Authentication error: Token not provided.'));
+    }
 
-  io.on('connection', async socket => {
-    console.log('connected', socket?.id);
+    const tokenParts = token.split(' ');
+    const tokenValue = tokenParts[1];
 
     try {
-      //----------------------user token get from front end-------------------------//
-      const token =
-        socket.handshake.auth?.token || socket.handshake.headers?.token;
-      //----------------------check Token and return user details-------------------------//
-      const user: any = await getUserDetailsFromToken(token);
-      if (!user) {
-        // io.emit('io-error', {success:false, message:'invalid Token'});
-        throw new AppError(httpStatus.UNAUTHORIZED, 'Invalid token');
-      }
-
-      socket.join(user?._id?.toString());
-
-      //----------------------user id set in online array-------------------------//
-      onlineUser.add(user?._id?.toString());
-
-      socket.on('check', (data, callback) => {
-        callback({ success: true });
-      });
-
-      //-----------------------Disconnect------------------------//
-      socket.on('disconnect', () => {
-        onlineUser.delete(user?._id?.toString());
-        io.emit('onlineUser', Array.from(onlineUser));
-        console.log('disconnect user ', socket.id);
-      });
-    } catch (error) {
-      console.error('-- socket.io connection error --', error);
+      // Verify token using the utility function
+      const decoded = await socketVerifyToken(
+        tokenValue,
+        config.jwt_access_secret as string,
+      ); // Ensures secret is a string
+      socket.decodedToken = decoded;
+      next();
+    } catch (err) {
+      console.error('JWT Verification Error:', err);
+      return next(new Error('Authentication error: Invalid token.'));
     }
   });
+  // On new socket connection
+  io.on('connection', (socket: Socket) => {
+    console.log('connected');
+    console.log('socket decodedToken', socket.decodedToken);
+    try {
+      // socket.on('message', (data, callback) => {
+      //   console.log('Data message:', data); // Log the incoming message
 
-  return io;
+      //   // Optionally call the callback to acknowledge receipt
+      //   if (callback) {
+      //     callback({
+      //       status: 'received',
+      //       message: 'Message received successfully',
+      //     });
+      //   }
+
+      //   // Emit a message back to the client or other clients
+      //   socket.emit('message', { data: data }); // Emitting the message back
+      // });
+      console.log('activeUsers top', activeUsers);
+
+      if (!socket?.decodedToken?.userId) {
+        console.error('No user ID in decoded token');
+        return;
+      }
+
+      if (!activeUsers[socket.decodedToken.userId]) {
+        activeUsers[socket.decodedToken.userId] = {
+          ...socket.decodedToken,
+          id: socket.decodedToken.userId,
+        };
+        console.log(`User Id: ${socket.decodedToken.userId} has connected.`);
+      } else {
+        console.log(
+          `User Id: ${socket.decodedToken.userId} is already connected.`,
+        );
+      }
+
+      io.emit('active-users', Object.values(activeUsers));
+
+      console.log('activeUsers down', activeUsers);
+
+      // Handle 'add-new-chat' event
+      socket.on('add-new-chat', (data, callback) =>
+        handleChatEvents(socket, data, callback),
+      );
+      // Handle other events, like 'add-new-message'
+      socket.on('add-new-message', (data, callback) =>
+        handleMessageEvents(socket, data, callback, io),
+      );
+      // Other socket events...
+    } catch (error) {
+      console.error('Error in socket connection:', error);
+    }
+  });
 };
 
-export default initializeSocketIO;
+export default socketIO;

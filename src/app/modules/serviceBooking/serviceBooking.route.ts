@@ -10,7 +10,7 @@ const serviceBookingRoutes = Router();
 serviceBookingRoutes
   .post(
     '/create-booking',
-    //   auth(USER_ROLE.USER),
+      auth(USER_ROLE.CUSTOMER),
     //   validateRequest(paymnetValidation),
     serviceBookingController.createServiceBooking,
   )
@@ -23,8 +23,13 @@ serviceBookingRoutes
   .get('/:id', serviceBookingController.getSingleServiceBooking)
   .patch(
     '/:id',
-    // auth(USER_ROLE.CUSTOMER),
+    auth(USER_ROLE.CUSTOMER),
     serviceBookingController.cencelServiceBooking,
+  )
+  .patch(
+    '/complete/:id',
+    auth(USER_ROLE.CUSTOMER),
+    serviceBookingController.completeServiceBooking,
   );
 
 export default serviceBookingRoutes;

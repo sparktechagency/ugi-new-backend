@@ -1,49 +1,76 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { createServer, Server } from 'http';
 import mongoose from 'mongoose';
 import app from './app';
+import socketIO from './socketio';
+import { Server as SocketIOServer } from 'socket.io'; // For better type safety
+import colors from 'colors'; // Ensure correct import
 import config from './app/config';
-import initializeSocketIO from './socketio';
-//@ts-ignore
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unused-vars
-const colors = require('colors');
 
 let server: Server;
-export const io = initializeSocketIO(createServer(app));
-// export const io = initializeSocketIO(createServer(app));
+const socketServer = createServer();
+
+// Initialize Socket.IO with type safety
+const io: SocketIOServer = new SocketIOServer(socketServer, {
+  cors: {
+    origin: '*',
+  },
+});
 
 async function main() {
   try {
+    // console.log('config.database_url', config.database_url);
+    // Connect to MongoDB
     await mongoose.connect(config.database_url as string);
-    server = app.listen(Number(config.port), config.ip as string, () => {
-      //@ts-ignore
-      console.log(`app is listening on ${config.ip}:${config.port}`.green.bold);
-    });
-    io.listen(Number(config.socket_port));
-    console.log(
-      //@ts-ignore
-      `Socket is listening on port ${config.ip}:${config.socket_port}`.yellow
-        .bold,
-    );
+    // await mongoose.connect(
+    //   'mongodb+srv://tiger:tiger@team-codecanyon.ffrshve.mongodb.net/pro-mentors?retryWrites=true&w=majority&appName=Team-CodeCanyon',
+    // );
 
-    // io.listen(Number(config.socket_port));
-    // console.log(`Socket is listening on port ${config.socket_port}`);
+    // Start Express server
+    // server = app.listen(Number(config.port), config.ip as string, () => {
+    server = app.listen(Number(config.port), () => {
+      console.log(
+        colors.green(`App is listening on ${config.ip}:${config.port}`).bold,
+      );
+    });
+
+    // Start Socket server
+    socketServer.listen(config.socket_port || 6000, () => {
+      console.log(
+        colors.yellow(
+          `Socket is listening on ${config.ip}:${config.socket_port}`,
+        ).bold,
+      );
+    });
+
+    // Pass Socket.IO instance to socketIO module
+    socketIO(io);
+    global.io = io;
   } catch (err) {
-    console.error(err);
+    console.error('Error starting the server:', err);
+    console.log(err);
+    process.exit(1); // Exit after error
   }
 }
+
 main();
-process.on('unhandledRejection', err => {
-  console.log(`😈 unahandledRejection is detected , shutting down ...`, err);
+
+// Graceful shutdown for unhandled rejections
+process.on('unhandledRejection', (err) => {
+  console.error(`Unhandled rejection detected: ${err}`);
   if (server) {
     server.close(() => {
       process.exit(1);
     });
   }
-  process.exit(1);
+  process.exit(1); // Ensure process exits
 });
 
-process.on('uncaughtException', () => {
-  console.log(`😈 uncaughtException is detected , shutting down ...`);
-  process.exit(1);
+// Graceful shutdown for uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error(`Uncaught exception detected: ${err}`);
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+  }
 });

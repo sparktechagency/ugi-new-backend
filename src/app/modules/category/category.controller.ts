@@ -33,7 +33,7 @@ const getAllCategory = catchAsync(async (req, res) => {
     success: true,
     statusCode: httpStatus.OK,
     meta: result.meta,
-    data: result.result,
+    data: result.categoryQuery,
     message: 'Get All Category successful!!',
   });
 });
