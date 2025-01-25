@@ -17,6 +17,8 @@ import serviceRouter from '../modules/service/service.route';
 import ugiTokenRouter from '../modules/ugiToken/ugiToken.route';
 import favoriteBusinessRoutes from '../modules/favorite/favorite.route';
 import reviewRouter from '../modules/ratings/ratings.route';
+import chatRouter from '../modules/chat/chat.route';
+import messageRouter from '../modules/message/message.route';
 
 const router = Router();
 
@@ -89,6 +91,14 @@ const moduleRoutes = [
   {
     path: '/review',
     route: reviewRouter,
+  },
+  {
+    path: '/chat',
+    route: chatRouter,
+  },
+  {
+    path: '/message',
+    route: messageRouter,
   },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

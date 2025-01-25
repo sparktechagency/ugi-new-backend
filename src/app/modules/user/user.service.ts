@@ -250,14 +250,9 @@ const getAllUserRatio = async (year: number) => {
   return fullUserRatios;
 };
 
+
 const getUserById = async (id: string) => {
-  const result = await User.findById(id).populate({
-    path: 'purchesPackageId', // First level population
-    populate: {
-      path: 'package_id',
-      model: 'SubscriptionPlan',
-    },
-  });
+  const result = await User.findById(id);
   if (!result) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found');
   }

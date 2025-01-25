@@ -18,12 +18,32 @@ const bookingServiceSchema = new Schema<TServiceBooking>(
     bookingStartTime: { type: String, required: true },
     bookingEndTime: { type: String, required: true },
     duration: { type: Number, required: true },
+    reSheduleDate: { type: Date, required: false, default: null },
+    reSheduleStartTime: { type: String, required: false, default: ' ' },
+    reSheduleEndTime: { type: String, required: false, default: ' ' },
     // customerCencelRefandPrice: { type: Number, required: false },
+    reSheduleStatus: {
+      type: String,
+      required: true,
+      enum: [
+        'no-shuedule',
+        'pending-re-shedule',
+        'cencel-re-shedule',
+        'conform-re-shedule',
+      ],
+      default: 'no-shuedule',
+    },
     status: {
       type: String,
       required: true,
       enum: ['booking', 'cencel', 'complete'],
       default: 'booking',
+    },
+    paymentStatus: {
+      type: String,
+      required: true,
+      enum: ['upcoming', 'processing', 'paid'],
+      default: 'upcoming',
     },
   },
   {

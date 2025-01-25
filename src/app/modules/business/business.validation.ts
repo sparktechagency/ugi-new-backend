@@ -52,6 +52,19 @@ const daysOfWeek = z.enum([
          'Invalid time format. Expected format is "00:00 AM" or "00:00 PM"',
        )
        .default('05:00 PM'),
+       specialDays: z.array(daysOfWeek).optional(),
+       specialStartTime: z
+       .string()
+       .regex(
+         /^(0[1-9]|1[0-2]):[0-5][0-9]\s(AM|PM)$/,
+         'Invalid time format. Expected format is "00:00 AM" or "00:00 PM"',
+       ),
+       specialEndTime: z
+       .string()
+       .regex(
+         /^(0[1-9]|1[0-2]):[0-5][0-9]\s(AM|PM)$/,
+         'Invalid time format. Expected format is "00:00 AM" or "00:00 PM"',
+       ),
      bookingBreak: z.string().min(1, 'Booking break is required').default('10'),
      launchbreakStartTime: z
        .string()

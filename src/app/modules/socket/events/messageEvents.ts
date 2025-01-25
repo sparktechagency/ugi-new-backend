@@ -45,6 +45,18 @@ export const handleMessageEvents = async (
          console.log('eventName1', eventName1);
          const eventName2 = 'update-chatlist::' + participants[1].toString();
          console.log('eventName2', eventName2);
+        const notificationUser1 = 'user-notification::' + participants[0].toString();
+         console.log('notificationUser1', notificationUser1);
+         const notificationUser2 =
+           'user-notification::' + participants[1].toString();
+         console.log('notificationUser2', notificationUser2);
+
+        io.emit(notificationUser1, {
+          message: message.message,
+        });
+        io.emit(notificationUser2, {  
+          message: message.message,
+        });
 
         const chatListForUser1 = await chatService.getChatByParticipantId(
           { participantId: participants[0] },

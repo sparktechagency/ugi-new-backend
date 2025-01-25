@@ -54,10 +54,10 @@ const getAllFavoriteBusinessByUserQuery = async (
   query: Record<string, unknown>,
   customerId: string,
 ) => {
-  const FavoritecreateOrDeleteFavoriteBusinessQuery = new QueryBuilder(
-    FavoriteBusiness.find({ customerId }).populate({
-      path: 'businessId',
-    }),
+  const favoriteBusinessQuery = new QueryBuilder(
+    FavoriteBusiness.find({ customerId })
+      .populate('customerId')
+      .populate('businessId'),
     query,
   )
     .search([''])
@@ -66,8 +66,8 @@ const getAllFavoriteBusinessByUserQuery = async (
     .paginate()
     .fields();
 
-  const result = await FavoritecreateOrDeleteFavoriteBusinessQuery.modelQuery;
-  const meta = await FavoritecreateOrDeleteFavoriteBusinessQuery.countTotal();
+  const result = await favoriteBusinessQuery.modelQuery;
+  const meta = await favoriteBusinessQuery.countTotal();
   return { meta, result };
 };
 

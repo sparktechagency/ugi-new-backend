@@ -148,7 +148,7 @@ function generateAvailableSlots({
       return false; // Slot is already booked
     }
 
-    // Check if the slot violates the bookingBreak rule
+    
     const violatesBreak = bookedSlots.find(
       (booking: any) =>
         slotStart >= booking.end &&
@@ -161,10 +161,10 @@ function generateAvailableSlots({
     }
 
     if (slotEnd > convertToDate(endTime)) {
-      return false; // Slot extends beyond the available end time
+      return false; 
     }
 
-    return true; // This slot is available
+    return true; 
   });
 
   //   console.log(availableSlots);
@@ -226,6 +226,8 @@ export function generateNewTimeSlot(timeSlots: string[]): string {
   if (parsedSlots.length === 0) {
     throw new Error('No valid time slots provided.');
   }
+
+  console.log({ parsedSlots });
 
   // Find the earliest start time
   const earliestStart = parsedSlots.reduce((earliest, current) =>

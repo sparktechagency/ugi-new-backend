@@ -13,7 +13,7 @@ const createUgiTokenService = async (payload: TUgiToken) => {
     if (!service) {
       throw new AppError(404, 'Service not found!');
     }
-    const business = await Business.findById(payload.businessId);
+    const business = await Business.findOne({businessId: payload.businessId});
     if (!business) {
       throw new AppError(404, 'Business not found!');
     }

@@ -8,6 +8,7 @@ import FavoriteBusiness from '../favorite/favorite.model';
 import ServiceBooking from '../serviceBooking/serviceBooking.model';
 import { generateAvailableSlots, generateNewTimeSlot } from './business.utils';
 import Service from '../service/service.model';
+import { format } from 'path';
 // import { parse, isBefore, isAfter } from 'date-fns'; // You can use another library if preferred
 
 const createBusinessService = async (files: any, payload: any) => {
@@ -20,7 +21,7 @@ const createBusinessService = async (files: any, payload: any) => {
         throw new AppError(400, 'You are not business user');    
     };
     const existingBusiness = await Business.findOne({
-      businessName: payload.businessName,
+      businessId: payload.businessId,
     });
 
     if (existingBusiness) {
@@ -35,6 +36,7 @@ const createBusinessService = async (files: any, payload: any) => {
         );
       }
   const result = await Business.create(payload);
+  console.log("business create",{ result });
 
   if (!result) {
     const imagePath = `public/${payload.businessImage}`;
@@ -57,7 +59,7 @@ const createBusinessService = async (files: any, payload: any) => {
 
 const getAllBusinessService = async (query: Record<string, unknown>) => {
   const businessQuery = new QueryBuilder(Business.find({}), query)
-    .search([''])
+    .search(['businessName', 'businessDescription'])
     .filter()
     .sort()
     .paginate()
@@ -73,18 +75,34 @@ const getBusinessAvailableSlots = async (payload: any) => {
   const { businessId, date, serviceId }: any = payload;
 
   console.log('businessId', businessId, 'date', date);
-  const business = await Business.findById(businessId);
+  const business = await Business.findOne({businessId});
 
   if (!business) {
     throw new AppError(404, 'Business is Not Found!!');
   }
 
-  const service:any = await Business.findById(serviceId);
+  const service:any = await Service.findById(serviceId);
 
   if (!service) {
     throw new AppError(404, 'service is Not Found!!');
   }
 
+  console.log({ service });
+
+  const dateDay = new Date(date).getDay();
+
+  const daysOfWeek = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ];
+
+
+  const dayName = daysOfWeek[dateDay];
   // Define start and end of the day
   const startOfDay = new Date(date);
   startOfDay.setUTCHours(0, 0, 0, 0);
@@ -92,35 +110,55 @@ const getBusinessAvailableSlots = async (payload: any) => {
   const endOfDay = new Date(date);
   endOfDay.setUTCHours(23, 59, 59, 999);
 
-  // Find bookings within the specified date range
   const bookings = await ServiceBooking.find({
     businessId,
     bookingDate: {
-      $gte: startOfDay, // Start of the day
-      $lt: endOfDay, // End of the day
+      $gte: startOfDay, 
+      $lt: endOfDay, 
     },
   }).select('bookingStartTime bookingEndTime bookingDate');
 
 
-  console.log('startTime  ', business.businessStartTime);
-  console.log('endTime  ', business.businessEndTime);
-  console.log('startBreakTime  ', business.launchbreakStartTime);
-  console.log('endBreakTime  ', business.launchbreakEndTime);
-  console.log('bookingbreack', business.bookingBreak);
   const durationNum = Number(service.businessDuration);
-  console.log({ durationNum });
-  console.log({ bookings });
 
-  const availableSlots = generateAvailableSlots({
-    startTime: business.businessStartTime,
-    endTime: business.businessEndTime,
-    startBreakTime: business.launchbreakStartTime,
-    endBreakTime: business.launchbreakEndTime,
+
+  let availableSlots: any = [];
+  if(business.specialDays && business.specialDays.includes(dayName)){
+     availableSlots = generateAvailableSlots({
+       startTime: business.specialStartTime as string,
+       endTime: business.specialEndTime as string,
+       startBreakTime: business.launchbreakStartTime as string,
+       endBreakTime: business.launchbreakEndTime as string,
+       bookings,
+       duration: durationNum,
+       minimumSlotTime: durationNum,
+       bookingBreak: business.bookingBreak,
+     }); 
+}else{
+   availableSlots = generateAvailableSlots({
+    startTime: business.businessStartTime as string,
+    endTime: business.businessEndTime as string,
+    startBreakTime: business.launchbreakStartTime as string,
+    endBreakTime: business.launchbreakEndTime as string,
     bookings,
     duration: durationNum,
     minimumSlotTime: durationNum,
-    bookingBreak:business.bookingBreak
+    bookingBreak: business.bookingBreak,
   });
+}
+
+
+
+  // const availableSlots = generateAvailableSlots({
+  //   startTime: business.businessStartTime,
+  //   endTime: business.businessEndTime,
+  //   startBreakTime: business.launchbreakStartTime,
+  //   endBreakTime: business.launchbreakEndTime,
+  //   bookings,
+  //   duration: durationNum,
+  //   minimumSlotTime: durationNum,
+  //   bookingBreak:business.bookingBreak
+  // });
 
   // console.log({ availableSlots });
 
@@ -193,7 +231,7 @@ const getAllFilterByBusinessService = async (
   query: Record<string, unknown>,
   customerId: string,
 ) => {
-  console.log('Service query:', query);
+  console.log('Service query:==', query);
 
   const {
     categoryName,
@@ -204,92 +242,132 @@ const getAllFilterByBusinessService = async (
     limit = 10,
   }: any = query;
 
-  const newQuery: Record<string, unknown> = {};
-  if (availableDays) {
-    newQuery.availableDays = Array.isArray(availableDays)
-      ? availableDays
-      : [availableDays];
-  }
+  console.log('****')
+
+  console.log("999999")
+
+    let formattedAvailableDays = [];
+    let formattedTimeSlots = [];
+
+    try {
+      formattedAvailableDays = JSON.parse(availableDays.replace(/(\w+)/g, '"$1"'));
+    } catch (error) {
+      console.error('Error parsing availableDays:', error);
+    }
+
+    try {
+      formattedTimeSlots = JSON.parse(
+        timeSlots
+          .replace(/^\[/, '["')
+          .replace(/]$/, '"]')
+          .replace(/, /g, '", "'),
+      );
+    } catch (error) {
+      console.error('Error parsing timeSlots:', error);
+    }
+
+    const formattedQuery = {
+      categoryName,
+      subCategoryName,
+      availableDays: formattedAvailableDays,
+      timeSlots: formattedTimeSlots,
+    };
+
+console.log({ formattedQuery });
+
 
   // Pagination variables
   const skip = (page - 1) * limit;
 
   const serviceQuery = await Service.find({
-    subCategoryName,
-    categoryName,
+    subCategoryName:formattedQuery.subCategoryName,
+    categoryName:formattedQuery.categoryName,
   })
     .select('businessId')
     .populate('businessId');
 
+  console.log('serviceQuery', serviceQuery);
 
-let filteredBusinesses = serviceQuery;
- if(newQuery.availableDays){
-   filteredBusinesses = serviceQuery.filter(({ businessId }: any) => {
-    console.log('Business Available Days:', businessId?.availableDays);
-    if (!businessId || !businessId.availableDays) return false;
-    return (newQuery.availableDays as string[])?.some((day: string) =>
-      businessId.availableDays.includes(day),
-    );
-  });
- }
+  let filteredBusinesses = serviceQuery;
+  if (formattedQuery.availableDays) {
+    filteredBusinesses = serviceQuery.filter(({ businessId }: any) => {
+      console.log('Business Available Days:', businessId?.availableDays);
+      if (!businessId || !businessId.availableDays || !businessId.specialDays)
+        return false;
+      return (formattedQuery.availableDays as string[]).some(
+        (day: string) =>
+          businessId.availableDays.includes(day) ||
+          businessId.specialDays.includes(day),
+      );
+    });
+  }
 
-
-  console.log("oo",filteredBusinesses);
+  console.log('oo', filteredBusinesses);
   // console.log({filteredBusinesses});
 
 
-let newTimeSlots;
-  if(timeSlots){
-     const queryAvailableSlots = Array.isArray(timeSlots)
-       ? timeSlots
-       : [timeSlots];
+  let newTimeSlots;
+  if (formattedQuery.timeSlots) {
+    
 
-        newTimeSlots = await generateNewTimeSlot(queryAvailableSlots);
-
+    newTimeSlots = await generateNewTimeSlot(formattedQuery.timeSlots);
   }
 
  
 
   // const timeSlote = "10:00 AM - 11:00 AM";
-  
 
-  console.log('mmm',{ timeSlots });
-  console.log('nnn', { newTimeSlots });
-
-
-
+  console.log('timeSlots', { timeSlots });
+  console.log('newTimeSlots', { newTimeSlots });
 
   // Handle timeSlots filtering
 
+  // Handle timeSlots filtering
   let filteredResult = [];
   if (newTimeSlots && typeof newTimeSlots === 'string') {
     const [queryStartTime, queryEndTime] = newTimeSlots.split(' - ');
-    console.log({ queryStartTime });
-    console.log({ queryEndTime });
+    console.log({ queryStartTime, queryEndTime });
+
     const queryStart = convertTo24HourFormat11(queryStartTime.trim());
-    console.log({ queryStart });
     const queryEnd = convertTo24HourFormat11(queryEndTime.trim());
-    console.log({ queryEnd });
+    console.log({ queryStart, queryEnd });
 
-    // Fetch all businesses and filter by timeSlots
-    // const allBusinesses = filteredBusinesses;// Fetch businesses matching initial filters
-    console.log('in filter', filteredBusinesses);
-
+    // Filter businesses based on time slots
     filteredResult = filteredBusinesses.filter((business: any) => {
-      console.log('==', business);
-      console.log('==1', business.businessStartTime);
-      console.log('==2', business.businessEndTime);
-      const businessStart = convertTo24HourFormat11(
-        business.businessId.businessStartTime,
-      );
-      const businessEnd = convertTo24HourFormat11(
-        business.businessId.businessEndTime,
-      );
+      console.log('Business:', business);
 
+      let startTime, endTime;
+      console.log('specialStartTime', business.businessId.specialStartTime);
+      console.log('specialEndTime', business.businessId.specialEndTime);
+
+      if (
+        business.businessId.specialStartTime?.trim() && 
+        business.businessId.specialEndTime?.trim() && 
+        business.businessId.specialDays?.length > 0
+      ) {
+        console.log('business special', business);
+        console.log('business.specialStartTime', business.specialStartTime);
+        console.log('business.specialEndTime', business.specialEndTime);
+        // Use special times if available
+        startTime = convertTo24HourFormat11(
+          business.businessId.specialStartTime,
+        );
+        endTime = convertTo24HourFormat11(business.businessId.specialEndTime);
+      } else {
+        console.log('business businessTime', business);
+        startTime = convertTo24HourFormat11(
+          business.businessId.businessStartTime,
+        );
+        endTime = convertTo24HourFormat11(business.businessId.businessEndTime);
+      }
+
+      console.log({ startTime, endTime });
+
+      // Check if business falls within the queried time slot
       return (
-        businessStart >= queryStart && // Start time should be >= time slot start
-        businessStart < queryEnd && // Start time should be < time slot end
-        businessEnd > queryStart // End time should overlap with time slot start
+        startTime >= queryStart && // Start time should be >= query start
+        startTime < queryEnd && // Start time should be < query end
+        endTime > queryStart // End time should overlap with query start
       );
     });
   } else {
@@ -298,6 +376,8 @@ let newTimeSlots;
   }
 
   console.log({ filteredResult });
+
+  console.log('963', filteredResult );
   // console.log('customerId', customerId);
 
   // Fetch favorite data for the customer
@@ -307,9 +387,11 @@ let newTimeSlots;
   // Add isFavorite property to businesses
   const enhancedResult = filteredResult.map((business: any) => {
     const isFavorite = favoriteData.some(
-      (fav) => fav.businessId.toString() === business._id.toString(),
+      (fav) =>
+        fav.businessId.toString() ===
+        business.businessId._id.toString(),
     );
-    return { ...business._doc, isFavorite }; // Include isFavorite as true/false
+    return { ...business._doc, isFavorite };
   });
 
   // console.log('Filtered result with favorites:', enhancedResult);
@@ -352,6 +434,32 @@ const getSingleBusinessService = async (id: string) => {
     throw new AppError(404, 'Business not found!');
   }
   return result;
+};
+
+// const getBusinessByServiceService = async (businessId: string) => {
+//   const result = await Service.find({ businessId });
+//   console.log({ result });
+//   if (!result) {
+//     throw new AppError(404, 'Business not found!');
+//   }
+//   return result;
+// };
+
+const getBusinessByServiceService = async (
+  query: Record<string, unknown>,
+  businessId: string,
+) => {
+  console.log({ businessId });
+  const businessQuery = new QueryBuilder(Service.find({ businessId }), query)
+    .search([''])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await businessQuery.modelQuery;
+  const meta = await businessQuery.countTotal();
+  return { meta, result };
 };
 
 
@@ -450,4 +558,5 @@ export const businessService = {
   deletedBusinessService,
   updateBusinessService,
   updateAvailableBusinessTimeService,
+  getBusinessByServiceService,
 };

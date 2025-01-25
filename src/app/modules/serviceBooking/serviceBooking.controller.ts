@@ -47,6 +47,23 @@ const getAllServiceBookingByUser = catchAsync(async (req, res) => {
   });
 });
 
+const getAllServiceBookingByBusiness = catchAsync(async (req, res) => {
+  const { userId } = req.user;
+  const result =
+    await serviceBookingService.getAllServiceBookingByBusinessQuery(
+      req.query,
+      userId as string,
+    );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    meta: result.meta,
+    data: result.result,
+    message: 'My Service Booking All are requered successful!!',
+  });
+});
+
 
 const getSingleServiceBooking = catchAsync(
   async (req: Request, res: Response) => {
@@ -79,6 +96,24 @@ const cencelServiceBooking = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const paymentStatusServiceBooking = catchAsync(
+  async (req: Request, res: Response) => {
+    // const  userId  = '64a1f32b3c9f536a2e9b1234';
+    const { userId } = req.user;
+    const result = await serviceBookingService.cancelServiceBooking(
+      req.params.id,
+      userId,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      data: result,
+      message: 'Cencel Service Booking successful',
+    });
+  },
+);
+
 
 const completeServiceBooking = catchAsync(
   async (req: Request, res: Response) => {
@@ -98,12 +133,60 @@ const completeServiceBooking = catchAsync(
   },
 );
 
+const reScheduleRequestServiceBooking = catchAsync(
+  async (req: Request, res: Response) => {
+    // const userId = '64a1f32b3c9f536a2e9b1234';
+    const bodyData = req.body;
+    const { userId } = req.user;
+    bodyData.customerId = userId;
+
+    const result = await serviceBookingService.reSheduleRequestServiceBooking(
+      req.params.id,
+      bodyData,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      data: result,
+      message: 'Complete Service Booking Reshedule Requested successful!',
+    });
+  },
+);
+
+const reScheduleCompleteCencelServiceBooking = catchAsync(
+  async (req: Request, res: Response) => {
+    // const userId = '64a1f32b3c9f536a2e9b1234';
+    const { userId } = req.user;
+    const status = req.query.status as string;  
+    const result =
+      await serviceBookingService.reSheduleCompleteCencelServiceBooking(
+        req.params.id,
+        userId,
+        status,
+      );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      data: result,
+      message: 'Complete Service Booking Reshedule Requested successful!',
+    });
+  },
+);
+
+
+
 
 
 export const serviceBookingController = {
   createServiceBooking,
   getAllServiceBookingByUser,
+  getAllServiceBookingByBusiness,
   getSingleServiceBooking,
+  paymentStatusServiceBooking,
   cencelServiceBooking,
   completeServiceBooking,
+  reScheduleRequestServiceBooking,
+  reScheduleCompleteCencelServiceBooking,
 };

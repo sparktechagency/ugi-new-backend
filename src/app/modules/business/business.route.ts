@@ -25,17 +25,20 @@ businessRouter
     auth(USER_ROLE.CUSTOMER),
     businessController.getAllFilterBusiness,
   )
+
   .get('/available/:businessId', businessController.getBusinessAvailableSlots)
   .get(
     '/user',
     auth(USER_ROLE.BUSINESS),
     businessController.getSingleBusinessBybusinessId,
   )
+  .get('/service/:id', businessController.getBusinessByService)
   .get(
     '/:id',
     // auth(USER_ROLE.BUSINESS),
     businessController.getSingleBusiness,
   )
+
   .patch(
     '/',
     auth(USER_ROLE.BUSINESS),
@@ -51,3 +54,5 @@ businessRouter
   .delete('/', auth(USER_ROLE.BUSINESS), businessController.deletedBusiness);
 
 export default businessRouter;
+
+

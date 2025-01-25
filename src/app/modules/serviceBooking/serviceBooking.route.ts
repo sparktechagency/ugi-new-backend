@@ -10,14 +10,20 @@ const serviceBookingRoutes = Router();
 serviceBookingRoutes
   .post(
     '/create-booking',
-      auth(USER_ROLE.CUSTOMER),
+    auth(USER_ROLE.CUSTOMER),
     //   validateRequest(paymnetValidation),
     serviceBookingController.createServiceBooking,
   )
+
   .get(
     '',
     auth(USER_ROLE.CUSTOMER),
     serviceBookingController.getAllServiceBookingByUser,
+  )
+  .get(
+    '/business',
+    auth(USER_ROLE.BUSINESS),
+    serviceBookingController.getAllServiceBookingByBusiness,
   )
 
   .get('/:id', serviceBookingController.getSingleServiceBooking)
@@ -27,9 +33,25 @@ serviceBookingRoutes
     serviceBookingController.cencelServiceBooking,
   )
   .patch(
+    'payment/:id',
+    auth(USER_ROLE.CUSTOMER),
+    serviceBookingController.paymentStatusServiceBooking,
+  )
+  .patch(
     '/complete/:id',
     auth(USER_ROLE.CUSTOMER),
     serviceBookingController.completeServiceBooking,
+  )
+  .patch(
+    '/re-schedule-request/:id',
+    auth(USER_ROLE.CUSTOMER),
+    serviceBookingController.reScheduleRequestServiceBooking,
+  )
+  .patch(
+    '/re-schedule-complete-cencel/:id',
+    auth(USER_ROLE.BUSINESS),
+    serviceBookingController.reScheduleCompleteCencelServiceBooking,
   );
+ 
 
 export default serviceBookingRoutes;

@@ -45,6 +45,16 @@ const userSchema = new Schema<TUser>(
       type: Boolean,
       default: false,
     },
+    pegnensi: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    allergies: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   {
     timestamps: true,

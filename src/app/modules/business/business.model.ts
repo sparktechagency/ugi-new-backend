@@ -8,7 +8,7 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
       ref: 'User',
       required: true,
     },
-    
+
     businessName: {
       type: String,
       required: true,
@@ -32,15 +32,6 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
       enum: ['Mobile', 'High Street Salon', 'Home Salon'],
       required: true,
     },
-
-    // businessDuration: {
-    //   type: String,
-    //   required: true,
-    // },
-    // dipositAmount: {
-    //   type: String,
-    //   required: true,
-    // },
     paymentMethod: {
       type: String,
       enum: ['Card', 'Cash', 'Cash & Card'],
@@ -49,17 +40,32 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
     availableDays: {
       type: [String],
       required: true,
-      default: ['Monday', 'Tuesday'],
+      default: ['Monday', 'Tuesday', 'Wednesday'],
     },
     businessStartTime: {
       type: String,
       required: true,
-      default: '09:00 AM',
+      default: '08:00 AM',
     },
     businessEndTime: {
       type: String,
       required: true,
-      default: '05:00 PM',
+      default: '06:00 PM',
+    },
+    specialDays: {
+      type: [String],
+      required: true,
+      default: [],
+    },
+    specialStartTime: {
+      type: String,
+      required: true,
+      default:" "
+    },
+    specialEndTime: {
+      type: String,
+      required: true,
+      default:" "
     },
     bookingBreak: {
       type: String,

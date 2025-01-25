@@ -15,6 +15,7 @@ const createBusiness = catchAsync(async (req: Request, res: Response) => {
     [fieldname: string]: Express.Multer.File[];
   };
 
+  console.log(bodyData);
   const result = await businessService.createBusinessService(files, bodyData);
 
   sendResponse(res, {
@@ -55,15 +56,16 @@ const getAllFilterBusiness = catchAsync(async (req, res) => {
   });
 });
 
+
 const getBusinessAvailableSlots = catchAsync(async (req, res) => {
   const { businessId } = req.params;
   const { date } = req.query;
   const {serviceId} = req.query;
-  const payload = {
+ const payload = {
     businessId,
     serviceId,
     date,
-  };
+  }; 
 
   const result = await businessService.getBusinessAvailableSlots(payload);
 
@@ -74,6 +76,7 @@ const getBusinessAvailableSlots = catchAsync(async (req, res) => {
     message: 'Mentor Available Slots are requered successful!!',
   });
 });
+
 
 const getSingleBusinessBybusinessId = catchAsync(async (req: Request, res: Response) => {
     const businessId = req.user.userId; // business man _id 
@@ -99,6 +102,19 @@ const getSingleBusiness = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     data: result,
     message: 'Get Single Business get successful',
+  });
+});
+
+const getBusinessByService = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id; // business man _id
+  // console.log({ businessId });
+  const result = await businessService.getBusinessByServiceService(req.query,id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    data: result,
+    message: 'Get Business  by service successful',
   });
 });
 
@@ -166,4 +182,5 @@ export const businessController = {
   deletedBusiness,
   updateBusiness,
   updateAvailableBusinessTime,
+  getBusinessByService,
 };

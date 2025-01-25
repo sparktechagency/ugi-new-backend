@@ -47,7 +47,7 @@ const addPaymentService = async (payload: any) => {
       throw new AppError(400, 'User is not authorized as a User!!');
     }
 
-    const buisness = await Business.findById(businessId);
+    const buisness = await Business.findOne({businessId});
     if (!buisness) {
       throw new AppError(400, 'Business is not found!');
     }

@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import { Date, Types } from 'mongoose';
 
 export type TServiceBooking = {
   customerId: Types.ObjectId;
@@ -11,6 +11,15 @@ export type TServiceBooking = {
   duration: number;
   bookingStartTime: string;
   bookingEndTime: string;
+  reSheduleStartTime:string;
+  reSheduleEndTime:string;
+  reSheduleDate:Date;
   // customerCencelRefandPrice?: number;
+  reSheduleStatus:
+    | 'no-shuedule'
+    | 'pending-re-shedule'
+    | 'cencel-re-shedule'
+    | 'conform-re-shedule';
   status: 'booking' | 'cencel' | 'complete';
+  paymentStatus: 'upcoming' | 'processing' | 'paid';
 };
