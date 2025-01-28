@@ -11,6 +11,7 @@ import moment from 'moment';
 import httpStatus from 'http-status';
 import { ugiTokenService } from '../ugiToken/ugiToken.service';
 import Business from '../business/business.model';
+import { notificationService } from '../notification/notification.service';
 
 
 const createServiceBooking = async (
@@ -187,14 +188,18 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
 
    console.log('step-4');
   let refundPercentage = 0;
+  let ugiTokenParcentage = 0;
 
   // Apply refund policy
   if (timeDifferenceInHours <= 24) {
     refundPercentage = 0; // No refund
+    ugiTokenParcentage = 100;
   } else if (timeDifferenceInHours <= 36) {
     refundPercentage = 20; // Refund 20% of the deposit
+    ugiTokenParcentage = 80;
   } else if (timeDifferenceInHours <= 48) {
     refundPercentage = 75; // Refund 75% of the deposit
+    ugiTokenParcentage = 25;
   }
   console.log('step-5');
 
@@ -208,6 +213,9 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
   // Update booking status to 'cancel'
 
   serviceBooking.status = 'cencel';
+  serviceBooking.cencelationParsentage = refundPercentage;
+  serviceBooking.cencelationAmount = refundAmount;
+  serviceBooking.cencelationHours = Math.floor(timeDifferenceInHours);
   // await serviceBooking.save();
   // console.log({ serviceBooking });
 
@@ -216,22 +224,35 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
   console.log('After Save:', serviceBooking);
 
   const ugiTokenData: any = {
-    customerId: serviceBooking.customerId,
     businessId: serviceBooking.businessId,
-    serviceId: serviceBooking.serviceId,
-    serviceBookingId: serviceBooking._id,
-    cencelationParsentage: refundPercentage,
-    cencelationAmount: refundAmount ? refundAmount : 0,
-    cencelationHours: Math.floor(timeDifferenceInHours),
+    ugiTokenParcentage: ugiTokenParcentage,
+    ugiTokenAmount: uogiTokenAmount,
   };
-  console.log({ ugiTokenData });
 
   const tokenCreate = await ugiTokenService.createUgiTokenService(ugiTokenData);
-  console.log({ tokenCreate });
 
   if (!tokenCreate) {
     throw new AppError(500, 'Ugi token not created');
   }
+
+  const notificationData: any = {
+    userId: business.businessId,
+    message: `Booking Cancelled Successfully! Refund is ${refundPercentage}% of the deposit. Remaining ${uogiTokenAmount} converted to Uogi Tokens.`,
+    type: 'success',
+  };
+  const notificationData1: any = {
+    userId: business.businessId,
+    message: `Create Ugi Token Request Successfully!`,
+    type: 'success',
+    isUgiToken: tokenCreate._id,
+  };
+  const notification =
+    await notificationService.createNotification(notificationData);
+  const notification1 =
+    await notificationService.createNotification(notificationData1);
+    if(!notification || !notification1){
+      throw new AppError(500, 'Notification not created');
+    }
 
   return {
     message: `Booking cancelled successfully. Refund is ${refundPercentage}% of the deposit. Remaining ${uogiTokenAmount} converted to Uogi Tokens.`,
@@ -257,31 +278,21 @@ const paymentStatusServiceBooking = async (id: string, customerId: string) => {
 
   bookingService.paymentStatus = 'processing';
   const result = await bookingService.save();
+
+  const notificationData:any = {
+    userId: customerId,
+    message: `Payment Done Successfully!`,
+    type: 'success',
+  };
+  const notification =
+    await notificationService.createNotification(notificationData);
+    if(!notification){
+      throw new AppError(500, 'Notification not created');
+    }
+
+
   return result;
 };
-
-const paymentStatusScaningCompletedServiceBooking = async (
-  id: string,
-  businessId: string,
-) => {
-  const bookingService = await ServiceBooking.findById(id);
-
-  if (!bookingService) {
-    throw new AppError(404, 'Booking Service not found!');
-  }
-
-  if (bookingService.businessId.toString() !== businessId) {
-    throw new AppError(
-      403,
-      'You are not authorized to complete this ServiceBooking!!',
-    );
-  }
-
-  bookingService.paymentStatus = 'processing';
-  const result = await bookingService.save();
-  return result;
-};
-
 
 
 
@@ -303,6 +314,23 @@ const completeServiceBooking = async (id: string, customerId: string) => {
   bookingService.status = 'complete';
   bookingService.paymentStatus = 'paid';
   const result = await bookingService.save();
+   const notificationData: any = {
+     userId: customerId,
+     message: `Complete Service Booking Successfully!`,
+     type: 'success',
+   };
+   const notificationData1: any = {
+     role: 'admin',
+     message: `Complete Service Booking Successfully!`,
+     type: 'success',
+   };
+   const notification =
+     await notificationService.createNotification(notificationData);
+   const notification1 =
+     await notificationService.createNotification(notificationData1);
+   if (!notification || !notification1) {
+     throw new AppError(500, 'Notification not created');
+   }
   return result;
 };
 

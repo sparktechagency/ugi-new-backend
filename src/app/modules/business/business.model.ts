@@ -60,12 +60,12 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
     specialStartTime: {
       type: String,
       required: true,
-      default:" "
+      default: ' ',
     },
     specialEndTime: {
       type: String,
       required: true,
-      default:" "
+      default: ' ',
     },
     bookingBreak: {
       type: String,
@@ -92,6 +92,14 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
       required: true,
       default: 0,
     },
+    latitude:{
+      type: Number,
+      required: true,
+    },
+    longitude: {
+      type: Number,
+      required: true,
+    }
   },
   {
     timestamps: true,

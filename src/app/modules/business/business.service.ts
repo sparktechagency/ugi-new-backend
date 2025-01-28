@@ -9,6 +9,7 @@ import ServiceBooking from '../serviceBooking/serviceBooking.model';
 import { generateAvailableSlots, generateNewTimeSlot } from './business.utils';
 import Service from '../service/service.model';
 import { format } from 'path';
+import { UgiToken } from '../ugiToken/ugiToken.model';
 // import { parse, isBefore, isAfter } from 'date-fns'; // You can use another library if preferred
 
 const createBusinessService = async (files: any, payload: any) => {
@@ -244,8 +245,6 @@ const getAllFilterByBusinessService = async (
 
   console.log('****')
 
-  console.log("999999")
-
     let formattedAvailableDays = [];
     let formattedTimeSlots = [];
 
@@ -280,15 +279,15 @@ console.log({ formattedQuery });
   const skip = (page - 1) * limit;
 
   const serviceQuery = await Service.find({
-    subCategoryName:formattedQuery.subCategoryName,
     categoryName:formattedQuery.categoryName,
+    subCategoryName:formattedQuery.subCategoryName
   })
     .select('businessId')
     .populate('businessId');
 
-  console.log('serviceQuery', serviceQuery);
+  console.log('serviceQuery===', serviceQuery);
 
-  let filteredBusinesses = serviceQuery;
+  let filteredBusinesses:any = [];
   if (formattedQuery.availableDays) {
     filteredBusinesses = serviceQuery.filter(({ businessId }: any) => {
       console.log('Business Available Days:', businessId?.availableDays);
@@ -323,7 +322,7 @@ console.log({ formattedQuery });
   // Handle timeSlots filtering
 
   // Handle timeSlots filtering
-  let filteredResult = [];
+  let filteredResult:any = [];
   if (newTimeSlots && typeof newTimeSlots === 'string') {
     const [queryStartTime, queryEndTime] = newTimeSlots.split(' - ');
     console.log({ queryStartTime, queryEndTime });
@@ -370,10 +369,11 @@ console.log({ formattedQuery });
         endTime > queryStart // End time should overlap with query start
       );
     });
-  } else {
-    // If no timeSlots filter, fetch businesses matching other filters
-    filteredResult = filteredBusinesses;
-  }
+  } 
+  // else {
+  //   // If no timeSlots filter, fetch businesses matching other filters
+  //   filteredResult = filteredBusinesses;
+  // }
 
   console.log({ filteredResult });
 
@@ -393,6 +393,20 @@ console.log({ formattedQuery });
     );
     return { ...business._doc, isFavorite };
   });
+
+  // const ugiTokenData = await UgiToken.findOne({ businessId });
+  // console.log({ favoriteData });
+  // // Add isFavorite property to businesses
+  // const enhancedResult2 = enhancedResult.map((business: any) => {
+  //   console.log('ugi token', business);
+  //   const ugiToken =
+  //     ugiTokenData?.businessId === business.businessId.businessId.toString();
+
+  //   // const isFavorite = favoriteData.some(
+  //   //   (fav) => fav.businessId.toString() === business.businessId._id.toString(),
+  //   // );
+  //   return { ...business._doc, isFavorite };
+  // });
 
   // console.log('Filtered result with favorites:', enhancedResult);
 

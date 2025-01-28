@@ -23,12 +23,9 @@ const createUgiToken = catchAsync(async (req: Request, res: Response) => {
 
 
 const getSingleUgiToken = catchAsync(async (req: Request, res: Response) => {
-    const {userId} = req.user
-    const { bookingId }:any = req.query;
+    const { businessId }:any = req.query;
   const result = await ugiTokenService.getSingleUgiTokenService(
-    userId,
-    req.params.id,
-    bookingId,
+    businessId,
   );
 
   sendResponse(res, {
@@ -39,27 +36,14 @@ const getSingleUgiToken = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const verifySingleUgiToken = catchAsync(async (req: Request, res: Response) => {
-  const { ugiToken, businessId }:any = req.query;
-//   console.log('ugiToken', ugiToken);
-//   console.log('businessId', businessId);
-  const result = await ugiTokenService.verifySingleUgiTokenService(
-      businessId,
-      ugiToken,
+
+const updateUgiTokenAcceptCencel = catchAsync(async (req: Request, res: Response) => {
+  const status = req.query.status as string;
+
+  const result = await ugiTokenService.updateUgiTokenAcceptCencelService(
+    req.params.id,
+    status,
   );
-
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    data: result,
-    message: 'Single verified UgiToken get successful',
-  });
-});
-
-
-const updateUgiToken = catchAsync(async (req: Request, res: Response) => {
-
-  const result = await ugiTokenService.updateUgiTokenService(req.params.id);
 
   sendResponse(res, {
     success: true,
@@ -72,6 +56,5 @@ const updateUgiToken = catchAsync(async (req: Request, res: Response) => {
 export const ugiTokenController = {
   createUgiToken,
   getSingleUgiToken,
-  verifySingleUgiToken,
-  updateUgiToken,
+  updateUgiTokenAcceptCencel,
 };

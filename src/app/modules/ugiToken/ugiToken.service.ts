@@ -9,19 +9,10 @@ import Business from '../business/business.model';
 import { User } from '../user/user.models';
 import { generateUniqueToken } from './ugiToken.utils';
 const createUgiTokenService = async (payload: TUgiToken) => {
-    const service = await Service.findById(payload.serviceId);
-    if (!service) {
-      throw new AppError(404, 'Service not found!');
-    }
     const business = await Business.findOne({businessId: payload.businessId});
     if (!business) {
       throw new AppError(404, 'Business not found!');
     }
-    const customer = await User.findById(payload.customerId);
-    if (!customer) {
-      throw new AppError(404, 'Customer not found!');
-    }
-
     const token = generateUniqueToken(15);
     if(token){
         payload.ugiToken = token;
@@ -33,47 +24,31 @@ const createUgiTokenService = async (payload: TUgiToken) => {
 };
 
 const getSingleUgiTokenService = async (
-  customerId: string,
-  serviceId: string,
-  serviceBookingId:string,
+  businessId: string,
 ) => {
   const result = await UgiToken.findOne({
-    serviceId,
-    customerId,
-    serviceBookingId,
+    businessId
   });
   return result;
 };
 
-const verifySingleUgiTokenService = async (
-  businessId: string,
-  ugiToken: string,
-) => {
-    // console.log({ businessId, ugiToken });
-  const result = await UgiToken.findOne({ businessId, ugiToken });
-  if(!result){
-      throw new AppError(404, 'UgiToken is invalid !');
-  }
-  return result;
-};
 
-const updateUgiTokenService = async (id: string) => {
+
+const updateUgiTokenAcceptCencelService = async (id: string, status: string) => {
   // Check if the document exists
   const existingUgiToken = await UgiToken.findById(id);
   if (!existingUgiToken) {
     throw new AppError(404, 'UgiToken not found!');
   }
-  if (existingUgiToken.status === 'deactive') {
-    throw new AppError(404, 'UgiToken is already deactivated!');
+let result
+  if(status === 'accept'){
+      existingUgiToken.status = 'accept';
+    result =  await existingUgiToken.save();
+  }else{
+     result = await UgiToken.findByIdAndDelete( id);
+
   }
 
-  const result = await UgiToken.findByIdAndUpdate(
-    id,
-    { status: 'deactive' },
-    {
-      new: true,
-    },
-  );
 
   return result;
 };
@@ -81,6 +56,5 @@ const updateUgiTokenService = async (id: string) => {
 export const ugiTokenService = {
   createUgiTokenService,
   getSingleUgiTokenService,
-  verifySingleUgiTokenService,
-  updateUgiTokenService,
+  updateUgiTokenAcceptCencelService
 };

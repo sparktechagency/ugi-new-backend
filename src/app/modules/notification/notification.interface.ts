@@ -6,4 +6,5 @@ export type TNotification = {
   role?: 'admin' | 'mentee' | 'mentor';
   type?: 'info' | 'warning' | 'error' | 'success';
   isRead: boolean;
+  isUgiToken?: string;
 };

@@ -45,6 +45,9 @@ const bookingServiceSchema = new Schema<TServiceBooking>(
       enum: ['upcoming', 'processing', 'paid'],
       default: 'upcoming',
     },
+    cencelationParsentage: { type: Number, required: true, default:null },
+    cencelationAmount: { type: Number, required: true,  default:null},
+    cencelationHours: { type: String, required: true,  default:null},
   },
   {
     timestamps: true,

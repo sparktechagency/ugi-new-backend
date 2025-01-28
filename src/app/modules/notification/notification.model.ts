@@ -27,6 +27,11 @@ const NotificationSchema = new Schema<TNotification>(
       type: Boolean,
       default: false,
     },
+    isUgiToken: {
+      type: String,
+      required: false,
+      default: null,
+    },
   },
   {
     timestamps: true,

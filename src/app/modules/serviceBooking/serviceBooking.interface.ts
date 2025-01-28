@@ -11,9 +11,9 @@ export type TServiceBooking = {
   duration: number;
   bookingStartTime: string;
   bookingEndTime: string;
-  reSheduleStartTime:string;
-  reSheduleEndTime:string;
-  reSheduleDate:Date;
+  reSheduleStartTime: string;
+  reSheduleEndTime: string;
+  reSheduleDate: Date;
   // customerCencelRefandPrice?: number;
   reSheduleStatus:
     | 'no-shuedule'
@@ -22,4 +22,7 @@ export type TServiceBooking = {
     | 'conform-re-shedule';
   status: 'booking' | 'cencel' | 'complete';
   paymentStatus: 'upcoming' | 'processing' | 'paid';
+  cencelationParsentage: number;
+  cencelationAmount: number;
+  cencelationHours: string;
 };

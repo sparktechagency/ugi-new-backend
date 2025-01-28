@@ -16,6 +16,8 @@ const createBusiness = catchAsync(async (req: Request, res: Response) => {
   };
 
   console.log(bodyData);
+  bodyData.latitude = Number(bodyData.latitude);
+  bodyData.longitude = Number(bodyData.longitude);
   const result = await businessService.createBusinessService(files, bodyData);
 
   sendResponse(res, {

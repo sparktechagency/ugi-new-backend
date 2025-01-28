@@ -28,7 +28,7 @@ serviceBookingRoutes
 
   .get('/:id', serviceBookingController.getSingleServiceBooking)
   .patch(
-    '/:id',
+    '/cencel/:id',
     auth(USER_ROLE.CUSTOMER),
     serviceBookingController.cencelServiceBooking,
   )

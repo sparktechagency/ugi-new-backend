@@ -154,6 +154,7 @@ function generateAvailableSlots({
         slotStart >= booking.end &&
         slotStart < new Date(booking.end.getTime() + bookingBreak * 60000),
     );
+    console.log({ violatesBreak });
 
     if (violatesBreak) {
       return false; 

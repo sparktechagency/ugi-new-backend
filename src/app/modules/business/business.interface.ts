@@ -22,4 +22,6 @@ export type TBusiness = {
   launchbreakEndTime: string;
   ratings: number;
   reviewCount: number;
+  latitude: number;
+  longitude: number;
 };
