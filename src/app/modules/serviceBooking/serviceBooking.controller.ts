@@ -5,8 +5,10 @@ import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
 import { serviceBookingService } from './serviceBooking.service';
 import moment from 'moment';
+import mongoose from 'mongoose';
 
 const createServiceBooking = catchAsync(async (req: Request, res: Response) => {
+  const session = await mongoose.startSession();
   console.log("sdafafaf")
     const bodyData = req.body;
       const { userId } = req.user; 
@@ -21,7 +23,7 @@ const createServiceBooking = catchAsync(async (req: Request, res: Response) => {
     // console.log("body2", req.body);
     // console.log({ bodyData });
     
-  const result = await serviceBookingService.createServiceBooking(bodyData);
+  const result = await serviceBookingService.createServiceBooking(bodyData, session);
 
   sendResponse(res, {
     success: true,
@@ -119,6 +121,7 @@ const completeServiceBooking = catchAsync(
   async (req: Request, res: Response) => {
     // const userId = '64a1f32b3c9f536a2e9b1234';
     const { userId } = req.user;
+    console.log('userId ==', userId);
     const result = await serviceBookingService.completeServiceBooking(
       req.params.id,
       userId,

@@ -20,9 +20,10 @@ export type TServiceBooking = {
     | 'pending-re-shedule'
     | 'cencel-re-shedule'
     | 'conform-re-shedule';
-  status: 'booking' | 'cencel' | 'complete';
-  paymentStatus: 'upcoming' | 'processing' | 'paid';
-  cencelationParsentage: number;
-  cencelationAmount: number;
-  cencelationHours: string;
+  status: 'pending' | 'booking' | 'cencel' | 'complete';
+  paymentStatus: 'pending' |'upcoming' | 'processing' | 'paid';
+  cencelationParsentage?: number;
+  cencelationAmount?: number;
+  cencelationHours?: string;
+  refundStatus?: 'pending' | 'success' | 'failed';
 };

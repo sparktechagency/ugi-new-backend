@@ -8,8 +8,8 @@ import Service from '../service/service.model';
 import Business from '../business/business.model';
 import { User } from '../user/user.models';
 import { generateUniqueToken } from './ugiToken.utils';
-const createUgiTokenService = async (payload: TUgiToken) => {
-    const business = await Business.findOne({businessId: payload.businessId});
+const createUgiTokenService = async (payload: TUgiToken, session: any) => {
+    const business = await Business.findOne({businessId: payload.businessId}).session(session);
     if (!business) {
       throw new AppError(404, 'Business not found!');
     }
@@ -19,7 +19,7 @@ const createUgiTokenService = async (payload: TUgiToken) => {
     }
 
 
-  const result = await UgiToken.create(payload);
+  const result = await UgiToken.create([payload], { session });
   return result;
 };
 

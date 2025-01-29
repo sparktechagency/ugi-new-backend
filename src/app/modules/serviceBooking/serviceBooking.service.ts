@@ -12,11 +12,12 @@ import httpStatus from 'http-status';
 import { ugiTokenService } from '../ugiToken/ugiToken.service';
 import Business from '../business/business.model';
 import { notificationService } from '../notification/notification.service';
+import { paymentService } from '../payment/payment.service';
 
 
 const createServiceBooking = async (
   payload: TServiceBooking,
-  // session?: mongoose.ClientSession,
+  session: mongoose.ClientSession,
 ) => {
   const { bookingDate, bookingStartTime, bookingEndTime, businessId } = payload;
 
@@ -46,12 +47,14 @@ const createServiceBooking = async (
     );
   }
 
-
+console.log('before existing booking');
 
  const existingBooking = await ServiceBooking.findOne(
    {
+
      businessId,
      bookingDate,
+     status: 'booking',
      $or: [
        {
          $and: [
@@ -67,10 +70,9 @@ const createServiceBooking = async (
          ],
        },
      ],
-   },
-   // { session },
- );
-   
+   }
+ ).session(session);
+   console.log('after existing booking');
  console.log({ existingBooking });
 
 
@@ -81,9 +83,11 @@ const createServiceBooking = async (
     );
   }
 
-
-  // // const result = await ServiceBooking.create([payload], { session }); // Use session if provided
-  const result = await ServiceBooking.create(payload); // Use session if provided
+console.log("before service create");
+ console.log({ payload });
+  const result = await ServiceBooking.create([payload], { session }); // Use session if provided
+  // const result = await ServiceBooking.create(payload); // Use session if provided
+  console.log('after service create');
   
   
   return result;
@@ -94,7 +98,7 @@ const getAllServiceBookingByUserQuery = async (
   customerId: string,
 ) => {
   const ServiceBookingQuery = new QueryBuilder(
-    ServiceBooking.find({ customerId })
+    ServiceBooking.find({ customerId,  })
       .populate('customerId')
       .populate('serviceId'),
     query,
@@ -140,126 +144,353 @@ const getSingleServiceBooking = async (id: string) => {
 
 
 
+// const cancelServiceBooking = async (id: string, customerId: string) => {
+//   console.log('customerid', customerId)
+//   // Fetch the user by ID
+//   // const user = await User.findById(userId);
+//   // if (!user) {
+//   //   throw new AppError(404, 'User not found!');
+//   // }
+
+//   // Fetch the service booking by ID
+//   const serviceBooking: any = await ServiceBooking.findById(id);
+//   console.log({ serviceBooking });
+//   if (!serviceBooking) {
+//     throw new AppError(404, 'Booking Service not found!');
+//   }
+//   const business = await Business.findOne({businessId: serviceBooking.businessId});
+//   if(!business){
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'Business not found',
+//     );
+//   }
+
+//   if (serviceBooking.status === 'complete') {
+//     throw new AppError(404, 'Booking Service is already completed!');
+//   }
+//   if (serviceBooking.status === 'cencel') {
+//     throw new AppError(404, 'Booking Service is already Cenceled!');
+//   }
+//    console.log('step-2');
+
+//   // Check if the user is authorized to cancel this booking
+//   if (serviceBooking.customerId.toString() !== customerId) {
+//     throw new AppError(
+//       403,
+//       'You are not authorized to cancel this ServiceBooking!!',
+//     );
+//   }
+//  console.log('step-3');
+//   // Calculate the time difference in hours
+//   const currentTime = new Date();
+//   console.log({ currentTime });
+//   const bookingTime = serviceBooking.bookingDate;
+//   console.log({ bookingTime });
+//   const timeDifferenceInHours =
+//     (currentTime.getTime() - bookingTime.getTime()) / (1000 * 60 * 60);
+//   console.log({ timeDifferenceInHours });
+
+//    console.log('step-4');
+//   let refundPercentage = 0;
+//   let ugiTokenParcentage = 0;
+
+//   // Apply refund policy
+//   if (timeDifferenceInHours <= 24) {
+//     refundPercentage = 0; // No refund
+//     ugiTokenParcentage = 100;
+//   } else if (timeDifferenceInHours <= 36) {
+//     refundPercentage = 20; // Refund 20% of the deposit
+//     ugiTokenParcentage = 80;
+//   } else if (timeDifferenceInHours <= 48) {
+//     refundPercentage = 75; // Refund 75% of the deposit
+//     ugiTokenParcentage = 25;
+//   }
+//   console.log('step-5');
+
+//   // Calculate refund amount
+//   const refundAmount = (serviceBooking.depositAmount * refundPercentage) / 100;
+//   console.log({ refundAmount });
+
+//   // Convert remaining amount into Uogi Token
+//   const uogiTokenAmount = serviceBooking.depositAmount - refundAmount;
+//  console.log({ uogiTokenAmount });
+//   // Update booking status to 'cancel'
+
+//   serviceBooking.status = 'cencel';
+//   serviceBooking.cencelationParsentage = refundPercentage;
+//   serviceBooking.cencelationAmount = refundAmount;
+//   serviceBooking.cencelationHours = Math.floor(timeDifferenceInHours);
+//   // await serviceBooking.save();
+//   // console.log({ serviceBooking });
+//   console.log('Before Save:', serviceBooking);
+//   await serviceBooking.save();
+//   console.log('After Save:', serviceBooking);
+
+//   const paymentData = await Payment.findOne({
+//     serviceBookingId: serviceBooking._id,
+//     status:'paid',
+//   });
+
+//   if (!paymentData) {
+//     throw new AppError(404, 'Payment not found!');
+//   }
+
+//   if(paymentData.method === 'stripe'){
+
+//     const refundData:any = {
+//       amount: refundAmount,
+//       payment_intent: paymentData.transactionId,
+//     };
+
+//     const refundResult = await paymentService.paymentRefundService(refundData.amount, refundData.payment_intent);
+
+//     if(refundResult.status !== 'succeeded'){
+//       throw new AppError(500, 'Refund not created');
+//     }
+
+//     serviceBooking.refundStatus = 'success';
+//     await serviceBooking.save();
+
+//   }
+
+
+//    serviceBooking.refundStatus = 'pending';
+//    await serviceBooking.save();
+
+
+
+  
+
+
+//   const ugiTokenData: any = {
+//     businessId: serviceBooking.businessId,
+//     ugiTokenParcentage: ugiTokenParcentage,
+//     ugiTokenAmount: uogiTokenAmount,
+//   };
+
+//   const tokenCreate = await ugiTokenService.createUgiTokenService(ugiTokenData);
+
+//   if (!tokenCreate) {
+//     throw new AppError(500, 'Ugi token not created');
+//   }
+
+//   const notificationData: any = {
+//     userId: business.businessId,
+//     message: `Booking Cancelled Successfully! Refund is ${refundPercentage}% of the deposit. Remaining ${uogiTokenAmount} converted to Uogi Tokens.`,
+//     type: 'success',
+//   };
+//   const notificationData1: any = {
+//     userId: business.businessId,
+//     message: `Create Ugi Token Request Successfully!`,
+//     type: 'success',
+//     isUgiToken: tokenCreate._id,
+//   };
+//   const notification =
+//     await notificationService.createNotification(notificationData);
+//   const notification1 =
+//     await notificationService.createNotification(notificationData1);
+//     if(!notification || !notification1){
+//       throw new AppError(500, 'Notification not created');
+//     }
+
+//   return {
+//     message: `Booking cancelled successfully. Refund is ${refundPercentage}% of the deposit. Remaining ${uogiTokenAmount} converted to Uogi Tokens.`,
+//     refundAmount: refundAmount ? refundAmount : 0,
+//     uogiTokenAmount: uogiTokenAmount ? uogiTokenAmount : 0,
+//   };
+// };
+
+
+
 const cancelServiceBooking = async (id: string, customerId: string) => {
-  console.log('customerid', customerId)
-  // Fetch the user by ID
-  // const user = await User.findById(userId);
-  // if (!user) {
-  //   throw new AppError(404, 'User not found!');
-  // }
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  // Fetch the service booking by ID
-  const serviceBooking: any = await ServiceBooking.findById(id);
-  console.log({ serviceBooking });
-  if (!serviceBooking) {
-    throw new AppError(404, 'Booking Service not found!');
-  }
-  const business = await Business.findOne({businessId: serviceBooking.businessId});
-  if(!business){
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'Business not found',
+  try {
+    console.log('customerid', customerId);
+
+    // Fetch the service booking by ID inside the transaction
+    const serviceBooking: any =
+      await ServiceBooking.findById(id).session(session);
+    console.log({ serviceBooking });
+
+    if (!serviceBooking) {
+      throw new AppError(404, 'Booking Service not found!');
+    }
+
+    // Validate business existence
+    const business = await Business.findOne({
+      businessId: serviceBooking.businessId,
+    }).session(session);
+    if (!business) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Business not found');
+    }
+
+    // Prevent double cancellation
+    if (serviceBooking.status === 'complete') {
+      throw new AppError(404, 'Booking Service is already completed!');
+    }
+    if (serviceBooking.status === 'cancel') {
+      throw new AppError(404, 'Booking Service is already canceled!');
+    }
+
+    console.log('step-2');
+
+    // Check if the user is authorized to cancel this booking
+    if (serviceBooking.customerId.toString() !== customerId) {
+      throw new AppError(
+        403,
+        'You are not authorized to cancel this ServiceBooking!',
+      );
+    }
+
+    console.log('step-3');
+
+    // Calculate the time difference in hours
+    const currentTime = new Date();
+    console.log({ currentTime });
+    const bookingTime = serviceBooking.bookingDate;
+    console.log({ bookingTime });
+    const timeDifferenceInHours =
+      (currentTime.getTime() - bookingTime.getTime()) / (1000 * 60 * 60);
+    console.log({ timeDifferenceInHours });
+
+    console.log('step-4');
+
+    let refundPercentage = 0;
+    let ugiTokenParcentage = 0;
+
+    // Apply refund policy
+    if (timeDifferenceInHours <= 24) {
+      refundPercentage = 0; // No refund
+      ugiTokenParcentage = 100;
+    } else if (timeDifferenceInHours <= 36) {
+      refundPercentage = 20; // Refund 20% of the deposit
+      ugiTokenParcentage = 80;
+    } else if (timeDifferenceInHours <= 48) {
+      refundPercentage = 75; // Refund 75% of the deposit
+      ugiTokenParcentage = 25;
+    }
+    console.log('step-5');
+
+    // Calculate refund amount
+    const refundAmount =
+      (serviceBooking.depositAmount * refundPercentage) / 100;
+    console.log({ refundAmount });
+
+    // Convert remaining amount into Uogi Token
+    const uogiTokenAmount = serviceBooking.depositAmount - refundAmount;
+    console.log({ uogiTokenAmount });
+
+    // Update booking status to 'cancel'
+    serviceBooking.status = 'cancel';
+    serviceBooking.cancelationPercentage = refundPercentage;
+    serviceBooking.cancelationAmount = refundAmount;
+    serviceBooking.cancelationHours = Math.floor(timeDifferenceInHours);
+
+    console.log('Before Save:', serviceBooking);
+    await serviceBooking.save({ session });
+    console.log('After Save:', serviceBooking);
+
+    // Fetch the payment data for the booking
+    const paymentData = await Payment.findOne({
+      serviceBookingId: serviceBooking._id,
+      status: 'paid',
+    }).session(session);
+
+    if (!paymentData) {
+      throw new AppError(404, 'Payment not found!');
+    }
+
+    // Handle Stripe refund
+    if (paymentData.method === 'stripe') {
+      const refundData: any = {
+        amount: refundAmount,
+        payment_intent: paymentData.transactionId,
+      };
+
+      const refundResult = await paymentService.paymentRefundService(
+        refundData.amount,
+        refundData.payment_intent,
+      );
+
+      if (refundResult.status !== 'succeeded') {
+        throw new AppError(500, 'Refund not created');
+      }
+
+      serviceBooking.refundStatus = 'success';
+      await serviceBooking.save({ session });
+    } else {
+      serviceBooking.refundStatus = 'pending';
+      await serviceBooking.save({ session });
+    }
+
+    // Create Ugi Token data
+    const ugiTokenData: any = {
+      businessId: serviceBooking.businessId,
+      ugiTokenParcentage: ugiTokenParcentage,
+      ugiTokenAmount: uogiTokenAmount,
+    };
+
+    const tokenCreate = await ugiTokenService.createUgiTokenService(
+      ugiTokenData,
+      session,
     );
-  }
-  if (serviceBooking.status === 'complete') {
-    throw new AppError(404, 'Booking Service is already completed!');
-  }
-  if (serviceBooking.status === 'cencel') {
-    throw new AppError(404, 'Booking Service is already Cenceled!');
-  }
-   console.log('step-2');
 
-  // Check if the user is authorized to cancel this booking
-  if (serviceBooking.customerId.toString() !== customerId) {
-    throw new AppError(
-      403,
-      'You are not authorized to cancel this ServiceBooking!!',
-    );
-  }
- console.log('step-3');
-  // Calculate the time difference in hours
-  const currentTime = new Date();
-  console.log({ currentTime });
-  const bookingTime = serviceBooking.bookingDate;
-  console.log({ bookingTime });
-  const timeDifferenceInHours =
-    (currentTime.getTime() - bookingTime.getTime()) / (1000 * 60 * 60);
-  console.log({ timeDifferenceInHours });
+    if (!tokenCreate) {
+      throw new AppError(500, 'Ugi token not created');
+    }
 
-   console.log('step-4');
-  let refundPercentage = 0;
-  let ugiTokenParcentage = 0;
+    // Create Notifications
+    const notificationData: any = {
+      userId: business.businessId,
+      message: `Booking Cancelled Successfully! Refund is ${refundPercentage}% of the deposit. Remaining ${uogiTokenAmount} converted to Uogi Tokens.`,
+      type: 'success',
+    };
 
-  // Apply refund policy
-  if (timeDifferenceInHours <= 24) {
-    refundPercentage = 0; // No refund
-    ugiTokenParcentage = 100;
-  } else if (timeDifferenceInHours <= 36) {
-    refundPercentage = 20; // Refund 20% of the deposit
-    ugiTokenParcentage = 80;
-  } else if (timeDifferenceInHours <= 48) {
-    refundPercentage = 75; // Refund 75% of the deposit
-    ugiTokenParcentage = 25;
-  }
-  console.log('step-5');
+    const notificationData1: any = {
+      userId: business.businessId,
+      message: `Create Ugi Token Request Successfully!`,
+      type: 'success',
+      isUgiToken: tokenCreate[0]._id,
+    };
 
-  // Calculate refund amount
-  const refundAmount = (serviceBooking.depositAmount * refundPercentage) / 100;
-  console.log({ refundAmount });
+    const [notification, notification1] = await Promise.all([
+      notificationService.createNotification(notificationData, session),
+      notificationService.createNotification(notificationData1, session),
+    ]);
 
-  // Convert remaining amount into Uogi Token
-  const uogiTokenAmount = serviceBooking.depositAmount - refundAmount;
- console.log({ uogiTokenAmount });
-  // Update booking status to 'cancel'
-
-  serviceBooking.status = 'cencel';
-  serviceBooking.cencelationParsentage = refundPercentage;
-  serviceBooking.cencelationAmount = refundAmount;
-  serviceBooking.cencelationHours = Math.floor(timeDifferenceInHours);
-  // await serviceBooking.save();
-  // console.log({ serviceBooking });
-
-  console.log('Before Save:', serviceBooking);
-  await serviceBooking.save();
-  console.log('After Save:', serviceBooking);
-
-  const ugiTokenData: any = {
-    businessId: serviceBooking.businessId,
-    ugiTokenParcentage: ugiTokenParcentage,
-    ugiTokenAmount: uogiTokenAmount,
-  };
-
-  const tokenCreate = await ugiTokenService.createUgiTokenService(ugiTokenData);
-
-  if (!tokenCreate) {
-    throw new AppError(500, 'Ugi token not created');
-  }
-
-  const notificationData: any = {
-    userId: business.businessId,
-    message: `Booking Cancelled Successfully! Refund is ${refundPercentage}% of the deposit. Remaining ${uogiTokenAmount} converted to Uogi Tokens.`,
-    type: 'success',
-  };
-  const notificationData1: any = {
-    userId: business.businessId,
-    message: `Create Ugi Token Request Successfully!`,
-    type: 'success',
-    isUgiToken: tokenCreate._id,
-  };
-  const notification =
-    await notificationService.createNotification(notificationData);
-  const notification1 =
-    await notificationService.createNotification(notificationData1);
-    if(!notification || !notification1){
+    if (!notification || !notification1) {
       throw new AppError(500, 'Notification not created');
     }
 
-  return {
-    message: `Booking cancelled successfully. Refund is ${refundPercentage}% of the deposit. Remaining ${uogiTokenAmount} converted to Uogi Tokens.`,
-    refundAmount: refundAmount ? refundAmount : 0,
-    uogiTokenAmount: uogiTokenAmount ? uogiTokenAmount : 0,
-  };
+    // Commit the transaction (All operations succeed)
+    await session.commitTransaction();
+    session.endSession();
+
+    return {
+      message: `Booking cancelled successfully. Refund is ${refundPercentage}% of the deposit. Remaining ${uogiTokenAmount} converted to Uogi Tokens.`,
+      refundAmount: refundAmount ? refundAmount : 0,
+      uogiTokenAmount: uogiTokenAmount ? uogiTokenAmount : 0,
+    };
+  } catch (error) {
+    console.error('Transaction Error:', error);
+
+    // Rollback changes if any error occurs
+    await session.abortTransaction();
+    session.endSession();
+
+    throw error;
+  }
 };
+
+
+
+
+
+
+
 
 
 const paymentStatusServiceBooking = async (id: string, customerId: string) => {
@@ -284,6 +515,7 @@ const paymentStatusServiceBooking = async (id: string, customerId: string) => {
     message: `Payment Done Successfully!`,
     type: 'success',
   };
+  
   const notification =
     await notificationService.createNotification(notificationData);
     if(!notification){
@@ -296,43 +528,108 @@ const paymentStatusServiceBooking = async (id: string, customerId: string) => {
 
 
 
-const completeServiceBooking = async (id: string, customerId: string) => {
-  const bookingService = await ServiceBooking.findById(id);
+// const completeServiceBooking = async (id: string, customerId: string) => {
+//   const bookingService = await ServiceBooking.findById(id);
 
-  if (!bookingService) {
-    throw new AppError(404, 'Booking Service not found!');
-  }
+//   if (!bookingService) {
+//     throw new AppError(404, 'Booking Service not found!');
+//   }
 
-  if (bookingService.customerId.toString() !== customerId) {
-    throw new AppError(
-      403,
-      'You are not authorized to complete this ServiceBooking!!',
-    );
-  }
+//   if (bookingService.customerId.toString() !== customerId) {
+//     throw new AppError(
+//       403,
+//       'You are not authorized to complete this ServiceBooking!!',
+//     );
+//   }
  
 
-  bookingService.status = 'complete';
-  bookingService.paymentStatus = 'paid';
-  const result = await bookingService.save();
-   const notificationData: any = {
-     userId: customerId,
-     message: `Complete Service Booking Successfully!`,
-     type: 'success',
-   };
-   const notificationData1: any = {
-     role: 'admin',
-     message: `Complete Service Booking Successfully!`,
-     type: 'success',
-   };
-   const notification =
-     await notificationService.createNotification(notificationData);
-   const notification1 =
-     await notificationService.createNotification(notificationData1);
-   if (!notification || !notification1) {
-     throw new AppError(500, 'Notification not created');
-   }
-  return result;
+//   bookingService.status = 'complete';
+//   bookingService.paymentStatus = 'paid';
+//   const result = await bookingService.save();
+//    const notificationData: any = {
+//      userId: customerId,
+//      message: `Complete Service Booking Successfully!`,
+//      type: 'success',
+//    };
+//    const notificationData1: any = {
+//      role: 'admin',
+//      message: `Complete Service Booking Successfully!`,
+//      type: 'success',
+//    };
+//    const notification =
+//      await notificationService.createNotification(notificationData);
+//    const notification1 =
+//      await notificationService.createNotification(notificationData1);
+//    if (!notification || !notification1) {
+//      throw new AppError(500, 'Notification not created');
+//    }
+//   return result;
+// };
+
+
+
+const completeServiceBooking = async (id: string, customerId: string) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  console.log('id*****+++',id)
+
+  try {
+    // 1️⃣ Find the Service Booking inside the transaction
+    const bookingService = await ServiceBooking.findById(id).session(session);
+
+    if (!bookingService) {
+      throw new AppError(404, 'Booking Service not found!');
+    }
+
+    if (bookingService.customerId.toString() !== customerId) {
+      throw new AppError(
+        403,
+        'You are not authorized to complete this ServiceBooking!!',
+      );
+    }
+
+    // 2️⃣ Update the service booking status
+    bookingService.status = 'complete';
+    bookingService.paymentStatus = 'paid';
+    const result = await bookingService.save({ session });
+
+    // 3️⃣ Create notifications inside the transaction
+    const notificationData = {
+      userId: customerId,
+      message: `Complete Service Booking Successfully!`,
+      type: 'success',
+    };
+    const notificationData1 = {
+      role: 'admin',
+      message: `Complete Service Booking Successfully!`,
+      type: 'success',
+    };
+
+    const [notification, notification1] = await Promise.all([
+      notificationService.createNotification(notificationData, session),
+      notificationService.createNotification(notificationData1, session),
+    ]);
+
+    if (!notification || !notification1) {
+      throw new AppError(500, 'Notification not created');
+    }
+
+    // 4️⃣ Commit the transaction (All operations succeed)
+    await session.commitTransaction();
+    session.endSession();
+
+    return result;
+  } catch (error) {
+    console.error('Transaction Error:', error);
+
+    // 5️⃣ Abort transaction if an error occurs
+    await session.abortTransaction();
+    session.endSession();
+
+    throw error;
+  }
 };
+
 
 const reSheduleRequestServiceBooking = async (
   id: string,

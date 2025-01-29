@@ -6,7 +6,7 @@ const NotificationSchema = new Schema<TNotification>(
   {
     userId: {
       type: Schema.Types.ObjectId,
-      required: true,
+      required: false,
       ref: 'User', // Reference to User model
     },
     message: {

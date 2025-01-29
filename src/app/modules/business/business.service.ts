@@ -243,51 +243,49 @@ const getAllFilterByBusinessService = async (
     limit = 10,
   }: any = query;
 
-  console.log('****')
+  console.log('****');
 
-    let formattedAvailableDays = [];
-    let formattedTimeSlots = [];
+  let formattedAvailableDays = [];
+  let formattedTimeSlots = [];
 
-    try {
-      formattedAvailableDays = JSON.parse(availableDays.replace(/(\w+)/g, '"$1"'));
-    } catch (error) {
-      console.error('Error parsing availableDays:', error);
-    }
+  try {
+    formattedAvailableDays = JSON.parse(
+      availableDays.replace(/(\w+)/g, '"$1"'),
+    );
+  } catch (error) {
+    console.error('Error parsing availableDays:', error);
+  }
 
-    try {
-      formattedTimeSlots = JSON.parse(
-        timeSlots
-          .replace(/^\[/, '["')
-          .replace(/]$/, '"]')
-          .replace(/, /g, '", "'),
-      );
-    } catch (error) {
-      console.error('Error parsing timeSlots:', error);
-    }
+  try {
+    formattedTimeSlots = JSON.parse(
+      timeSlots.replace(/^\[/, '["').replace(/]$/, '"]').replace(/, /g, '", "'),
+    );
+  } catch (error) {
+    console.error('Error parsing timeSlots:', error);
+  }
 
-    const formattedQuery = {
-      categoryName,
-      subCategoryName,
-      availableDays: formattedAvailableDays,
-      timeSlots: formattedTimeSlots,
-    };
+  const formattedQuery = {
+    categoryName,
+    subCategoryName,
+    availableDays: formattedAvailableDays,
+    timeSlots: formattedTimeSlots,
+  };
 
-console.log({ formattedQuery });
-
+  console.log({ formattedQuery });
 
   // Pagination variables
   const skip = (page - 1) * limit;
 
   const serviceQuery = await Service.find({
-    categoryName:formattedQuery.categoryName,
-    subCategoryName:formattedQuery.subCategoryName
+    categoryName: formattedQuery.categoryName,
+    subCategoryName: formattedQuery.subCategoryName,
   })
     .select('businessId')
     .populate('businessId');
 
   console.log('serviceQuery===', serviceQuery);
 
-  let filteredBusinesses:any = [];
+  let filteredBusinesses: any = [];
   if (formattedQuery.availableDays) {
     filteredBusinesses = serviceQuery.filter(({ businessId }: any) => {
       console.log('Business Available Days:', businessId?.availableDays);
@@ -304,15 +302,10 @@ console.log({ formattedQuery });
   console.log('oo', filteredBusinesses);
   // console.log({filteredBusinesses});
 
-
   let newTimeSlots;
   if (formattedQuery.timeSlots) {
-    
-
     newTimeSlots = await generateNewTimeSlot(formattedQuery.timeSlots);
   }
-
- 
 
   // const timeSlote = "10:00 AM - 11:00 AM";
 
@@ -322,7 +315,7 @@ console.log({ formattedQuery });
   // Handle timeSlots filtering
 
   // Handle timeSlots filtering
-  let filteredResult:any = [];
+  let filteredResult: any = [];
   if (newTimeSlots && typeof newTimeSlots === 'string') {
     const [queryStartTime, queryEndTime] = newTimeSlots.split(' - ');
     console.log({ queryStartTime, queryEndTime });
@@ -340,8 +333,8 @@ console.log({ formattedQuery });
       console.log('specialEndTime', business.businessId.specialEndTime);
 
       if (
-        business.businessId.specialStartTime?.trim() && 
-        business.businessId.specialEndTime?.trim() && 
+        business.businessId.specialStartTime?.trim() &&
+        business.businessId.specialEndTime?.trim() &&
         business.businessId.specialDays?.length > 0
       ) {
         console.log('business special', business);
@@ -369,7 +362,7 @@ console.log({ formattedQuery });
         endTime > queryStart // End time should overlap with query start
       );
     });
-  } 
+  }
   // else {
   //   // If no timeSlots filter, fetch businesses matching other filters
   //   filteredResult = filteredBusinesses;
@@ -377,45 +370,60 @@ console.log({ formattedQuery });
 
   console.log({ filteredResult });
 
-  console.log('963', filteredResult );
+  console.log('963', filteredResult);
   // console.log('customerId', customerId);
 
   // Fetch favorite data for the customer
 
   const favoriteData = await FavoriteBusiness.find({ customerId });
-  console.log({ favoriteData });
+  // console.log({ favoriteData });
   // Add isFavorite property to businesses
   const enhancedResult = filteredResult.map((business: any) => {
     const isFavorite = favoriteData.some(
-      (fav) =>
-        fav.businessId.toString() ===
-        business.businessId._id.toString(),
+      (fav) => fav.businessId.toString() === business.businessId._id.toString(),
     );
     return { ...business._doc, isFavorite };
   });
 
-  // const ugiTokenData = await UgiToken.findOne({ businessId });
+  console.log('enhancedResult', enhancedResult);
+
+  // const ugiTokenData = await UgiToken.findOne({ businessId: });
   // console.log({ favoriteData });
-  // // Add isFavorite property to businesses
-  // const enhancedResult2 = enhancedResult.map((business: any) => {
-  //   console.log('ugi token', business);
-  //   const ugiToken =
-  //     ugiTokenData?.businessId === business.businessId.businessId.toString();
+  // Add isFavorite property to businesses
+  const enhancedResult2 = await Promise.all(
+    enhancedResult.map(async (business: any) => {
+      // Fetch ugiToken data asynchronously
+      const ugiTokenData = await UgiToken.findOne({
+        businessId: business.businessId.businessId,
+      });
 
-  //   // const isFavorite = favoriteData.some(
-  //   //   (fav) => fav.businessId.toString() === business.businessId._id.toString(),
-  //   // );
-  //   return { ...business._doc, isFavorite };
-  // });
+      const ugiToken = ugiTokenData ? ugiTokenData.ugiTokenAmount : 'false';
+      return {
+        _id: business._id,
+        businessId: business.businessId, // Keep the nested businessId object
+        isFavorite: business.isFavorite,
+        ugiToken, // Add the new ugiToken field
+      };
+    }),
+  );
 
+  // Sort businesses to place those with ugiToken at the top
+  const sortedEnhancedResult2 = enhancedResult2.sort((a, b) => {
+    // Place businesses with ugiToken at the top
+    if (b.ugiToken && !a.ugiToken) return 1;
+    if (a.ugiToken && !b.ugiToken) return -1;
+    return 0; // If both have or don't have ugiToken, maintain original order
+  });
+
+  console.log('enhancedResult2', sortedEnhancedResult2);
   // console.log('Filtered result with favorites:', enhancedResult);
 
   // Calculate pagination metadata
-  const total = enhancedResult?.length;
+  const total = sortedEnhancedResult2?.length;
   const totalPage = Math.ceil(total / limit);
 
   // Apply pagination to the enhanced result
-  const paginatedResult = enhancedResult.slice(skip, skip + limit);
+  const paginatedResult = sortedEnhancedResult2.slice(skip, skip + limit);
   console.log({ paginatedResult });
 
   const meta = {

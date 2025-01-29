@@ -4,13 +4,15 @@ import { Request, Response } from 'express';
 import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
 import { ugiTokenService } from './ugiToken.service';
+import mongoose from 'mongoose';
 
 const createUgiToken = catchAsync(async (req: Request, res: Response) => {
   // console.log('hit hoise')
+  const session = await mongoose.startSession();
   const bodyData = req.body;
 
 
-  const result = await ugiTokenService.createUgiTokenService(bodyData);
+  const result = await ugiTokenService.createUgiTokenService(bodyData, session);
 
   sendResponse(res, {
     success: true,

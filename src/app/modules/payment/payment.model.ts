@@ -20,10 +20,14 @@ const paymentSchema = new Schema<TPayment>(
     dipositParsentage: { type: Number, required: true },
     method: {
       type: String,
-      enum: ['bank', 'google_pay', 'apple_pay'],
+      enum: ['stripe', 'google_pay', 'apple_pay'],
       required: true,
     },
-    status: { type: String, enum: ['pending', 'paid'], default: 'pending' },
+    status: {
+      type: String,
+      enum: ['pending', 'paid', 'Failed'],
+      default: 'pending',
+    },
 
     // bankDetails: {
     //   accountNumber: { type: String },
@@ -38,11 +42,20 @@ const paymentSchema = new Schema<TPayment>(
     },
     transactionId: {
       type: String,
-      required: true,
+      required: false,
     },
     transactionDate: {
       type: Date,
       default: Date.now,
+    },
+    session_id: {
+      type: String,
+      default: null,
+    },
+    serviceBookingId: {
+      type: Schema.Types.ObjectId,
+      ref: 'ServiceBooking',
+      required: true,
     },
   },
   { timestamps: true },

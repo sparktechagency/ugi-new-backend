@@ -21,6 +21,8 @@ export type TPayment = {
   applePayDetails?: {
     appleId: string;
   };
-  transactionId: string;
+  transactionId?: string;
   transactionDate: Date;
+  session_id?: string;
+  serviceBookingId: Types.ObjectId;
 };

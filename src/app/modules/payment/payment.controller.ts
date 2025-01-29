@@ -1,7 +1,10 @@
 import httpStatus from 'http-status';
 import catchAsync from '../../utils/catchAsync';
-import { paymentService } from './payment.service';
+import { paymentService, stripe } from './payment.service';
 import sendResponse from '../../utils/sendResponse';
+import Stripe from 'stripe';
+import AppError from '../../error/AppError';
+import config from "../../config";
 
 const addPayment = catchAsync(async (req, res, next) => {
 const {userId} = req.user;
@@ -159,6 +162,66 @@ const getAllIncomeRasioBy7days = catchAsync(async (req, res) => {
   });
 });
 
+//payment 
+
+const successPage = catchAsync(async (req, res) => {
+  console.log('hit hoise');
+  res.render('success.ejs');
+});
+
+const cancelPage = catchAsync(async (req, res) => {
+  res.render('cancel.ejs');
+});
+
+
+//webhook
+const createCheckout = catchAsync(async (req, res) => {
+  const {userId} = req.user;
+  const result = await paymentService.createCheckout(userId, req.body);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Payment initialized',
+    data: result,
+  });
+});
+
+const conformWebhook = catchAsync(async (req, res) => {
+  console.log('wabook hit hoise controller')
+  const sig = req.headers['stripe-signature'];
+  let event: Stripe.Event;
+  try {
+    // Verify the event using Stripe's library
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig as string,
+      config.WEBHOOK,
+    );
+
+    await paymentService.automaticCompletePayment(event);
+  } catch (err) {
+    console.error('Error verifying webhook signature:', err);
+    // res.status(400).send('Webhook Error');
+    throw new AppError(httpStatus.BAD_REQUEST, 'Webhook Error');
+    // return;
+  }
+});
+
+const paymentRefund = catchAsync(async (req, res) => {
+  const { amount, payment_intent } = req.body;
+  console.log('refaund data', req.body);
+  const result = await paymentService.paymentRefundService(
+    amount,
+    payment_intent,
+  );
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Payment Refund Successfull',
+    data: result,
+  });
+});
+
 export const paymentController = {
   addPayment,
   getAllPayment,
@@ -167,4 +230,9 @@ export const paymentController = {
   getAllPaymentByCustormer,
   getAllIncomeRasio,
   getAllIncomeRasioBy7days,
+  createCheckout,
+  conformWebhook,
+  successPage,
+  cancelPage,
+  paymentRefund,
 };

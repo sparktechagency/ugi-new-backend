@@ -32,7 +32,8 @@ export default {
   otp_token_expire_time: process.env.OTP_TOKEN_EXPIRE_TIME,
   socket_port: process.env.SOCKET_PORT,
   stripe_secret: process.env.STRIPE_API_SECRET,
-  stripe_key: process.env.STRIPE_API_KEY,
+  // stripe_key: process.env.STRIPE_API_KEY,
+  WEBHOOK: process.env.WEBHOOK || '',
   aws,
   stripe,
 };

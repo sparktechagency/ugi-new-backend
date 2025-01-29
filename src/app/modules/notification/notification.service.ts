@@ -5,8 +5,8 @@ import { User } from '../user/user.models';
 import Notification from './notification.model';
 import { TNotification } from './notification.interface';
 
-const createNotification = async (payload: TNotification) => {
-  const result = await Notification.create(payload);
+const createNotification = async (payload: any, session?: any) => {
+  const result = await Notification.create([payload], { session });
   return result;
 };
 
@@ -57,7 +57,7 @@ const deleteNotification = async (id: string, userId: string) => {
     throw new AppError(404, 'User not found!');
   }
 
-  const notification = await Notification.findById(id);
+  const notification:any = await Notification.findById(id);
   if (!notification) {
     throw new AppError(404, 'Notification is not found!');
   }
