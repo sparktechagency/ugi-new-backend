@@ -33,7 +33,7 @@ serviceBookingRoutes
     serviceBookingController.cencelServiceBooking,
   )
   .patch(
-    'payment/:id',
+    '/payment/:id',
     auth(USER_ROLE.CUSTOMER),
     serviceBookingController.paymentStatusServiceBooking,
   )

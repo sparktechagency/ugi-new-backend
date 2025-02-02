@@ -12,6 +12,11 @@ const socketIO = (io: Server) => {
   // Middleware to handle JWT authentication
   io.use(async (socket: Socket, next) => {
     const token = socket.handshake.headers.authorization;
+    const token1 = socket.handshake.headers;
+    const token2 = socket.handshake;
+    // console.log('======token up', token)
+    // console.log('======token up', token1);
+    // console.log('======token up', token2);
 
     if (!token) {
       return next(new Error('Authentication error: Token not provided.'));
@@ -19,6 +24,7 @@ const socketIO = (io: Server) => {
 
     const tokenParts = token.split(' ');
     const tokenValue = tokenParts[1];
+    console.log('===========token', tokenValue);
 
     try {
       // Verify token using the utility function
@@ -36,7 +42,7 @@ const socketIO = (io: Server) => {
   // On new socket connection
   io.on('connection', (socket: Socket) => {
     console.log('connected');
-    console.log('socket decodedToken', socket.decodedToken);
+    // console.log('socket decodedToken', socket.decodedToken);
     try {
       // socket.on('message', (data, callback) => {
       //   console.log('Data message:', data); // Log the incoming message

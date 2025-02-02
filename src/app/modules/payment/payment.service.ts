@@ -12,6 +12,7 @@ import Stripe from 'stripe';
 import httpStatus from 'http-status';
 import config from '../../config';
 import mongoose from 'mongoose';
+import { UgiToken } from '../ugiToken/ugiToken.model';
 
 console.log({ first: config.stripe.stripe_api_secret });
 
@@ -43,6 +44,8 @@ const addPaymentService = async (payload: any) => {
       method,
       googlePayDetails,
       applePayDetails,
+      ugiTokenAmount,
+      ugiTokenId
     } = payload;
 
     const user = await User.findById(customerId).session(session);
@@ -124,6 +127,8 @@ const addPaymentService = async (payload: any) => {
       duration,
       bookingStartTime: startTime,
       bookingEndTime: endTime,
+      ugiTokenAmount: ugiTokenAmount || null,
+      ugiTokenId: ugiTokenId || null,
     };
 
     console.log('bookingData', bookingData);
@@ -134,6 +139,16 @@ const addPaymentService = async (payload: any) => {
       throw new AppError(400, 'Failed to create service booking!');
     }
 
+    if (serviceBookingResult[0].ugiTokenId) {
+      const ugiToken = await UgiToken.findById(serviceBookingResult[0].ugiTokenId);
+      if (!ugiToken) {
+        throw new AppError(400, 'UgiToken is not found!');
+      }
+      const deletedUgiToken = await UgiToken.findByIdAndDelete(ugiToken._id);
+      if (!deletedUgiToken) {
+        throw new AppError(400, 'Failed to delete UgiToken!');
+      }
+    }
    
 
 
@@ -191,9 +206,15 @@ const addPaymentService = async (payload: any) => {
         { paymentStatus: 'upcoming', status: 'booking' },
         { new: true, session },
       );
+
       if (!serviceUpdate) {
         throw new AppError(400, 'Failed to service Modal Update!');
       }
+
+
+
+
+
       result = paymentResult[0];
     }
 
@@ -504,12 +525,24 @@ const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
           throw new AppError(httpStatus.BAD_REQUEST, 'Payment Not Updated');
         }
 
-        const deletedServiceBooking = await ServiceBooking.findOneAndDelete({
-          customerId, status: 'pending',
-        })
+        // const deletedServiceBooking = await ServiceBooking.findOneAndDelete({
+        //   customerId, status: 'pending',
+        // })
 
-        if (deletedServiceBooking) {
-          console.log('deleted sarvice booking successfully');
+        // if (deletedServiceBooking) {
+        //   console.log('deleted sarvice booking successfully');
+        // }
+        const deletedServiceBookings = await ServiceBooking.deleteMany({
+          customerId,
+          status: 'pending',
+        });
+
+        if (deletedServiceBookings.deletedCount > 0) {
+          console.log(
+            `${deletedServiceBookings.deletedCount} bookings deleted successfully.`,
+          );
+        } else {
+          console.log('No matching bookings found.');
         }
 
         console.log('Payment completed successfully:', {
@@ -578,6 +611,91 @@ const paymentRefundService = async (
 };
 
 
+const getAllEarningRatio = async (year: number, businessId: string) => {
+  const startOfYear = new Date(year, 0, 1);
+  const endOfYear = new Date(year + 1, 0, 1);
+
+  const months = Array.from({ length: 12 }, (_, i) => ({
+    month: i + 1,
+    totalIncome: 0,
+  }));
+
+  console.log({ months });
+
+  const incomeData = await ServiceBooking.aggregate([
+    {
+      $match: {
+        status: 'complete',
+        businessId,
+        bookingDate: { $gte: startOfYear, $lt: endOfYear },
+      },
+    },
+    {
+      $group: {
+        _id: { month: { $month: '$bookingDate' } },
+        totalIncome: { $sum: '$bookingprice' },
+      },
+    },
+    {
+      $project: {
+        month: '$_id.month',
+        totalIncome: 1,
+        _id: 0,
+      },
+    },
+    {
+      $sort: { month: 1 },
+    },
+  ]);
+
+  incomeData.forEach((data) => {
+    const monthData = months.find((m) => m.month === data.month);
+    if (monthData) {
+      monthData.totalIncome = data.totalIncome;
+    }
+  });
+
+ 
+
+  return months;
+};
+
+
+const filterBalanceByPaymentMethod = async (paymentMethod: string, businessId: string) => {
+  
+  const payment = await Payment.aggregate([
+    {
+      $match: {
+        method: paymentMethod,
+        businessId
+      },
+    },
+    {
+      $group: {
+        _id: '$method',
+        totalAmount: { $sum: '$depositAmount' },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        method: '$_id',
+        totalAmount: 1,
+      },
+    },
+    
+  ]);
+
+  if (payment.length === 0) {
+    return { method: paymentMethod, totalAmount: 0 };
+  }
+
+
+  return payment;
+}
+
+
+
 export const paymentService = {
   addPaymentService,
   getAllPaymentService,
@@ -589,4 +707,6 @@ export const paymentService = {
   createCheckout,
   automaticCompletePayment,
   paymentRefundService,
+  getAllEarningRatio,
+  filterBalanceByPaymentMethod,
 };

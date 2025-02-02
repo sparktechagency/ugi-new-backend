@@ -11,6 +11,9 @@ import Service from '../service/service.model';
 import { format } from 'path';
 import { UgiToken } from '../ugiToken/ugiToken.model';
 // import { parse, isBefore, isAfter } from 'date-fns'; // You can use another library if preferred
+import axios from 'axios';
+import config from '../../config';
+import { notificationService } from '../notification/notification.service';
 
 const createBusinessService = async (files: any, payload: any) => {
   // console.log("businesss-1",{payload})
@@ -88,7 +91,7 @@ const getBusinessAvailableSlots = async (payload: any) => {
     throw new AppError(404, 'service is Not Found!!');
   }
 
-  console.log({ service });
+  // console.log({ service });
 
   const dateDay = new Date(date).getDay();
 
@@ -376,8 +379,7 @@ const getAllFilterByBusinessService = async (
   // Fetch favorite data for the customer
 
   const favoriteData = await FavoriteBusiness.find({ customerId });
-  // console.log({ favoriteData });
-  // Add isFavorite property to businesses
+
   const enhancedResult = filteredResult.map((business: any) => {
     const isFavorite = favoriteData.some(
       (fav) => fav.businessId.toString() === business.businessId._id.toString(),
@@ -395,6 +397,7 @@ const getAllFilterByBusinessService = async (
       // Fetch ugiToken data asynchronously
       const ugiTokenData = await UgiToken.findOne({
         businessId: business.businessId.businessId,
+        status:"accept",
       });
 
       const ugiToken = ugiTokenData ? ugiTokenData.ugiTokenAmount : 'false';
@@ -438,14 +441,75 @@ const getAllFilterByBusinessService = async (
 };
 
 
+const getAllFilterByBusinessByPostcodeService = async (
+  postCode: number,
+) => {
+  try {
+    const apiKey = config.googleApiKey;
+    console.log('api key', apiKey, postCode);
+    if (!apiKey) throw new Error('Google API Key is missing!');
+
+    // Geocoding API endpoint
+    const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${postCode},Bangladesh&key=${apiKey}`;
+    // const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${postCode}&key=${apiKey}`;
+
+    // Fetching the geocoding data
+    const response = await axios.get(apiUrl);
+    console.log('response', response);
+    const data = response.data;
+    console.log('goole api response', data);
+
+    if (data.status === 'OK') {
+      const location = data.results[0].geometry.location;
+      const latitude = location.lat;
+      const longitude = location.lng;
+
+      // Use the latitude and longitude as needed
+      console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+
+      const businesses = await Business.find({
+        location: {
+          $geoWithin: {
+            $centerSphere: [[longitude, latitude], 20 / 6378.1], // 20km radius
+          },
+        },
+      });
+
+      console.log('Nearby Businesses:', businesses);
+
+      return businesses;
+
+    } else {
+      throw new Error('Geocoding API error: ' + data.status);
+    }
+
+
+    // const latitude = 23.76124;
+    // const longitude = 90.4207;
+
+      // const businesses = await Business.find({
+      //   location: {
+      //     $geoWithin: {
+      //       $centerSphere: [[longitude, latitude], 20 / 6378.1], // 20km radius
+      //     },
+      //   },
+      // });
+
+      // return businesses;
+  } catch (error) {
+    console.error('Error fetching geocoding data:', error);
+    throw error;
+  }
+};
+
 
 
 const getSingleBusinessByBusinessIdService = async (businessId: string) => {
   const result = await Business.findOne({ businessId });
-  console.log({ result });
   if (!result) {
     throw new AppError(404, 'Business not found!');
   }
+  
   return result;
 };
 
@@ -457,6 +521,7 @@ const getSingleBusinessService = async (id: string) => {
   }
   return result;
 };
+
 
 // const getBusinessByServiceService = async (businessId: string) => {
 //   const result = await Service.find({ businessId });
@@ -581,4 +646,5 @@ export const businessService = {
   updateBusinessService,
   updateAvailableBusinessTimeService,
   getBusinessByServiceService,
+  getAllFilterByBusinessByPostcodeService,
 };

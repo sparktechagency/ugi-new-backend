@@ -36,4 +36,6 @@ export default {
   WEBHOOK: process.env.WEBHOOK || '',
   aws,
   stripe,
+  googleApiKey: process.env.GOOGLEAPI,
+  // user_jwt_token: process.env.USER_JWT_TOKEN,
 };

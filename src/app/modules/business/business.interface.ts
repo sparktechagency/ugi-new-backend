@@ -24,4 +24,8 @@ export type TBusiness = {
   reviewCount: number;
   latitude: number;
   longitude: number;
+  location: {
+    type: 'Point';
+    coordinates: [number, number]; // [longitude, latitude]
+  };
 };

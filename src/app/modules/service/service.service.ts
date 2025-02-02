@@ -48,7 +48,7 @@ const createBusinessServiceService = async (files: any, payload: TService) => {
 
 const getAllBusinessServiceByBusinessId = async (query: Record<string, unknown>, businessId: string) => {
   const businessServiceQuery = new QueryBuilder(
-    Service.find({ businessId }).populate('businessId'),
+    Service.find({ businessUserId: businessId }),
     query,
   )
     .search([''])

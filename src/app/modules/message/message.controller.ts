@@ -1,4 +1,3 @@
-
 import httpStatus from 'http-status';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
@@ -10,8 +9,8 @@ const getAllMessages = catchAsync(async (req, res) => {
     page: req.query.page || 1,
     limit: Number(req.query.limit) || 10,
   };
-  const chatId = req.query.chatId
-
+  const chatId = req.query.chatId;
+  console.log({ chatIdController: chatId });
   if (!chatId) {
     throw new Error('ChatId is required in params');
   }
@@ -29,4 +28,3 @@ const getAllMessages = catchAsync(async (req, res) => {
 export const messageController = {
   getAllMessages,
 };
-

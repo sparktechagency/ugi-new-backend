@@ -13,17 +13,23 @@ const businessRouter = express.Router();
 businessRouter
   .post(
     '/create-business',
-    // auth(USER_ROLE.ADMIN),
+    auth(USER_ROLE.BUSINESS),
     // upload.single('image'),
     upload.fields([{ name: 'businessImage', maxCount: 1 }]),
     // validateRequest(businessValidation.businessValidationSchema),
     businessController.createBusiness,
   )
+  
   .get('/', businessController.getAllBusiness)
   .get(
     '/filter',
     auth(USER_ROLE.CUSTOMER),
     businessController.getAllFilterBusiness,
+  )
+  .get(
+    '/postcode',
+    // auth(USER_ROLE.CUSTOMER),
+    businessController.getAllFilterBusinessByPostcode,
   )
 
   .get('/available/:businessId', businessController.getBusinessAvailableSlots)

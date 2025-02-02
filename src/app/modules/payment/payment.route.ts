@@ -20,12 +20,26 @@ paymentRouter
   .get('/', auth(USER_ROLE.ADMIN), paymentController.getAllPayment)
   .get('/all-income-rasio', paymentController.getAllIncomeRasio)
   .get('/all-income-rasio-by-days', paymentController.getAllIncomeRasioBy7days)
+  .get('/all-earning-rasio', auth(USER_ROLE.BUSINESS), paymentController.getAllEarningRasio)
+  .get('/all-earning-by-payment-method', auth(USER_ROLE.BUSINESS), paymentController.getAllEarningByPaymentMethod)
   .get('/:id', paymentController.getSinglePayment)
   .get(
     '/customer',
     auth(USER_ROLE.CUSTOMER),
     paymentController.getAllPaymentByCustormer,
   )
+
   .delete('/:id', paymentController.deleteSinglePayment);
 
 export default paymentRouter;
+
+
+
+
+
+
+
+
+
+
+

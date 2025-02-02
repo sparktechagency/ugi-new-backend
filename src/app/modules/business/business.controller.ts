@@ -5,12 +5,18 @@ import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
 import AppError from '../../error/AppError';
 import { businessService } from './business.service';
+import { number } from 'zod';
+import jwt from 'jsonwebtoken';
 
 
 const createBusiness = catchAsync(async (req: Request, res: Response) => {
   console.log('hit hoise');
   const bodyData = req.body;
-  // console.log({ bodyData });
+  const {userId} = req.user;
+  bodyData.businessId = userId;
+  console.log('=====', bodyData);
+  
+  console.log({ bodyData });
   const files = req.files as {
     [fieldname: string]: Express.Multer.File[];
   };
@@ -58,6 +64,24 @@ const getAllFilterBusiness = catchAsync(async (req, res) => {
   });
 });
 
+const getAllFilterBusinessByPostcode = catchAsync(async (req, res) => {
+  // const { userId } = req.user;
+  // console.log('=======', { userId });
+  const postcode = Number(req.query.postcode); ;
+  const result = await businessService.getAllFilterByBusinessByPostcodeService(
+   postcode,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    // meta: result.meta,
+    // data: result.result,
+    data: result,
+    message: 'Get All filter Business successful!!',
+  });
+});
+
 
 const getBusinessAvailableSlots = catchAsync(async (req, res) => {
   const { businessId } = req.params;
@@ -75,7 +99,7 @@ const getBusinessAvailableSlots = catchAsync(async (req, res) => {
     success: true,
     statusCode: httpStatus.OK,
     data: result,
-    message: 'Mentor Available Slots are requered successful!!',
+    message: 'Business Available Slots are requered successful!!',
   });
 });
 
@@ -185,4 +209,5 @@ export const businessController = {
   updateBusiness,
   updateAvailableBusinessTime,
   getBusinessByService,
+  getAllFilterBusinessByPostcode,
 };

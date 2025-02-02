@@ -13,7 +13,7 @@ export type TServiceBooking = {
   bookingEndTime: string;
   reSheduleStartTime: string;
   reSheduleEndTime: string;
-  reSheduleDate: Date;
+  reSheduleDate: string;
   // customerCencelRefandPrice?: number;
   reSheduleStatus:
     | 'no-shuedule'
@@ -21,9 +21,11 @@ export type TServiceBooking = {
     | 'cencel-re-shedule'
     | 'conform-re-shedule';
   status: 'pending' | 'booking' | 'cencel' | 'complete';
-  paymentStatus: 'pending' |'upcoming' | 'processing' | 'paid';
+  paymentStatus: 'pending' | 'upcoming' | 'processing' | 'paid';
   cencelationParsentage?: number;
   cencelationAmount?: number;
   cencelationHours?: string;
   refundStatus?: 'pending' | 'success' | 'failed';
+  ugiTokenAmount?: number;
+  ugiTokenId?: Types.ObjectId;
 };

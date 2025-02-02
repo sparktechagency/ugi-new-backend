@@ -5,16 +5,27 @@ import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
 import AppError from '../../error/AppError';
 import { businessServiceService } from './service.service';
+import Business from '../business/business.model';
 
 const createBusinessService = catchAsync(async (req: Request, res: Response) => {
   console.log('hit hoise');
   const bodyData = req.body;
-  // console.log({ bodyData });
+  const { userId } = req.user;
+  console.log({ userId });
   bodyData.servicePrice = Number(bodyData.servicePrice);
+   bodyData.businessUserId = userId;
+      console.log({ bodyData });
+   const business = await Business.findOne({ businessId: userId });
+   console.log({ business });
+   if (!business) {
+     throw new AppError(404, 'Business not found!');
+   }
+   bodyData.businessId = business._id;
+   console.log({ bodyData });
   const files = req.files as {
     [fieldname: string]: Express.Multer.File[];
   };
-console.log({ bodyData });
+
   const result = await businessServiceService.createBusinessServiceService(
     files,
     bodyData,
@@ -23,13 +34,14 @@ console.log({ bodyData });
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    data: result,
+    data: 'result',
     message: 'Create Business Service successful!!',
   });
 });
 
 const getAllBusinessServiceByBusinessId = catchAsync(async (req, res) => {
-    const businessId:any = req.query.businessId;
+  //halka change korte hobe
+    const businessId:any = req.user.userId;
   const result = await businessServiceService.getAllBusinessServiceByBusinessId(
     req.query,
     businessId,

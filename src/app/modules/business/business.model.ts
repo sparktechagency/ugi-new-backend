@@ -99,12 +99,30 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
     longitude: {
       type: Number,
       required: true,
-    }
+    },
+    location: {
+    type: { type: String, enum: ['Point'], default: 'Point' },
+    coordinates: { type: [Number], required: false }, // [longitude, latitude]
+  },
   },
   {
     timestamps: true,
   },
 );
+
+// Ensure location.coordinates is always updated
+BusinessSchema.pre('save', function (next) {
+  if (this.latitude && this.longitude) {
+    this.location = {
+      type: 'Point',
+      coordinates: [this.longitude, this.latitude], // Store in correct format
+    };
+  }
+  next();
+});
+
+// Create 2dsphere index for geospatial queries
+BusinessSchema.index({ location: '2dsphere' });
 
 const Business = mongoose.model<TBusiness>('Business', BusinessSchema);
 

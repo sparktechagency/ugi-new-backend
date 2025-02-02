@@ -3,8 +3,8 @@ import { z } from 'zod';
 
 const serviceValidationSchema = z.object({
   body: z.object({
-    businessUserId: z.string(),
-    businessId: z.string(),
+    businessUserId: z.string().optional(),
+    businessId: z.string().optional(),
     serviceName: z
       .string()
       .min(1, 'Service name is required')

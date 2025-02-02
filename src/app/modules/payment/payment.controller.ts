@@ -222,6 +222,49 @@ const paymentRefund = catchAsync(async (req, res) => {
   });
 });
 
+
+const getAllEarningRasio = catchAsync(async (req, res) => {
+  const yearQuery = req.query.year;
+  const {userId} = req.user;
+
+  // Safely extract year as string
+  const year = typeof yearQuery === 'string' ? parseInt(yearQuery) : undefined;
+
+  if (!year || isNaN(year)) {
+    return sendResponse(res, {
+      success: false,
+      statusCode: httpStatus.BAD_REQUEST,
+      message: 'Invalid year provided!',
+      data: {},
+    });
+  }
+
+  const result = await paymentService.getAllEarningRatio(year, userId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    data: result,
+    message: 'Earning All Ratio successful!!',
+  });
+});
+
+
+const getAllEarningByPaymentMethod = catchAsync(async (req, res) => {
+  const method:any = req.query.method;
+  const {userId} = req.user;
+
+
+  const result = await paymentService.filterBalanceByPaymentMethod(method, userId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    data: result,
+    message: 'Earning All balance  successful!!',
+  });
+});
+
 export const paymentController = {
   addPayment,
   getAllPayment,
@@ -235,4 +278,6 @@ export const paymentController = {
   successPage,
   cancelPage,
   paymentRefund,
+  getAllEarningRasio,
+  getAllEarningByPaymentMethod,
 };

@@ -13,24 +13,28 @@ const serviceRouter = express.Router();
 serviceRouter
   .post(
     '/create-service',
-    // auth(USER_ROLE.ADMIN),
+    auth(USER_ROLE.BUSINESS),
     // // upload.single('image'),
     upload.fields([{ name: 'serviceImage', maxCount: 1 }]),
     validateRequest(serviceValidation.serviceValidationSchema),
-    businessServiceController.createBusinessService
+    businessServiceController.createBusinessService,
   )
-  .get('/', businessServiceController.getAllBusinessServiceByBusinessId)
+  .get(
+    '/',
+    auth(USER_ROLE.BUSINESS),
+    businessServiceController.getAllBusinessServiceByBusinessId,
+  )
   .get('/:id', businessServiceController.getSingleBusinessService)
   .patch(
     '/:id',
     auth(USER_ROLE.BUSINESS),
     upload.fields([{ name: 'serviceImage', maxCount: 1 }]),
-    businessServiceController.updateBusinessService
+    businessServiceController.updateBusinessService,
   )
   .delete(
     '/:id',
     auth(USER_ROLE.BUSINESS),
-    businessServiceController.deletedBusinessService
+    businessServiceController.deletedBusinessService,
   );
 
 export default serviceRouter;
