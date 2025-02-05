@@ -1,12 +1,15 @@
 import httpStatus from 'http-status';
 import catchAsync from '../../utils/catchAsync';
-import { paymentService } from './payment.service';
+import { paymentService, stripe } from './payment.service';
 import sendResponse from '../../utils/sendResponse';
+import Stripe from 'stripe';
+import AppError from '../../error/AppError';
+import config from "../../config";
 
 const addPayment = catchAsync(async (req, res, next) => {
 const {userId} = req.user;
   const paymentData = req.body;
-  paymentData.menteeId = userId;
+  paymentData.customerId = userId;
 
 
   const result = await paymentService.addPaymentService(req.body);
@@ -51,11 +54,11 @@ const getAllPayment = catchAsync(async (req, res, next) => {
   
 });
 
-const getAllPaymentByMentor = catchAsync(async (req, res, next) => {
+const getAllPaymentByCustormer = catchAsync(async (req, res, next) => {
     const { userId } = req.user;
-  const result = await paymentService.getAllPaymentByMentorService(
-      req.query,
-      userId
+  const result = await paymentService.getAllPaymentByCustomerService(
+    req.query,
+    userId,
   );
   // console.log('result',result)
    if (result) {
@@ -118,10 +121,163 @@ const deleteSinglePayment = catchAsync(async (req, res, next) => {
   }
 });
 
+const getAllIncomeRasio = catchAsync(async (req, res) => {
+  const yearQuery = req.query.year;
+
+  // Safely extract year as string
+  const year = typeof yearQuery === 'string' ? parseInt(yearQuery) : undefined;
+
+  if (!year || isNaN(year)) {
+    return sendResponse(res, {
+      success: false,
+      statusCode: httpStatus.BAD_REQUEST,
+      message: 'Invalid year provided!',
+      data: {},
+    });
+  }
+ 
+
+  const result = await paymentService.getAllIncomeRatio(year);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    data: result,
+    message: 'Income All Ratio successful!!',
+  });
+});
+
+
+
+const getAllIncomeRasioBy7days = catchAsync(async (req, res) => {
+  const {days}:any = req.query;
+  
+  const result = await paymentService.getAllIncomeRatiobyDays(days);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    data: result,
+    message: 'Income All Ratio successful!!',
+  });
+});
+
+//payment 
+
+const successPage = catchAsync(async (req, res) => {
+  console.log('hit hoise');
+  res.render('success.ejs');
+});
+
+const cancelPage = catchAsync(async (req, res) => {
+  res.render('cancel.ejs');
+});
+
+
+//webhook
+const createCheckout = catchAsync(async (req, res) => {
+  const {userId} = req.user;
+  const result = await paymentService.createCheckout(userId, req.body);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Payment initialized',
+    data: result,
+  });
+});
+
+const conformWebhook = catchAsync(async (req, res) => {
+  console.log('wabook hit hoise controller')
+  const sig = req.headers['stripe-signature'];
+  let event: Stripe.Event;
+  try {
+    // Verify the event using Stripe's library
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig as string,
+      config.WEBHOOK,
+    );
+
+    await paymentService.automaticCompletePayment(event);
+  } catch (err) {
+    console.error('Error verifying webhook signature:', err);
+    // res.status(400).send('Webhook Error');
+    throw new AppError(httpStatus.BAD_REQUEST, 'Webhook Error');
+    // return;
+  }
+});
+
+const paymentRefund = catchAsync(async (req, res) => {
+  const { amount, payment_intent } = req.body;
+  console.log('refaund data', req.body);
+  const result = await paymentService.paymentRefundService(
+    amount,
+    payment_intent,
+  );
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Payment Refund Successfull',
+    data: result,
+  });
+});
+
+
+const getAllEarningRasio = catchAsync(async (req, res) => {
+  const yearQuery = req.query.year;
+  const {userId} = req.user;
+
+  // Safely extract year as string
+  const year = typeof yearQuery === 'string' ? parseInt(yearQuery) : undefined;
+
+  if (!year || isNaN(year)) {
+    return sendResponse(res, {
+      success: false,
+      statusCode: httpStatus.BAD_REQUEST,
+      message: 'Invalid year provided!',
+      data: {},
+    });
+  }
+
+  const result = await paymentService.getAllEarningRatio(year, userId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    data: result,
+    message: 'Earning All Ratio successful!!',
+  });
+});
+
+
+const getAllEarningByPaymentMethod = catchAsync(async (req, res) => {
+  const method:any = req.query.method;
+  const {userId} = req.user;
+
+
+  const result = await paymentService.filterBalanceByPaymentMethod(method, userId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    data: result,
+    message: 'Earning All balance  successful!!',
+  });
+});
+
 export const paymentController = {
   addPayment,
   getAllPayment,
   getSinglePayment,
   deleteSinglePayment,
-  getAllPaymentByMentor,
+  getAllPaymentByCustormer,
+  getAllIncomeRasio,
+  getAllIncomeRasioBy7days,
+  createCheckout,
+  conformWebhook,
+  successPage,
+  cancelPage,
+  paymentRefund,
+  getAllEarningRasio,
+  getAllEarningByPaymentMethod,
 };

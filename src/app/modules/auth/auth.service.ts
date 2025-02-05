@@ -34,10 +34,9 @@ console.log('user', user);
     throw new AppError(httpStatus.BAD_REQUEST, 'Password does not match');
   }
 
-  const jwtPayload: { userId: string; role: string, fullName:string, email:string, phone:string } = {
+  const jwtPayload: { userId: string; role: string, fullName:string, email:string} = {
     fullName: user?.fullName,
     email: user.email,
-    phone: user.phone,
     userId: user?._id?.toString() as string,
     role: user?.role,
   };
@@ -283,11 +282,9 @@ const refreshToken = async (token: string) => {
      role: string;
      fullName: string;
      email: string;
-     phone: string;
    } = {
      fullName: activeUser?.fullName,
      email: activeUser.email,
-     phone: activeUser.phone,
      userId: activeUser?._id?.toString() as string,
      role: activeUser?.role,
    };

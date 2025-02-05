@@ -8,17 +8,38 @@ import { USER_ROLE } from '../user/user.constants';
 const paymentRouter = express.Router();
 
 paymentRouter
-  .post('/add-payment', auth(USER_ROLE.USER), paymentController.addPayment)
+  .post('/add-payment', auth(USER_ROLE.CUSTOMER), paymentController.addPayment)
+  //   .post(
+  //   '/checkout',
+  //   auth(USER_ROLE.CUSTOMER),
+  //   paymentController.createCheckout,
+  // )
+  .post('/refund', paymentController.paymentRefund)
+  .get('/success', paymentController.successPage)
+  .get('/cancel', paymentController.cancelPage)
   .get('/', auth(USER_ROLE.ADMIN), paymentController.getAllPayment)
+  .get('/all-income-rasio', paymentController.getAllIncomeRasio)
+  .get('/all-income-rasio-by-days', paymentController.getAllIncomeRasioBy7days)
+  .get('/all-earning-rasio', auth(USER_ROLE.BUSINESS), paymentController.getAllEarningRasio)
+  .get('/all-earning-by-payment-method', auth(USER_ROLE.BUSINESS), paymentController.getAllEarningByPaymentMethod)
   .get('/:id', paymentController.getSinglePayment)
   .get(
-    '/mentor',
-    auth(USER_ROLE.USER),
-    paymentController.getAllPaymentByMentor,
+    '/customer',
+    auth(USER_ROLE.CUSTOMER),
+    paymentController.getAllPaymentByCustormer,
   )
-  .delete(
-    '/:id',
-    paymentController.deleteSinglePayment,
-  );
+
+  .delete('/:id', paymentController.deleteSinglePayment);
 
 export default paymentRouter;
+
+
+
+
+
+
+
+
+
+
+

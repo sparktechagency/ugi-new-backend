@@ -1,22 +1,31 @@
 import { Types } from "mongoose";
 
 export type TBusiness = {
-  userId: Types.ObjectId;
-  categoryName: string;
-  categoryId: Types.ObjectId;
-  subCategoryName: string;
-  subCategoryId: Types.ObjectId;
+  businessId: Types.ObjectId;
+
   businessName: string;
   businessImage: string;
-  businessLocation: 'Mobile' | 'High Street Salon' | 'Home Salon';
   businessDescription: string;
-  businessDuration: string;
-  dipositAmount: string;
-  paymentMethod: "Card" | "Cash" | "Cash & Card";
-  availableDays: [string];
-  selectStartTime: string;
-  selectEndTime: string;
+  businessLocation: string;
+  businessType: string[];
+  // businessDuration: string;
+  // dipositAmount: string;
+  paymentMethod: 'Card' | 'Cash' | 'Cash & Card';
+  availableDays?: string[];
+  businessStartTime: string;
+  businessEndTime: string;
+  specialDays?: string[];
+  specialStartTime?: string;
+  specialEndTime?: string;
   bookingBreak: string;
-  breakStartTime: string;
-  breakEndTime: string;
+  launchbreakStartTime: string;
+  launchbreakEndTime: string;
+  ratings: number;
+  reviewCount: number;
+  latitude: number;
+  longitude: number;
+  location: {
+    type: 'Point';
+    coordinates: [number, number]; // [longitude, latitude]
+  };
 };

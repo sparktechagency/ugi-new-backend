@@ -2,7 +2,7 @@ import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { Request, Response } from 'express';
 import { settingsService } from './settings.service';
-import httpStatus from '../../constants/httpStatus';
+import httpStatus from 'http-status';
 
 const addSetting = catchAsync(async (req, res) => {
   const settingData = {

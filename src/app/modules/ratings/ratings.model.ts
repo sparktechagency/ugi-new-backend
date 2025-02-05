@@ -1,19 +1,19 @@
-import { model, Schema } from "mongoose";
-import { TReview } from "./review.interface";
+import { model, Schema } from 'mongoose';
+import { TReview } from './ratings.interface';
 
 const reviewSchema = new Schema<TReview>(
   {
-    menteeId: {
+    customerId: {
       type: Schema.Types.ObjectId,
       required: true,
       ref: 'User',
     },
-    mentorId: {
+    businessId: {
       type: Schema.Types.ObjectId,
       required: true,
-      ref: 'User',
+      ref: 'Business',
     },
-    rating: { 
+    rating: {
       type: Number,
       required: true,
     },

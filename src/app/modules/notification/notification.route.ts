@@ -15,7 +15,7 @@ notificationRoutes.post(
 
 notificationRoutes.get(
   '',
-  auth(USER_ROLE.MENTEE, USER_ROLE.MENTOR),
+  auth(USER_ROLE.CUSTOMER, USER_ROLE.BUSINESS),
   NotificationController.getAllNotificationByUser,
 );
 notificationRoutes.get(
@@ -26,7 +26,7 @@ notificationRoutes.get(
 notificationRoutes.get('/:id', NotificationController.getSingleNotification);
 notificationRoutes.delete(
   '/:id',
-  auth(USER_ROLE.MENTEE, USER_ROLE.MENTOR),
+  auth(USER_ROLE.CUSTOMER, USER_ROLE.BUSINESS),
   NotificationController.deletedNotification,
 );
 notificationRoutes.delete(

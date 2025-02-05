@@ -25,7 +25,7 @@ export interface OTPVerifyAndCreateUserProps {
 }
 
 const createUserToken = async (payload: TUserCreate) => {
-  const { role, email, fullName, password, phone} =
+  const { role, email, fullName, password} =
     payload;
 
   // user role check
@@ -41,8 +41,12 @@ const createUserToken = async (payload: TUserCreate) => {
   }
 
   const { isExist, isExpireOtp } = await otpServices.checkOtpByEmail(email);
+  console.log({ isExist });
+  console.log({ isExpireOtp });
 
   const { otp, expiredAt } = generateOptAndExpireTime();
+    console.log({ otp });
+    console.log({ expiredAt });
 
   let otpPurpose: TPurposeType = 'email-verification';
 
@@ -66,13 +70,14 @@ const createUserToken = async (payload: TUserCreate) => {
     });
   }
 
-  const otpBody: TUserCreate = {
+  const otpBody: any = {
     email,
     fullName,
     password,
-    phone,
     role,
   };
+
+  console.log({ otpBody });
 
 
   // send email
@@ -84,6 +89,7 @@ const createUserToken = async (payload: TUserCreate) => {
       otp,
       expiredAt: expiredAt,
     });
+    // console.log({alala})
   });
 
   // crete token
@@ -100,6 +106,7 @@ const otpVerifyAndCreateUser = async ({
   otp,
   token,
 }: OTPVerifyAndCreateUserProps) => {
+  console.log('otp',otp)
   if (!token) {
     throw new AppError(httpStatus.BAD_REQUEST, 'Token not found');
   }
@@ -108,12 +115,13 @@ const otpVerifyAndCreateUser = async ({
     token,
     access_secret: config.jwt_access_secret as string,
   });
+  // console.log({ decodeData });
 
   if (!decodeData) {
     throw new AppError(httpStatus.BAD_REQUEST, 'You are not authorised');
   }
 
-  const { password, email, fullName, role, phone, about, professional } =
+  const { password, email, fullName, role} =
     decodeData;
 
   const isOtpMatch = await otpServices.otpMatch(email, otp);
@@ -137,9 +145,6 @@ const otpVerifyAndCreateUser = async ({
     email,
     fullName,
     role,
-    phone,
-    about,
-    professional,
   };
 
   const isExist = await User.isUserExist(email as string);
@@ -157,7 +162,26 @@ const otpVerifyAndCreateUser = async ({
     throw new AppError(httpStatus.BAD_REQUEST, 'User creation failed');
   }
 
-  return user;
+  const jwtPayload: {
+    userId: string;
+    role: string;
+    fullName: string;
+    email: string;
+  } = {
+    fullName: user?.fullName,
+    email: user.email,
+    userId: user?._id?.toString() as string,
+    role: user?.role,
+  };
+ 
+
+  const userToken = createToken({
+    payload: jwtPayload,
+    access_secret: config.jwt_access_secret as string,
+    expity_time: config.jwt_access_expires_in as string | number,
+  });
+
+  return { user, userToken };
 };
 
 const updateUser = async (id: string, payload: Partial<TUser>) => {
@@ -188,8 +212,13 @@ const getAllUserQuery = async (query: Record<string, unknown>) => {
 };
 
 const getAllUserCount = async () => {
-  const allUserCount = await User.countDocuments();
-  return allUserCount;
+  const allCustomerCount = await User.countDocuments({role: USER_ROLE.CUSTOMER});
+  const allBusinessCount = await User.countDocuments({role: USER_ROLE.BUSINESS});
+  const result = {
+    allCustomerCount,
+    allBusinessCount,
+  }
+  return result;
 };
 
 
@@ -240,14 +269,9 @@ const getAllUserRatio = async (year: number) => {
   return fullUserRatios;
 };
 
+
 const getUserById = async (id: string) => {
-  const result = await User.findById(id).populate({
-    path: 'purchesPackageId', // First level population
-    populate: {
-      path: 'package_id',
-      model: 'SubscriptionPlan',
-    },
-  });
+  const result = await User.findById(id);
   if (!result) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found');
   }

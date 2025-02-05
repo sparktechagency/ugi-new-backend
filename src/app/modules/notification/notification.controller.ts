@@ -4,9 +4,11 @@ import { Request, Response } from 'express';
 import sendResponse from '../../utils/sendResponse';
 import { notificationService } from './notification.service';
 import httpStatus from 'http-status';
+import mongoose from 'mongoose';
 
 const createNotification = catchAsync(async (req: Request, res: Response) => {
-  const result = await notificationService.createNotification(req.body);
+  const session = await mongoose.startSession();
+  const result = await notificationService.createNotification(req.body, session);
 
   sendResponse(res, {
     success: true,
@@ -18,6 +20,7 @@ const createNotification = catchAsync(async (req: Request, res: Response) => {
 
 const getAllNotificationByUser = catchAsync(async (req, res) => {
   const { userId } = req.user;
+  console.log({userId});
   const result = await notificationService.getAllNotificationQuery(
     req.query,
     userId as string,

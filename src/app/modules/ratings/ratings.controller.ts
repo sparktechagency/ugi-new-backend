@@ -1,13 +1,13 @@
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
-import AppError from '../../error/AppError';
-import { reviewService } from './review.service';
+import { reviewService } from './ratings.service';
 
 const createReview = catchAsync(async (req, res) => {
-    const reviewData = req.body;
-   const {userId} = req.user;
-   reviewData.menteeId = userId;
+  const reviewData = req.body;
+  const { userId } = req.user;
+  console.log({ userId });
+  reviewData.customerId = userId;
 
   const result = await reviewService.createReviewService(reviewData);
 
@@ -20,11 +20,11 @@ const createReview = catchAsync(async (req, res) => {
   });
 });
 
-const getReviewByMentor = catchAsync(async (req, res) => {
-  const { userId } = req.user;
-  const { meta, result } = await reviewService.getAllReviewByMentorQuery(
+const getReviewByCustomer = catchAsync(async (req, res) => {
+  const { businessId }: any = req.query;
+  const { meta, result } = await reviewService.getAllReviewByBusinessQuery(
     req.query,
-    userId,
+    businessId,
   );
 
   sendResponse(res, {
@@ -48,8 +48,8 @@ const getSingleReview = catchAsync(async (req, res) => {
 });
 
 const updateSingleReview = catchAsync(async (req, res) => {
-  const { id } = req.params; 
-  const {userId} = req.user;
+  const { id } = req.params;
+  const { userId } = req.user;
   const updateData = req.body;
   const result = await reviewService.updateReviewQuery(id, updateData, userId);
 
@@ -63,7 +63,7 @@ const updateSingleReview = catchAsync(async (req, res) => {
 });
 
 const deleteSingleReview = catchAsync(async (req, res) => {
-    const { userId } = req.user;
+  const { userId } = req.user;
   const result = await reviewService.deletedReviewQuery(req.params.id, userId);
 
   sendResponse(res, {
@@ -76,7 +76,7 @@ const deleteSingleReview = catchAsync(async (req, res) => {
 
 export const reviewController = {
   createReview,
-  getReviewByMentor,
+  getReviewByCustomer,
   getSingleReview,
   updateSingleReview,
   deleteSingleReview,

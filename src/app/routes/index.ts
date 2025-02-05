@@ -6,13 +6,19 @@ import { authRoutes } from '../modules/auth/auth.route';
 import settingsRouter from '../modules/settings/setting.route';
 import notificationRoutes from '../modules/notification/notification.route';
 import paymentRouter from '../modules/payment/payment.route';
-import reviewRouter from '../modules/review/review.route';
 import walletRouter from '../modules/wallet/wallet.route';
 import withdrawRouter from '../modules/withdraw/withdraw.route';
 import cencelBookingRoutes from '../modules/cencelBooking/cencelBooking.route';
 import serviceBookingRoutes from '../modules/serviceBooking/serviceBooking.route';
 import categoryRouter from '../modules/category/category.route';
 import subCategoryRouter from '../modules/subCategory/subCategory.route';
+import businessRouter from '../modules/business/business.route';
+import serviceRouter from '../modules/service/service.route';
+import ugiTokenRouter from '../modules/ugiToken/ugiToken.route';
+import favoriteBusinessRoutes from '../modules/favorite/favorite.route';
+import reviewRouter from '../modules/ratings/ratings.route';
+import chatRouter from '../modules/chat/chat.route';
+import messageRouter from '../modules/message/message.route';
 
 const router = Router();
 
@@ -38,11 +44,6 @@ const moduleRoutes = [
     path: '/notification',
     route: notificationRoutes,
   },
-  {
-    path: '/review',
-    route: reviewRouter,
-  },
-
   {
     path: '/wallet',
     route: walletRouter,
@@ -70,6 +71,34 @@ const moduleRoutes = [
   {
     path: '/sub-category',
     route: subCategoryRouter,
+  },
+  {
+    path: '/business',
+    route: businessRouter,
+  },
+  {
+    path: '/service',
+    route: serviceRouter,
+  },
+  {
+    path: '/ugi-token',
+    route: ugiTokenRouter,
+  },
+  {
+    path: '/favorite-business',
+    route: favoriteBusinessRoutes,
+  },
+  {
+    path: '/review',
+    route: reviewRouter,
+  },
+  {
+    path: '/chat',
+    route: chatRouter,
+  },
+  {
+    path: '/message',
+    route: messageRouter,
   },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

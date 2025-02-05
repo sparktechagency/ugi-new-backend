@@ -22,7 +22,7 @@ const userSchema = new Schema<TUser>(
     role: {
       type: String,
       enum: Role,
-      required:true
+      required: true,
     },
     password: {
       type: String,
@@ -31,7 +31,11 @@ const userSchema = new Schema<TUser>(
     },
     phone: {
       type: String,
-      required: true,
+      required: false,
+    },
+    dateOfBirth: {
+      type: Date,
+      required: false,
     },
     isActive: {
       type: Boolean,
@@ -39,6 +43,16 @@ const userSchema = new Schema<TUser>(
     },
     isDeleted: {
       type: Boolean,
+      default: false,
+    },
+    pegnensi: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    allergies: {
+      type: Boolean,
+      required: false,
       default: false,
     },
   },

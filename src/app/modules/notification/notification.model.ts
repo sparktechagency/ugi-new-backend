@@ -6,7 +6,7 @@ const NotificationSchema = new Schema<TNotification>(
   {
     userId: {
       type: Schema.Types.ObjectId,
-      required: true,
+      required: false,
       ref: 'User', // Reference to User model
     },
     message: {
@@ -20,12 +20,28 @@ const NotificationSchema = new Schema<TNotification>(
     },
     type: {
       type: String,
-      enum: ['info', 'warning', 'error', 'success'],
+      enum: ['info', 'warning', 'error', 'success', 'reshedule', 'ugiToken'],
       required: true,
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'accept', 'cancel'],
+      default: 'pending',
     },
     isRead: {
       type: Boolean,
       default: false,
+    },
+    isUgiToken: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    serviceBookingId: {
+      type: Schema.Types.ObjectId,
+      required: false,
+      ref: 'ServiceBooking', // Reference to ServiceBooking model
+      default:null
     },
   },
   {
