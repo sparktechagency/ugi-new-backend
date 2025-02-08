@@ -9,7 +9,7 @@ const getAllChats = catchAsync(async (req, res) => {
     page: Number(req.query.page) || 1,
   };
   const { userId } = req.user;
-  console.log('userId', userId);
+  console.log('userId=====================', userId);
   const filter: any = { participantId: userId };
 
   const search = req.query.search;

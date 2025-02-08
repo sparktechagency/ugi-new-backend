@@ -56,6 +56,33 @@ const getAllBusinessServiceByBusinessId = catchAsync(async (req, res) => {
   });
 });
 
+const getAllAdminServiceByBusinessId = catchAsync(async (req, res) => {
+  //halka change korte hobe
+  const businessId: any = req.query.businessId;
+  const result = await businessServiceService.getAllAdminServiceByBusinessId(
+    businessId,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    data: result,
+    message: 'Get All Business Service successful!!',
+  });
+});
+const getAllAdminByService = catchAsync(async (req, res) => {
+  //halka change korte hobe
+  const result =
+    await businessServiceService.getAllAdminByService(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    data: result,
+    message: 'Get All Business Service successful!!',
+  });
+});
+
 const getSingleBusinessService = catchAsync(async (req: Request, res: Response) => {
   const result = await businessServiceService.getSingleBusinessServiceService(
     req.params.id,
@@ -117,6 +144,8 @@ const deletedBusinessService = catchAsync(
 export const businessServiceController = {
   createBusinessService,
   getAllBusinessServiceByBusinessId,
+  getAllAdminServiceByBusinessId,
+  getAllAdminByService,
   getSingleBusinessService,
   updateBusinessService,
   deletedBusinessService,

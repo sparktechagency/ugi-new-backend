@@ -62,7 +62,7 @@ const createBusinessService = async (files: any, payload: any) => {
 
 
 const getAllBusinessService = async (query: Record<string, unknown>) => {
-  const businessQuery = new QueryBuilder(Business.find({}), query)
+  const businessQuery = new QueryBuilder(Business.find({}).populate('businessId'), query)
     .search(['businessName', 'businessDescription'])
     .filter()
     .sort()

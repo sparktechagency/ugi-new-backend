@@ -6,6 +6,8 @@ import { TService } from './service.interface';
 import Service from './service.model';
 import { Category } from '../category/category.model';
 import SubCategory from '../subCategory/subCategory.model';
+import { object } from 'zod';
+import mongoose from 'mongoose';
 
 
 const createBusinessServiceService = async (files: any, payload: TService) => {
@@ -49,6 +51,36 @@ const createBusinessServiceService = async (files: any, payload: TService) => {
 const getAllBusinessServiceByBusinessId = async (query: Record<string, unknown>, businessId: string) => {
   const businessServiceQuery = new QueryBuilder(
     Service.find({ businessUserId: businessId }),
+    query,
+  )
+    .search([''])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await businessServiceQuery.modelQuery;
+  const meta = await businessServiceQuery.countTotal();
+  return { meta, result };
+};
+
+
+
+const getAllAdminServiceByBusinessId = async (
+  businessId: string,
+) => {
+
+  const businessIdx = new mongoose.Types.ObjectId(businessId);
+  const service = await Service.find({ businessUserId: businessIdx });
+  return service;
+  
+};
+
+const getAllAdminByService = async (
+  query: Record<string, unknown>,
+) => {
+  const businessServiceQuery = new QueryBuilder(
+    Service.find({}).populate('businessUserId'),
     query,
   )
     .search([''])
@@ -149,6 +181,8 @@ const deletedBusinessServiceService = async (id: string, businessId: string) => 
 export const businessServiceService = {
   createBusinessServiceService,
   getAllBusinessServiceByBusinessId,
+  getAllAdminServiceByBusinessId,
+  getAllAdminByService,
   getSingleBusinessServiceService,
   deletedBusinessServiceService,
   updateBusinessServiceService,

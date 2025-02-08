@@ -36,8 +36,8 @@ export const handleMessageEvents = async (
  console.log('populatedMessage', populatedMessage);
       if (populatedMessage.chat && populatedMessage.chat.participants) {
         const participants = populatedMessage.chat.participants;
-
-        const chatRoom = 'new-message::' + data.chat;
+        const chatId = data.chat ? data.chat.toString() : 'unknown';
+        const chatRoom = 'new-message::' + chatId;
         console.log('chatRoom', chatRoom);
         socket.broadcast.emit(chatRoom, message);
 

@@ -17,17 +17,17 @@ const getReceiverSocketId = (receiverId: string): string | undefined => {
     console.log('connected');
     // console.log('socket decodedToken', socket.decodedToken);
     try {
-   
-      const userId = socket.handshake.query.userId as string;
-      console.log('socket userId---', userId);
+      
+      // console.log('socket ---', socket);
+      // console.log('socket ---', data);
 
-       if (userId && userId !== 'undefined') {
-         userSocketMap[userId] = socket.id;
-       }
+      //  if (userId && userId !== 'undefined') {
+      //    userSocketMap[userId] = socket.id;
+      //  }
 
-       io.emit('active-users', Object.keys(userSocketMap));
+      //  io.emit('active-users', Object.keys(userSocketMap));
 
-      console.log('activeUsers down', userSocketMap);
+      // console.log('activeUsers down', userSocketMap);
 
       // Handle 'add-new-chat' event
       socket.on('add-new-chat', (data, callback) =>
@@ -38,12 +38,12 @@ const getReceiverSocketId = (receiverId: string): string | undefined => {
         handleMessageEvents(socket, data, callback, io),
       );
 
-      socket.on('disconnect', () => {
-        if (userId) {
-          delete userSocketMap[userId];
-        }
-        io.emit('getOnlineUsers', Object.keys(userSocketMap));
-      });
+      // socket.on('disconnect', () => {
+      //   if (userId) {
+      //     delete userSocketMap[userId];
+      //   }
+      //   io.emit('getOnlineUsers', Object.keys(userSocketMap));
+      // });
       // Other socket events...
     } catch (error) {
       console.error('Error in socket connection:', error);
