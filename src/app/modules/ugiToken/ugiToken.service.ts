@@ -24,6 +24,10 @@ const createUgiTokenService = async (payload: TUgiToken, session: any) => {
   return result;
 };
 
+
+
+
+
 const getSingleUgiTokenService = async (
   businessId: string,
 ) => {
@@ -33,6 +37,9 @@ const getSingleUgiTokenService = async (
   });
   return result;
 };
+
+
+
 
 
 
@@ -94,5 +101,5 @@ let result
 export const ugiTokenService = {
   createUgiTokenService,
   getSingleUgiTokenService,
-  updateUgiTokenAcceptCencelService
+  updateUgiTokenAcceptCencelService,
 };

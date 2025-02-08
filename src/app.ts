@@ -10,13 +10,15 @@ import notFound from './app/middleware/notfound';
 import router from './app/routes';
 import path from 'path';
 import { paymentController } from './app/modules/payment/payment.controller';
+
 const app: Application = express();
+
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 app.post(
-  '/api/v1/webhook',
+  '/api/v1/payment/webhook',
   express.raw({ type: 'application/json' }),
   paymentController.conformWebhook,
 );

@@ -24,6 +24,7 @@ const createUgiToken = catchAsync(async (req: Request, res: Response) => {
 
 
 
+
 const getSingleUgiToken = catchAsync(async (req: Request, res: Response) => {
     const { businessId }:any = req.query;
   const result = await ugiTokenService.getSingleUgiTokenService(
@@ -37,6 +38,8 @@ const getSingleUgiToken = catchAsync(async (req: Request, res: Response) => {
     message: 'Single UgiToken get successful',
   });
 });
+
+
 
 
 const updateUgiTokenAcceptCencel = catchAsync(async (req: Request, res: Response) => {

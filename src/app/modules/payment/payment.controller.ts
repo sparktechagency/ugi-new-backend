@@ -5,6 +5,7 @@ import sendResponse from '../../utils/sendResponse';
 import Stripe from 'stripe';
 import AppError from '../../error/AppError';
 import config from "../../config";
+import { StripeAccount } from '../stripeAccount/stripeAccount.model';
 
 const addPayment = catchAsync(async (req, res, next) => {
 const {userId} = req.user;
@@ -173,6 +174,54 @@ const cancelPage = catchAsync(async (req, res) => {
   res.render('cancel.ejs');
 });
 
+const successPageAccount = catchAsync(async (req, res) => {
+  console.log('payment account hit hoise');
+   const { id } = req.params;
+   const account = await stripe.accounts.update(id, {});
+   console.log('account', account);
+
+   if (
+     account?.requirements?.disabled_reason &&
+     account?.requirements?.disabled_reason.indexOf('rejected') > -1
+   ) {
+     return res.redirect(
+       `${req.protocol + '://' + req.get('host')}/api/v1/payment/refreshAccountConnect/${id}`,
+     );
+   }
+   if (
+     account?.requirements?.disabled_reason &&
+     account?.requirements?.currently_due &&
+     account?.requirements?.currently_due?.length > 0
+   ) {
+     return res.redirect(
+       `${req.protocol + '://' + req.get('host')}/api/v1/payment/refreshAccountConnect/${id}`,
+     );
+   }
+   if (!account.payouts_enabled) {
+     return res.redirect(
+       `${req.protocol + '://' + req.get('host')}/api/v1/payment/refreshAccountConnect/${id}`,
+     );
+   }
+   if (!account.charges_enabled) {
+     return res.redirect(
+       `${req.protocol + '://' + req.get('host')}/api/v1/payment/refreshAccountConnect/${id}`,
+     );
+   }
+   // if (account?.requirements?.past_due) {
+   //     return res.redirect(`${req.protocol + '://' + req.get('host')}/payment/refreshAccountConnect/${id}`);
+   // }
+   if (
+     account?.requirements?.pending_verification &&
+     account?.requirements?.pending_verification?.length > 0
+   ) {
+     // return res.redirect(`${req.protocol + '://' + req.get('host')}/payment/refreshAccountConnect/${id}`);
+   }
+   await StripeAccount.updateOne({ accountId: id }, { isCompleted: true });
+
+
+  res.render('success-account.ejs');
+});
+
 
 //webhook
 const createCheckout = catchAsync(async (req, res) => {
@@ -251,17 +300,74 @@ const getAllEarningRasio = catchAsync(async (req, res) => {
 
 
 const getAllEarningByPaymentMethod = catchAsync(async (req, res) => {
-  const method:any = req.query.method;
   const {userId} = req.user;
 
 
-  const result = await paymentService.filterBalanceByPaymentMethod(method, userId);
+  const result = await paymentService.filterBalanceByPaymentMethod( userId);
+  console.log('result', result);
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    data: result,
+    data: result ? result : 0,
     message: 'Earning All balance  successful!!',
+  });
+});
+
+const getAllWithdrawEarningByPaymentMethod = catchAsync(async (req, res) => {
+  const {userId} = req.user;
+  const method = req.query.method as string;
+
+
+  const result =
+    await paymentService.filterWithdrawBalanceByPaymentMethod(method, userId);
+  console.log('result', result);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    data: result ? result : 0,
+    message: 'Withdraw Availvle All balance  successful!!',
+  });
+});
+
+
+const refreshAccountConnect = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const url = await paymentService.refreshAccountConnect(
+    id,
+    req.get('host') || '',
+    req.protocol,
+  );
+  res.redirect(url);
+});
+
+
+const createStripeAccount = catchAsync(async (req, res) => {
+  const result = await paymentService.createStripeAccount(
+    req.user,
+    req.get('host') || '',
+    req.protocol,
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Stripe account created',
+    data: result,
+  });
+});
+
+
+const transferBalance = catchAsync(async (req, res) => {
+  const { accountId, amount } = req.body;
+  const {userId} = req.user;
+  const result = await paymentService.transferBalanceService(accountId, amount, userId);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Transfer balance success',
+    data: result,
   });
 });
 
@@ -277,7 +383,12 @@ export const paymentController = {
   conformWebhook,
   successPage,
   cancelPage,
+  successPageAccount,
   paymentRefund,
   getAllEarningRasio,
   getAllEarningByPaymentMethod,
+  getAllWithdrawEarningByPaymentMethod,
+  createStripeAccount,
+  refreshAccountConnect,
+  transferBalance,
 };

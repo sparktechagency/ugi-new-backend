@@ -10,6 +10,7 @@ ugiTokenRouter
     // auth(USER_ROLE.ADMIN),
     ugiTokenController.createUgiToken,
   )
+  
   .get('/', ugiTokenController.getSingleUgiToken)
   .patch(
     '/:id',

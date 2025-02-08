@@ -455,9 +455,7 @@ const getAllFilterByBusinessByPostcodeService = async (
 
     // Fetching the geocoding data
     const response = await axios.get(apiUrl);
-    console.log('response', response);
-    const data = response.data;
-    console.log('goole api response', data);
+    const data = response.data;;
 
     if (data.status === 'OK') {
       const location = data.results[0].geometry.location;
@@ -466,11 +464,17 @@ const getAllFilterByBusinessByPostcodeService = async (
 
       // Use the latitude and longitude as needed
       console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+       const businessesAll = await Business.find({})
+         .select('location.coordinates')
+         .limit(1000);
+       console.log('business all', businessesAll);
+
 
       const businesses = await Business.find({
         location: {
           $geoWithin: {
-            $centerSphere: [[longitude, latitude], 20 / 6378.1], // 20km radius
+            $centerSphere: [[longitude, latitude], 5 / 6378.1], // 20km radius
+            // $centerSphere: [[90.426659, 23.780546], 20 / 6378.1], // 20km radius
           },
         },
       });
@@ -483,19 +487,7 @@ const getAllFilterByBusinessByPostcodeService = async (
       throw new Error('Geocoding API error: ' + data.status);
     }
 
-
-    // const latitude = 23.76124;
-    // const longitude = 90.4207;
-
-      // const businesses = await Business.find({
-      //   location: {
-      //     $geoWithin: {
-      //       $centerSphere: [[longitude, latitude], 20 / 6378.1], // 20km radius
-      //     },
-      //   },
-      // });
-
-      // return businesses;
+    
   } catch (error) {
     console.error('Error fetching geocoding data:', error);
     throw error;

@@ -94,14 +94,22 @@ console.log("before service create");
   return result;
 };
 
+// .populate({
+//         path: 'mentorId', // Populate the full mentorId object (not just the ObjectId)
+//         populate: { path: 'mentorRegistrationId' }, // Populate mentorRegistrationId inside mentorId
+//       })
 const getAllServiceBookingByUserQuery = async (
   query: Record<string, unknown>,
   customerId: string,
 ) => {
+  console.log('booking user id', customerId);
   const ServiceBookingQuery = new QueryBuilder(
-    ServiceBooking.find({ customerId,  })
+    ServiceBooking.find({ customerId })
       .populate('customerId')
-      .populate('serviceId'),
+      .populate({
+        path: 'serviceId',
+        populate: { path: 'businessId', select: 'businessName' },
+      }),
     query,
   )
     .search([''])

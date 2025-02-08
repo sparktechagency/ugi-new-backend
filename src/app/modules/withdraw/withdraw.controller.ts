@@ -6,9 +6,9 @@ import { withdrawService } from './withdraw.service';
 const addWithdraw = catchAsync(async (req, res, next) => {
   const { userId } = req.user;
   const withdrawData = req.body;
-  withdrawData.mentorId = userId;
+  withdrawData.businessId = userId;
 
-  const result = await withdrawService.addWithdrawService(req.body);
+  const result = await withdrawService.addWithdrawService(withdrawData);
 
   if (result) {
     sendResponse(res, {
@@ -48,9 +48,10 @@ const getAllWithdraw = catchAsync(async (req, res, next) => {
   }
 });
 
-const getAllWithdrawByMentor = catchAsync(async (req, res, next) => {
+const getAllWithdrawByBusinessMan = catchAsync(async (req, res, next) => {
   const { userId } = req.user;
-  const result = await withdrawService.getAllWithdrawByMentorService(
+  console.log('user id', userId);
+  const result = await withdrawService.getAllWithdrawBybusinessService(
     req.query,
     userId,
   );
@@ -92,28 +93,7 @@ const getSingleWithdraw = catchAsync(async (req, res, next) => {
   }
 });
 
-const getAllWithdrawRequestAccept = catchAsync(async (req, res, next) => {
-  // give me validation data
-  const result = await withdrawService.acceptSingleWithdrawService(
-    req.params.id,
-  );
 
-  if (result) {
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: 'Conform Withdraw Successfull!!!',
-      data: result,
-    });
-  } else {
-    sendResponse(res, {
-      statusCode: httpStatus.BAD_REQUEST,
-      success: true,
-      message: 'Data is not found',
-      data: {},
-    });
-  }
-});
 
 
 const deleteSingleWithdraw = catchAsync(async (req, res, next) => {
@@ -143,7 +123,6 @@ export const withdrawController = {
   addWithdraw,
   getAllWithdraw,
   getSingleWithdraw,
-  getAllWithdrawByMentor,
-  getAllWithdrawRequestAccept,
+  getAllWithdrawByBusinessMan,
   deleteSingleWithdraw,
 };

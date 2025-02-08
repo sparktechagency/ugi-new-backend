@@ -55,6 +55,12 @@ const userSchema = new Schema<TUser>(
       required: false,
       default: false,
     },
+    asRole: {
+      type: String,
+      enum:['customer_business', 'customer', 'business'],
+      required: false,
+      default: ' ',
+    },
   },
   {
     timestamps: true,

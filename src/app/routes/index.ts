@@ -99,7 +99,7 @@ const moduleRoutes = [
   {
     path: '/message',
     route: messageRouter,
-  },
+  }
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
 

@@ -22,6 +22,11 @@ userRoutes
     validateRequest(resentOtpValidations.verifyOtpZodSchema),
     userController.userCreateVarification,
   )
+  .post(
+    '/swich-role',
+    auth(USER_ROLE.CUSTOMER, USER_ROLE.BUSINESS),
+    userController.userSwichRole,
+  )
   .get(
     '/my-profile',
     auth(

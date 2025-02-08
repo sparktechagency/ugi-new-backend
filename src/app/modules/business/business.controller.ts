@@ -182,20 +182,23 @@ const updateBusiness = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updateAvailableBusinessTime = catchAsync(async (req: Request, res: Response) => {
+  console.log('hit hoise')
   const businessId = req.user.userId; // business man _id
   const updateData = req.body;
 
-  const result = await businessService.updateAvailableBusinessTimeService(
-    businessId,
-    updateData,
-  );
+  updateData.availableDays =JSON.parse(updateData.availableDays);
+  updateData.specialDays = JSON.parse(updateData.specialDays);
+    const result = await businessService.updateAvailableBusinessTimeService(
+      businessId,
+      updateData,
+    );
 
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    data: result,
-    message: 'Business Available Time update successful',
-  });
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      data: result,
+      message: 'Business Available Time update successful',
+    });
 });
 
 export const businessController = {

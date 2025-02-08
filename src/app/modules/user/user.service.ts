@@ -25,7 +25,7 @@ export interface OTPVerifyAndCreateUserProps {
 }
 
 const createUserToken = async (payload: TUserCreate) => {
-  const { role, email, fullName, password} =
+  const { role, email, fullName, password, asRole} =
     payload;
 
   // user role check
@@ -75,6 +75,7 @@ const createUserToken = async (payload: TUserCreate) => {
     fullName,
     password,
     role,
+    asRole
   };
 
   console.log({ otpBody });
@@ -121,7 +122,7 @@ const otpVerifyAndCreateUser = async ({
     throw new AppError(httpStatus.BAD_REQUEST, 'You are not authorised');
   }
 
-  const { password, email, fullName, role} =
+  const { password, email, fullName, role, asRole} =
     decodeData;
 
   const isOtpMatch = await otpServices.otpMatch(email, otp);
@@ -145,6 +146,7 @@ const otpVerifyAndCreateUser = async ({
     email,
     fullName,
     role,
+    asRole
   };
 
   const isExist = await User.isUserExist(email as string);
@@ -183,6 +185,41 @@ const otpVerifyAndCreateUser = async ({
 
   return { user, userToken };
 };
+
+
+
+
+
+const userSwichRoleService = async (id:string) => {
+  const swichUser = await User.findById(id);
+
+  if (!swichUser) { 
+    throw new AppError(httpStatus.BAD_REQUEST, 'User not found');
+  }
+
+  if (swichUser.asRole !== 'customer_business') {
+    throw new AppError(httpStatus.BAD_REQUEST, 'You are not allowed to switch role');
+  }
+
+  let swichRole;
+
+  if(swichUser.role === 'customer') {
+    swichRole = 'business';
+  } else {
+    swichRole = 'customer';
+
+  }
+
+  console.log('swichRole', swichRole);
+  const user = await User.findByIdAndUpdate(id, {role: swichRole}, { new: true });
+
+  if (!user) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'User swich failed');
+  }
+
+  return user;
+};
+
 
 const updateUser = async (id: string, payload: Partial<TUser>) => {
   const { role, email, ...rest } = payload;
@@ -329,6 +366,7 @@ const blockedUser = async (id: string) => {
 export const userService = {
   createUserToken,
   otpVerifyAndCreateUser,
+  userSwichRoleService,
   getUserById,
   getUserByEmail,
   updateUser,

@@ -18,7 +18,7 @@ export const handleChatEvents = async (
     if (data.participant) {
       
       const existingChat = await chatService.getChatByParticipants(
-        socket.decodedToken.userId,
+        socket.handshake.query.userId,
         data.participant,
       );
       if (existingChat && existingChat.status === 'accepted') {
@@ -31,7 +31,7 @@ export const handleChatEvents = async (
       }
 
       chat = await chatService.createChat(
-        socket.decodedToken.userId,
+        socket.handshake.query.userId,
         data.participant,
       );
       //   

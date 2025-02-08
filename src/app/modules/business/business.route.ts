@@ -54,7 +54,7 @@ businessRouter
   .patch(
     '/available-time',
     auth(USER_ROLE.BUSINESS),
-    validateRequest(businessValidation.businessAvailableTimeValidationSchema),
+    // validateRequest(businessValidation.businessAvailableTimeValidationSchema),
     businessController.updateAvailableBusinessTime,
   )
   .delete('/', auth(USER_ROLE.BUSINESS), businessController.deletedBusiness);
