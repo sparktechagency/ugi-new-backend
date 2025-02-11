@@ -108,7 +108,7 @@ const getAllServiceBookingByUserQuery = async (
       .populate('customerId')
       .populate({
         path: 'serviceId',
-        populate: { path: 'businessId', select: 'businessName' },
+        populate: { path: 'businessUserId', select: 'fullName' },
       }),
     query,
   )

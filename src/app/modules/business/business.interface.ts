@@ -17,6 +17,9 @@ export type TBusiness = {
   specialDays?: string[];
   specialStartTime?: string;
   specialEndTime?: string;
+  specifigDate?: string[];
+  specifigStartTime?: string;
+  specifigEndTime?: string;
   bookingBreak: string;
   launchbreakStartTime: string;
   launchbreakEndTime: string;

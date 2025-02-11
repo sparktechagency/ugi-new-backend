@@ -55,17 +55,32 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
     specialDays: {
       type: [String],
       required: true,
-      default: [],
+      default: ['Monday'],
     },
     specialStartTime: {
       type: String,
       required: true,
-      default: ' ',
+      default: '09:00 AM',
     },
     specialEndTime: {
       type: String,
       required: true,
-      default: ' ',
+      default: '06:00 PM',
+    },
+    specifigDate: {
+      type: [String],
+      required: true,
+      default: ['02/10/2025', '02/11/2025'],
+    },
+    specifigStartTime: {
+      type: String,
+      required: true,
+      default: '10:00 PM',
+    },
+    specifigEndTime: {
+      type: String,
+      required: true,
+      default: '06:00 PM',
     },
     bookingBreak: {
       type: String,
@@ -92,7 +107,7 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
       required: true,
       default: 0,
     },
-    latitude:{
+    latitude: {
       type: Number,
       required: true,
     },
@@ -101,9 +116,9 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
       required: true,
     },
     location: {
-    type: { type: String, enum: ['Point'], default: 'Point' },
-    coordinates: { type: [Number], required: false }, // [longitude, latitude]
-  },
+      type: { type: String, enum: ['Point'], default: 'Point' },
+      coordinates: { type: [Number], required: false }, // [longitude, latitude]
+    },
   },
   {
     timestamps: true,
@@ -115,7 +130,7 @@ BusinessSchema.pre('save', function (next) {
   if (this.latitude && this.longitude) {
     this.location = {
       type: 'Point',
-      coordinates: [this.longitude, this.latitude], // Store in correct format
+      coordinates: [this.longitude, this.latitude],
     };
   }
   next();

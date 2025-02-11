@@ -55,7 +55,7 @@ export const getChatByParticipantId = async (filters: any, options: any) => {
     const skip = (page - 1) * limit;
 
     const participantId = new mongoose.Types.ObjectId(filters.participantId);
-    // console.log('participantId===', participantId);
+    console.log('participantId===', participantId);
 
     const name = filters.name || '';
 
@@ -87,32 +87,7 @@ export const getChatByParticipantId = async (filters: any, options: any) => {
         },
       },
 
-      // {
-      //   $addFields: {
-      //     participants: {
-      //       $filter: {
-      //         input: '$participants',
-      //         as: 'participant',
-      //         cond: { $ne: ['$$participant._id', participantId] }, // Exclude my ID
-      //       },
-      //     },
-      //   },
-      // },
-      // {
-      //   $project: {
-      //     _id: 1,
-      //     status: 1,
-      //     createdAt: 1,
-      //     updatedAt: 1,
-      //     latestMessage: 1,
-      //     participants: {
-      //       _id: 1,
-      //       image: 1,
-      //       fullName: 1,
-      //       email: 1,
-      //     },
-      //   },
-      // },
+
       {
         $addFields: {
           participants: {

@@ -16,7 +16,6 @@ import { UgiToken } from '../ugiToken/ugiToken.model';
 import { StripeAccount } from '../stripeAccount/stripeAccount.model';
 import { withdrawService } from '../withdraw/withdraw.service';
 import { Withdraw } from '../withdraw/withdraw.model';
-import cron from 'node-cron';
 
 console.log({ first: config.stripe.stripe_api_secret });
 
@@ -236,7 +235,17 @@ const addPaymentService = async (payload: any) => {
 };
 
 const getAllPaymentService = async (query: Record<string, unknown>) => {
-  const PaymentQuery = new QueryBuilder(Payment.find(), query)
+  const PaymentQuery = new QueryBuilder(
+    Payment.find().populate({
+      path: 'serviceBookingId', select: 'serviceId', // Populate the full mentorId object (not just the ObjectId)
+      populate: {
+        path: 'serviceId',
+        select: 'businessId',
+        populate: { path: 'businessId', select: 'businessName' },
+      }, // Populate mentorRegistrationId inside mentorId
+    }),
+    query,
+  )
     .search(['name'])
     .filter()
     .sort()
