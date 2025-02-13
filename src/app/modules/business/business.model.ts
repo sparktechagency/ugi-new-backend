@@ -34,7 +34,7 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
     },
     paymentMethod: {
       type: String,
-      enum: ['Card', 'Cash', 'Cash & Card'],
+      enum: ['Card', 'Cash', 'Card & Cash'],
       required: true,
     },
     availableDaysTime: {
