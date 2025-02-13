@@ -1,7 +1,6 @@
 import mongoose, { Types } from 'mongoose';
 import QueryBuilder from '../../builder/QueryBuilder';
 import AppError from '../../error/AppError';
-import { User } from '../user/user.models';
 import ServiceBooking from './serviceBooking.model';
 import { TServiceBooking } from './serviceBooking.interface';
 import { Payment } from '../payment/payment.model';
@@ -79,16 +78,12 @@ const createServiceBooking = async (
   // console.log("before service create");
   // console.log({ payload });
   const result = await ServiceBooking.create([payload], { session }); // Use session if provided
-  // const result = await ServiceBooking.create(payload); // Use session if provided
-  // console.log('after service create');
+
 
   return result;
 };
 
-// .populate({
-//         path: 'mentorId', // Populate the full mentorId object (not just the ObjectId)
-//         populate: { path: 'mentorRegistrationId' }, // Populate mentorRegistrationId inside mentorId
-//       })
+
 const getAllServiceBookingByUserQuery = async (
   query: Record<string, unknown>,
   customerId: string,
@@ -267,7 +262,7 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
 
     // console.log('Before Save:', serviceBooking.toObject());
     // await serviceBooking.save({ session });
-    const result = await serviceBooking.save({ session });
+    await serviceBooking.save({ session });
     // console.log('After Save:', result.toObject());
 
     // Fetch the payment data for the booking
