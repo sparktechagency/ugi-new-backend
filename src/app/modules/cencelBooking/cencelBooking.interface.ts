@@ -1,8 +1,8 @@
-import { Types } from 'mongoose';
+// import { Types } from 'mongoose';
 
-export type TCencelBooking = {
-  userId: Types.ObjectId;
-  serviceId: Types.ObjectId;
-  status: 'pending' | 'paid';
-  amount: number;
-};
+// export type TCencelBooking = {
+//   userId: Types.ObjectId;
+//   serviceId: Types.ObjectId;
+//   status: 'pending' | 'paid';
+//   amount: number;
+// };
