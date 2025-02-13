@@ -372,42 +372,6 @@ const paymentStatusServiceBooking = async (id: string, customerId: string) => {
   return result;
 };
 
-// const completeServiceBooking = async (id: string, customerId: string) => {
-//   const bookingService = await ServiceBooking.findById(id);
-
-//   if (!bookingService) {
-//     throw new AppError(404, 'Booking Service not found!');
-//   }
-
-//   if (bookingService.customerId.toString() !== customerId) {
-//     throw new AppError(
-//       403,
-//       'You are not authorized to complete this ServiceBooking!!',
-//     );
-//   }
-
-//   bookingService.status = 'complete';
-//   bookingService.paymentStatus = 'paid';
-//   const result = await bookingService.save();
-//    const notificationData: any = {
-//      userId: customerId,
-//      message: `Complete Service Booking Successfully!`,
-//      type: 'success',
-//    };
-//    const notificationData1: any = {
-//      role: 'admin',
-//      message: `Complete Service Booking Successfully!`,
-//      type: 'success',
-//    };
-//    const notification =
-//      await notificationService.createNotification(notificationData);
-//    const notification1 =
-//      await notificationService.createNotification(notificationData1);
-//    if (!notification || !notification1) {
-//      throw new AppError(500, 'Notification not created');
-//    }
-//   return result;
-// };
 
 const completeServiceBooking = async (id: string, customerId: string) => {
   const session = await mongoose.startSession();

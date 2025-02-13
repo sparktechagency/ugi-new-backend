@@ -8,13 +8,13 @@ export type TBusiness = {
   businessDescription: string;
   businessLocation: string;
   businessType: string[];
-  paymentMethod: 'Card' | 'Cash' | 'Cash & Card';
+  paymentMethod: 'Card' | 'Cash' | 'Card & Cash';
   availableDaysTime?: [
     {
       day: string;
       startTime: string;
       endTime: string;
-    }
+    },
   ];
   specifigDate?: string[];
   specifigStartTime?: string;
