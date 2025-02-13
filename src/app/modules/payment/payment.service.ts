@@ -469,9 +469,12 @@ const createCheckout = async (userId: any, payload: any) => {
 };
 
 const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
+  console.log('hit hise webhook controller servie')
   try {
     switch (event.type) {
+    
       case 'checkout.session.completed': {
+        console.log('hit hise webhook controller servie checkout.session.completed');
         const session = event.data.object as Stripe.Checkout.Session;
         const sessionId = session.id;
         const paymentIntentId = session.payment_intent as string;
@@ -501,7 +504,8 @@ const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
           { paymentStatus: 'upcoming', status: 'booking' },
           { new: true },
         );
-        // console.log('===updateServiceBooking', updateServiceBooking);
+
+        console.log('===updateServiceBooking', updateServiceBooking);
 
         const paymentData: any = {
           customerId,
@@ -519,7 +523,7 @@ const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
         };
 
         const payment = await Payment.create(paymentData);
-        // console.log('===payment', payment);
+        console.log('===payment', payment);
 
         if (!payment || !updateServiceBooking) {
           console.warn(
@@ -541,6 +545,7 @@ const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
           customerId,
           status: 'pending',
         });
+        console.log('deletedServiceBookings', deletedServiceBookings);
 
         if (deletedServiceBookings.deletedCount > 0) {
           console.log(
