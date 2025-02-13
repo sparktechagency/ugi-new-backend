@@ -52,14 +52,14 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
         { day: 'Wednesday', startTime: '11:00 AM', endTime: '05:00 PM' },
         { day: 'Thursday', startTime: '08:00 AM', endTime: '06:00 PM' },
         { day: 'Friday', startTime: '10:00 AM', endTime: '04:00 PM' },
-        { day: 'Saturday', startTime: '08:00 AM', endTime: '06:00 PM' },
-        { day: 'Sunday', startTime: '10:00 AM', endTime: '06:00 PM' },
+        // { day: 'Saturday', startTime: '08:00 AM', endTime: '06:00 PM' },
+        // { day: 'Sunday', startTime: '10:00 AM', endTime: '06:00 PM' },
       ],
     },
     specifigDate: {
       type: [String],
       required: true,
-      default: ['2025-02-10', '2025-02-11'],
+      default: ['2025-02-10'],
     },
     specifigStartTime: {
       type: String,
