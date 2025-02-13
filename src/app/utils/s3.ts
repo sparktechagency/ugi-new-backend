@@ -43,7 +43,7 @@ export const deleteFromS3 = async (key: string) => {
     });
     await s3Client.send(command);
   } catch (error) {
-    console.log('🚀 ~ deleteFromS3 ~ error:', error);
+    // console.log('🚀 ~ deleteFromS3 ~ error:', error);
     throw new Error('s3 file delete failed');
   }
 };
@@ -89,7 +89,7 @@ export const deleteManyFromS3 = async (keys: string[]) => {
     const deleteParams = {
       Bucket: config.aws.bucket,
       Delete: {
-        Objects: keys.map(key => ({ Key: key })),
+        Objects: keys.map((key) => ({ Key: key })),
         Quiet: false,
       },
     };

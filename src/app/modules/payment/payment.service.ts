@@ -13,8 +13,11 @@ import httpStatus from 'http-status';
 import config from '../../config';
 import mongoose from 'mongoose';
 import { UgiToken } from '../ugiToken/ugiToken.model';
+import { StripeAccount } from '../stripeAccount/stripeAccount.model';
+import { withdrawService } from '../withdraw/withdraw.service';
+import { Withdraw } from '../withdraw/withdraw.model';
 
-console.log({ first: config.stripe.stripe_api_secret });
+// console.log({ first: config.stripe.stripe_api_secret });
 
 export const stripe = new Stripe(
   config.stripe.stripe_api_secret as string,
@@ -27,10 +30,10 @@ const addPaymentService = async (payload: any) => {
   const session = await mongoose.startSession(); // Start a session
   session.startTransaction();
 
-  console.log('payment data', payload);
+  // console.log('payment data', payload);
 
   try {
-    console.log('console.log-1');
+    // console.log('console.log-1');
     const {
       customerId,
       serviceId,
@@ -45,7 +48,7 @@ const addPaymentService = async (payload: any) => {
       googlePayDetails,
       applePayDetails,
       ugiTokenAmount,
-      ugiTokenId
+      ugiTokenId,
     } = payload;
 
     const user = await User.findById(customerId).session(session);
@@ -102,8 +105,6 @@ const addPaymentService = async (payload: any) => {
       }
     }
 
-
-
     // const paymentResult = await Payment.create([paymentData], { session });
 
     // if (!paymentResult) {
@@ -131,16 +132,19 @@ const addPaymentService = async (payload: any) => {
       ugiTokenId: ugiTokenId || null,
     };
 
-    console.log('bookingData', bookingData);
+    console.log('bookingData========================' );
+    console.log(bookingData);
     const serviceBookingResult =
       await serviceBookingService.createServiceBooking(bookingData, session);
-    console.log({ serviceBookingResult });
+    // console.log('bookingData ==2  ====',  serviceBookingResult );
     if (!serviceBookingResult) {
       throw new AppError(400, 'Failed to create service booking!');
     }
 
     if (serviceBookingResult[0].ugiTokenId) {
-      const ugiToken = await UgiToken.findById(serviceBookingResult[0].ugiTokenId);
+      const ugiToken = await UgiToken.findById(
+        serviceBookingResult[0].ugiTokenId,
+      );
       if (!ugiToken) {
         throw new AppError(400, 'UgiToken is not found!');
       }
@@ -149,10 +153,6 @@ const addPaymentService = async (payload: any) => {
         throw new AppError(400, 'Failed to delete UgiToken!');
       }
     }
-   
-
-
-
 
     const paymentInfo = {
       serviceBookingId: serviceBookingResult[0]._id,
@@ -161,46 +161,43 @@ const addPaymentService = async (payload: any) => {
     let result;
 
     if (method === 'stripe') {
+      // console.log('======stripe payment');
       const checkoutResult: any = await createCheckout(customerId, paymentInfo);
 
       if (!checkoutResult) {
         throw new AppError(400, 'Failed to create checkout session!');
       }
 
-
       result = checkoutResult;
     } else {
+      const paymentData: any = {
+        customerId,
+        serviceId,
+        businessId,
+        bookingprice,
+        depositAmount,
+        dipositParsentage,
+        method,
+        transactionId: payload.transactionId,
+        transactionDate: bookingDate,
+        serviceBookingId: serviceBookingResult[0]._id,
+        status: 'paid',
+      };
 
-          const paymentData: any = {
-            customerId,
-            serviceId,
-            businessId,
-            bookingprice,
-            depositAmount,
-            dipositParsentage,
-            method,
-            transactionId: payload.transactionId,
-            transactionDate: bookingDate,
-            serviceBookingId: serviceBookingResult[0]._id,
-            status:"paid",
-          };
+      if (method === 'google_pay') {
+        paymentData.googlePayDetails = googlePayDetails;
+      } else if (method === 'apple_pay') {
+        paymentData.applePayDetails = applePayDetails;
+      }
 
-          if (method === 'google_pay') {
-            paymentData.googlePayDetails = googlePayDetails;
-          } else if (method === 'apple_pay') {
-            paymentData.applePayDetails = applePayDetails;
-          }
+      const paymentResult = await Payment.create([paymentData], {
+        session,
+      });
 
-          
-           const paymentResult = await Payment.create([paymentData], {
-             session,
-           });
+      if (!paymentResult) {
+        throw new AppError(400, 'Payment is not created!');
+      }
 
-           if (!paymentResult) {
-             throw new AppError(400, 'Payment is not created!');
-           }
-
- 
       const serviceUpdate = await ServiceBooking.findByIdAndUpdate(
         serviceBookingResult[0]._id,
         { paymentStatus: 'upcoming', status: 'booking' },
@@ -210,10 +207,6 @@ const addPaymentService = async (payload: any) => {
       if (!serviceUpdate) {
         throw new AppError(400, 'Failed to service Modal Update!');
       }
-
-
-
-
 
       result = paymentResult[0];
     }
@@ -231,7 +224,18 @@ const addPaymentService = async (payload: any) => {
 };
 
 const getAllPaymentService = async (query: Record<string, unknown>) => {
-  const PaymentQuery = new QueryBuilder(Payment.find(), query)
+  const PaymentQuery = new QueryBuilder(
+    Payment.find().populate({
+      path: 'serviceBookingId',
+      select: 'serviceId', // Populate the full mentorId object (not just the ObjectId)
+      populate: {
+        path: 'serviceId',
+        select: 'businessId',
+        populate: { path: 'businessId', select: 'businessName' },
+      }, // Populate mentorRegistrationId inside mentorId
+    }),
+    query,
+  )
     .search(['name'])
     .filter()
     .sort()
@@ -277,7 +281,7 @@ const getAllIncomeRatio = async (year: number) => {
     totalIncome: 0,
   }));
 
-  console.log({ months });
+  // console.log({ months });
 
   const incomeData = await Payment.aggregate([
     {
@@ -310,7 +314,7 @@ const getAllIncomeRatio = async (year: number) => {
     }
   });
 
-  console.log({ months });
+  // console.log({ months });
 
   return months;
 };
@@ -327,7 +331,7 @@ const getAllIncomeRatiobyDays = async (days: string) => {
     throw new Error("Invalid value for 'days'. Use '7day' or '24hour'.");
   }
 
-  console.log(`Fetching income data from ${startDate} to ${currentDay}`);
+  // console.log(`Fetching income data from ${startDate} to ${currentDay}`);
 
   const timeSlots =
     days === '7day'
@@ -406,7 +410,7 @@ const getAllIncomeRatiobyDays = async (days: string) => {
 };
 
 const createCheckout = async (userId: any, payload: any) => {
-  console.log('stripe payment', payload);
+  // console.log('stripe payment', payload);
   let session = {} as { id: string };
 
   // const lineItems = products.map((product) => ({
@@ -450,20 +454,19 @@ const createCheckout = async (userId: any, payload: any) => {
   try {
     session = await stripe.checkout.sessions.create(sessionData);
 
-    console.log('session', session.id);
+    // console.log('session', session.id);
   } catch (error) {
-    console.log('Error', error);
+    // console.log('Error', error);
   }
 
-  // console.log({ session });
+  // // console.log({ session });
   const { id: session_id, url }: any = session || {};
 
-  console.log({ url });
-  console.log({ url });
+  // console.log({ url });
+  // console.log({ url });
 
-  return { url};
+  return { url };
 };
-
 
 const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
   try {
@@ -474,8 +477,11 @@ const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
         const paymentIntentId = session.payment_intent as string;
         const serviceBookingId =
           session.metadata && (session.metadata.serviceBookingId as string);
-        const customerId = session.metadata && (session.metadata.userId as string);
-          session.metadata && (session.metadata.serviceBookingId as string);
+        // console.log('=======serviceBookingId', serviceBookingId);
+        const customerId =
+          session.metadata && (session.metadata.userId as string);
+        // console.log('=======customerId', customerId);
+        // session.metadata && (session.metadata.serviceBookingId as string);
         if (!paymentIntentId) {
           throw new AppError(
             httpStatus.BAD_REQUEST,
@@ -490,13 +496,12 @@ const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
           throw new AppError(httpStatus.BAD_REQUEST, 'Payment Not Successful');
         }
 
-       
         const updateServiceBooking = await ServiceBooking.findByIdAndUpdate(
           serviceBookingId,
           { paymentStatus: 'upcoming', status: 'booking' },
           { new: true },
         );
-
+        // console.log('===updateServiceBooking', updateServiceBooking);
 
         const paymentData: any = {
           customerId,
@@ -514,7 +519,7 @@ const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
         };
 
         const payment = await Payment.create(paymentData);
-        
+        // console.log('===payment', payment);
 
         if (!payment || !updateServiceBooking) {
           console.warn(
@@ -530,7 +535,7 @@ const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
         // })
 
         // if (deletedServiceBooking) {
-        //   console.log('deleted sarvice booking successfully');
+        //   // console.log('deleted sarvice booking successfully');
         // }
         const deletedServiceBookings = await ServiceBooking.deleteMany({
           customerId,
@@ -542,7 +547,7 @@ const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
             `${deletedServiceBookings.deletedCount} bookings deleted successfully.`,
           );
         } else {
-          console.log('No matching bookings found.');
+          // console.log('No matching bookings found.');
         }
 
         console.log('Payment completed successfully:', {
@@ -568,7 +573,7 @@ const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
         // if (payment) {
         //   payment.status = 'Failed';
         //   await payment.save();
-        //   console.log('Payment marked as failed:', { clientSecret });
+        //   // console.log('Payment marked as failed:', { clientSecret });
         // } else {
         //   console.warn(
         //     'No Payment record found for Client Secret:',
@@ -580,7 +585,7 @@ const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
       }
 
       default:
-        // console.log(`Unhandled event type: ${event.type}`);
+        // // console.log(`Unhandled event type: ${event.type}`);
         // res.status(400).send();
         return;
     }
@@ -603,13 +608,12 @@ const paymentRefundService = async (
     refundOptions.amount = Number(amount);
   }
 
-  console.log('refaund options', refundOptions);
+  // console.log('refaund options', refundOptions);
 
   const result = await stripe.refunds.create(refundOptions);
-  console.log('refund result ', result);
+  // console.log('refund result ', result);
   return result;
 };
-
 
 const getAllEarningRatio = async (year: number, businessId: string) => {
   const startOfYear = new Date(year, 0, 1);
@@ -620,7 +624,7 @@ const getAllEarningRatio = async (year: number, businessId: string) => {
     totalIncome: 0,
   }));
 
-  console.log({ months });
+  // console.log({ months });
 
   const incomeData = await ServiceBooking.aggregate([
     {
@@ -655,19 +659,60 @@ const getAllEarningRatio = async (year: number, businessId: string) => {
     }
   });
 
- 
-
   return months;
 };
 
+const filterBalanceByPaymentMethod = async (businessId: string) => {
+  // Convert businessId to ObjectId
+  const businessObjectId = new mongoose.Types.ObjectId(businessId);
 
-const filterBalanceByPaymentMethod = async (paymentMethod: string, businessId: string) => {
-  
+  // Aggregate payments
+  const payment = await ServiceBooking.aggregate([
+    {
+      $match: {
+        status: 'complete',
+        businessId: businessObjectId,
+      },
+    },
+    {
+      $group: {
+        _id: '$status',
+        totalAmount: { $sum: '$bookingprice' },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        totalAmount: 1,
+      },
+    },
+  ]);
+
+  // // console.log('payment', payment[0] ? payment[0] : totalAmount:0);
+  if (!payment[0]) {
+    return { totalAmount: 0 };
+  }
+
+  // Ensure `payment` always returns valid data
+  return payment[0];
+};
+
+const filterWithdrawBalanceByPaymentMethod = async (
+  paymentMethod: string,
+  businessId: string,
+) => {
+  // console.log('businessId:', businessId);
+  // console.log('paymentMethod:', paymentMethod);
+
+  // Convert businessId to ObjectId
+  const businessObjectId = new mongoose.Types.ObjectId(businessId);
+
+  // Aggregate payments
   const payment = await Payment.aggregate([
     {
       $match: {
         method: paymentMethod,
-        businessId
+        businessId: businessObjectId,
       },
     },
     {
@@ -683,18 +728,243 @@ const filterBalanceByPaymentMethod = async (paymentMethod: string, businessId: s
         totalAmount: 1,
       },
     },
-    
   ]);
 
-  if (payment.length === 0) {
-    return { method: paymentMethod, totalAmount: 0 };
+  // console.log('payment===', payment);
+
+  // Aggregate withdrawals
+  const withdraw = await Withdraw.aggregate([
+    {
+      $match: {
+        method: paymentMethod,
+        businessId: businessObjectId,
+      },
+    },
+    {
+      $group: {
+        _id: '$method',
+        totalAmount: { $sum: '$amount' },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        method: '$_id',
+        totalAmount: 1,
+      },
+    },
+  ]);
+
+  // Calculate available balance
+  const totalDeposits = payment.length > 0 ? payment[0].totalAmount : 0;
+  const totalWithdrawals = withdraw.length > 0 ? withdraw[0].totalAmount : 0;
+  const availableBalance = totalDeposits - totalWithdrawals;
+
+  // Ensure `payment` always returns valid data
+  return [
+    {
+      method: paymentMethod,
+      totalAmount: availableBalance,
+    },
+  ];
+};
+
+const availablewithdrawAmount = async (
+  paymentMethod: string,
+  businessId: string,
+) => {
+  // console.log('businessId:', businessId);
+  // console.log('paymentMethod:', paymentMethod);
+
+  // Convert businessId to ObjectId
+  const businessObjectId = new mongoose.Types.ObjectId(businessId);
+
+  // Aggregate payments
+  const payment = await Payment.aggregate([
+    {
+      $match: {
+        method: paymentMethod,
+        businessId: businessObjectId,
+      },
+    },
+    {
+      $group: {
+        _id: '$method',
+        totalAmount: { $sum: '$depositAmount' },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        method: '$_id',
+        totalAmount: 1,
+      },
+    },
+  ]);
+
+  // Aggregate withdrawals
+
+  // Calculate available balance
+  const totalDeposits = payment.length > 0 ? payment[0].totalAmount : 0;
+
+  // Ensure `payment` always returns valid data
+  return [
+    {
+      method: paymentMethod,
+      totalAmount: totalDeposits,
+    },
+  ];
+};
+
+const refreshAccountConnect = async (
+  id: string,
+  host: string,
+  protocol: string,
+): Promise<string> => {
+  const onboardingLink = await stripe.accountLinks.create({
+    account: id,
+    refresh_url: `${protocol}://${host}/api/v1/payment/refreshAccountConnect/${id}`,
+    return_url: `${protocol}://${host}/api/v1/payment/success-account/${id}`,
+    type: 'account_onboarding',
+  });
+  return onboardingLink.url;
+};
+
+const createStripeAccount = async (
+  user: any,
+  host: string,
+  protocol: string,
+): Promise<any> => {
+  // console.log('user',user);
+  const existingAccount = await StripeAccount.findOne({
+    userId: user.userId,
+  }).select('user accountId isCompleted');
+  // console.log('existingAccount', existingAccount);
+
+  if (existingAccount) {
+    if (existingAccount.isCompleted) {
+      return {
+        success: false,
+        message: 'Account already exists',
+        data: existingAccount,
+      };
+    }
+
+    const onboardingLink = await stripe.accountLinks.create({
+      account: existingAccount.accountId,
+      refresh_url: `${protocol}://${host}/api/v1/payment/refreshAccountConnect/${existingAccount.accountId}`,
+      return_url: `${protocol}://${host}/api/v1/payment/success-account/${existingAccount.accountId}`,
+      type: 'account_onboarding',
+    });
+    // console.log('onboardingLink-1', onboardingLink);
+
+    return {
+      success: true,
+      message: 'Please complete your account',
+      url: onboardingLink.url,
+    };
   }
 
+  const account = await stripe.accounts.create({
+    type: 'express',
+    email: user.email,
+    country: 'US',
+    capabilities: {
+      card_payments: { requested: true },
+      transfers: { requested: true },
+    },
+  });
+  // console.log('stripe account', account);
 
-  return payment;
-}
+  await StripeAccount.create({ accountId: account.id, userId: user.userId });
 
+  const onboardingLink = await stripe.accountLinks.create({
+    account: account.id,
+    refresh_url: `${protocol}://${host}/api/v1/payment/refreshAccountConnect/${account.id}`,
+    return_url: `${protocol}://${host}/api/v1/payment/success-account/${account.id}`,
+    type: 'account_onboarding',
+  });
+  // console.log('onboardingLink-2', onboardingLink);
 
+  return {
+    success: true,
+    message: 'Please complete your account',
+    url: onboardingLink.url,
+  };
+};
+
+const transferBalanceService = async (
+  accountId: string,
+  amt: number,
+  userId: string,
+) => {
+  const withdreawAmount = await availablewithdrawAmount('stripe', userId);
+  // console.log('withdreawAmount===', withdreawAmount[0].totalAmount);
+
+  if (withdreawAmount[0].totalAmount < 0) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Amount must be positive');
+  }
+  const amount = withdreawAmount[0].totalAmount * 100;
+  const transfer = await stripe.transfers.create({
+    amount,
+    currency: 'usd',
+    destination: accountId,
+  });
+  // console.log('transfer', transfer);
+  if (!transfer) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Transfer failed');
+  }
+  let withdraw;
+  if (transfer) {
+    const withdrawData: any = {
+      transactionId: transfer.id,
+      amount: withdreawAmount[0].totalAmount,
+      method: 'stripe',
+      status: 'completed',
+      businessId: userId,
+      destination: transfer.destination,
+    };
+
+    withdraw = withdrawService.addWithdrawService(withdrawData);
+    if (!withdraw) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Withdrawal failed');
+    }
+  }
+  return withdraw;
+};
+// 0 0 */7 * *
+
+// cron.schedule('* * * * *', async () => {
+//   // console.log('Executing transferBalanceService every 7 days...');
+//   const businessUser = await User.find({
+//     role: 'business',
+//     isDeleted: false,
+//   });
+//   // console.log('businessUser==', businessUser);
+
+//   for (const user of businessUser) {
+//     // console.log('usr=====');
+//     const isExiststripeAccount:any = await StripeAccount.findOne({
+//       userId: user._id,
+//       isCompleted: true,
+//     });
+//     // console.log('isExiststripeAccount', isExiststripeAccount);
+
+//     if (!isExiststripeAccount) {
+//       throw new AppError(httpStatus.BAD_REQUEST, 'Account not found');
+//     }
+
+//      // console.log('=====1')
+//     await transferBalanceService(
+//       isExiststripeAccount.accountId,
+//       0,
+//       isExiststripeAccount.userId,
+//     );
+//     // console.log('=====2');
+//   }
+
+//   // await transferBalanceService();
+// });
 
 export const paymentService = {
   addPaymentService,
@@ -709,4 +979,8 @@ export const paymentService = {
   paymentRefundService,
   getAllEarningRatio,
   filterBalanceByPaymentMethod,
+  filterWithdrawBalanceByPaymentMethod,
+  createStripeAccount,
+  refreshAccountConnect,
+  transferBalanceService,
 };

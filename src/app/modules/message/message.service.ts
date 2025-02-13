@@ -18,7 +18,7 @@ const getMessages = async (chatId: any, options = {}) => {
     const totalPages = Math.ceil(totalResults / limit);
     const pagination = { totalResults, totalPages, currentPage: page, limit };
 
-    console.log([chatId]);
+    // console.log([chatId]);
 
     const skip = (page - 1) * limit;
     const chat = new mongoose.Types.ObjectId(chatId);
@@ -63,7 +63,7 @@ const getMessages = async (chatId: any, options = {}) => {
       },
     ]);
 
-    console.log('messages', messages);
+    // console.log('messages', messages);
 
     return { messages, pagination };
   } catch (error) {

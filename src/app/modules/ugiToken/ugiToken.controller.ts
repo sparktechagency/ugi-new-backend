@@ -7,10 +7,9 @@ import { ugiTokenService } from './ugiToken.service';
 import mongoose from 'mongoose';
 
 const createUgiToken = catchAsync(async (req: Request, res: Response) => {
-  // console.log('hit hoise')
+  // // console.log('hit hoise')
   const session = await mongoose.startSession();
   const bodyData = req.body;
-
 
   const result = await ugiTokenService.createUgiTokenService(bodyData, session);
 
@@ -22,13 +21,9 @@ const createUgiToken = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
-
 const getSingleUgiToken = catchAsync(async (req: Request, res: Response) => {
-    const { businessId }:any = req.query;
-  const result = await ugiTokenService.getSingleUgiTokenService(
-    businessId,
-  );
+  const { businessId }: any = req.query;
+  const result = await ugiTokenService.getSingleUgiTokenService(businessId);
 
   sendResponse(res, {
     success: true,
@@ -38,22 +33,23 @@ const getSingleUgiToken = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateUgiTokenAcceptCencel = catchAsync(
+  async (req: Request, res: Response) => {
+    const status = req.query.status as string;
 
-const updateUgiTokenAcceptCencel = catchAsync(async (req: Request, res: Response) => {
-  const status = req.query.status as string;
+    const result = await ugiTokenService.updateUgiTokenAcceptCencelService(
+      req.params.id,
+      status,
+    );
 
-  const result = await ugiTokenService.updateUgiTokenAcceptCencelService(
-    req.params.id,
-    status,
-  );
-
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    data: result,
-    message: 'Update UgiToken successful',
-  });
-});
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      data: result,
+      message: 'Update UgiToken successful',
+    });
+  },
+);
 
 export const ugiTokenController = {
   createUgiToken,

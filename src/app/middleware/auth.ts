@@ -10,7 +10,7 @@ import { verifyToken } from '../utils/tokenManage';
 const auth = (...userRoles: string[]) => {
   return catchAsync(async (req, res, next) => {
     const token = req?.headers?.authorization?.split(' ')[1];
-    console.log('*****//***///**', token);
+    // console.log('*****//***///**', token);
     if (!token) {
       throw new AppError(httpStatus.UNAUTHORIZED, 'you are not authorized!');
     }
@@ -21,6 +21,7 @@ const auth = (...userRoles: string[]) => {
     });
 
     const { role, userId } = decodeData;
+    // // console.log('decodeData', decodeData);
     const isUserExist = await User.IsUserExistById(userId);
 
     if (!isUserExist) {

@@ -7,19 +7,18 @@ import { withdrawController } from './withdraw.controller';
 const withdrawRouter = express.Router();
 
 withdrawRouter
-  .post('/add-payment', auth(USER_ROLE.MENTEE), withdrawController.addWithdraw)
+  .post(
+    '/add-payment',
+    auth(USER_ROLE.BUSINESS),
+    withdrawController.addWithdraw,
+  )
   .get('/', auth(USER_ROLE.ADMIN), withdrawController.getAllWithdraw)
-  .get('/:id', withdrawController.getSingleWithdraw)
   .get(
-    '/mentor',
-    auth(USER_ROLE.MENTOR),
-    withdrawController.getAllWithdrawByMentor,
+    '/business',
+    auth(USER_ROLE.BUSINESS),
+    withdrawController.getAllWithdrawByBusinessMan,
   )
-  .patch(
-    '/status/:id',
-    auth(USER_ROLE.ADMIN),
-    withdrawController.getAllWithdrawRequestAccept,
-  )
+  .get('/:id', withdrawController.getSingleWithdraw)
   .delete('/:id', withdrawController.deleteSingleWithdraw);
 
 export default withdrawRouter;

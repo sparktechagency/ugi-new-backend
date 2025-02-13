@@ -2,14 +2,14 @@
 import catchAsync from '../../utils/catchAsync';
 import { Request, Response } from 'express';
 import sendResponse from '../../utils/sendResponse';
-import httpStatus from 'http-status';;
+import httpStatus from 'http-status';
 import AppError from '../../error/AppError';
 import { subCategoryService } from './subCategory.service';
 
 const createSubCategory = catchAsync(async (req: Request, res: Response) => {
-  console.log('hit hoise');
+  // console.log('hit hoise');
   const bodyData = req.body;
-  
+
   const result = await subCategoryService.createSubCategoryService(bodyData);
 
   sendResponse(res, {

@@ -55,6 +55,12 @@ const userSchema = new Schema<TUser>(
       required: false,
       default: false,
     },
+    asRole: {
+      type: String,
+      enum: ['customer_business', 'customer', 'business'],
+      required: false,
+      default: ' ',
+    },
   },
   {
     timestamps: true,
@@ -107,7 +113,7 @@ userSchema.pre('aggregate', function (next) {
 });
 
 userSchema.statics.isUserExist = async function (email: string) {
-  console.log({ email });
+  // console.log({ email });
   return await User.findOne({ email: email }).select('+password');
 };
 

@@ -37,35 +37,39 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
       enum: ['Card', 'Cash', 'Cash & Card'],
       required: true,
     },
-    availableDays: {
+    availableDaysTime: {
+      type: [
+        {
+          day: String,
+          startTime: String,
+          endTime: String,
+        },
+      ],
+      required: true,
+      default: [
+        { day: 'Monday', startTime: '09:00 AM', endTime: '06:00 PM' },
+        { day: 'Tuesday', startTime: '10:00 AM', endTime: '07:00 PM' },
+        { day: 'Wednesday', startTime: '11:00 AM', endTime: '05:00 PM' },
+        { day: 'Thursday', startTime: '08:00 AM', endTime: '06:00 PM' },
+        { day: 'Friday', startTime: '10:00 AM', endTime: '04:00 PM' },
+        { day: 'Saturday', startTime: '08:00 AM', endTime: '06:00 PM' },
+        { day: 'Sunday', startTime: '10:00 AM', endTime: '06:00 PM' },
+      ],
+    },
+    specifigDate: {
       type: [String],
       required: true,
-      default: ['Monday', 'Tuesday', 'Wednesday'],
+      default: ['2025-02-10', '2025-02-11'],
     },
-    businessStartTime: {
+    specifigStartTime: {
       type: String,
       required: true,
-      default: '08:00 AM',
+      default: '10:00 AM',
     },
-    businessEndTime: {
+    specifigEndTime: {
       type: String,
       required: true,
       default: '06:00 PM',
-    },
-    specialDays: {
-      type: [String],
-      required: true,
-      default: [],
-    },
-    specialStartTime: {
-      type: String,
-      required: true,
-      default: ' ',
-    },
-    specialEndTime: {
-      type: String,
-      required: true,
-      default: ' ',
     },
     bookingBreak: {
       type: String,
@@ -92,7 +96,7 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
       required: true,
       default: 0,
     },
-    latitude:{
+    latitude: {
       type: Number,
       required: true,
     },
@@ -101,9 +105,9 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
       required: true,
     },
     location: {
-    type: { type: String, enum: ['Point'], default: 'Point' },
-    coordinates: { type: [Number], required: false }, // [longitude, latitude]
-  },
+      type: { type: String, enum: ['Point'], default: 'Point' },
+      coordinates: { type: [Number], required: false },
+    },
   },
   {
     timestamps: true,
@@ -115,7 +119,7 @@ BusinessSchema.pre('save', function (next) {
   if (this.latitude && this.longitude) {
     this.location = {
       type: 'Point',
-      coordinates: [this.longitude, this.latitude], // Store in correct format
+      coordinates: [this.longitude, this.latitude],
     };
   }
   next();

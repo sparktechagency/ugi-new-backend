@@ -47,8 +47,8 @@ export const deleteChatList = async (chatId: any) => {
 
 // Get chats by participant ID with pagination and filtering
 export const getChatByParticipantId = async (filters: any, options: any) => {
-  // console.log(filters, options);
-  console.log('filters ----', filters);
+  // // console.log(filters, options);
+  // console.log('filters ----', filters);
   try {
     const page = Number(options.page) || 1;
     const limit = Number(options.limit) || 10;
@@ -59,7 +59,7 @@ export const getChatByParticipantId = async (filters: any, options: any) => {
 
     const name = filters.name || '';
 
-    console.log({ name });
+    // console.log({ name });
 
     const allChatLists = await Chat.aggregate([
       { $match: { participants: participantId } },
@@ -87,32 +87,6 @@ export const getChatByParticipantId = async (filters: any, options: any) => {
         },
       },
 
-      // {
-      //   $addFields: {
-      //     participants: {
-      //       $filter: {
-      //         input: '$participants',
-      //         as: 'participant',
-      //         cond: { $ne: ['$$participant._id', participantId] }, // Exclude my ID
-      //       },
-      //     },
-      //   },
-      // },
-      // {
-      //   $project: {
-      //     _id: 1,
-      //     status: 1,
-      //     createdAt: 1,
-      //     updatedAt: 1,
-      //     latestMessage: 1,
-      //     participants: {
-      //       _id: 1,
-      //       image: 1,
-      //       fullName: 1,
-      //       email: 1,
-      //     },
-      //   },
-      // },
       {
         $addFields: {
           participants: {
@@ -166,8 +140,8 @@ export const getChatByParticipantId = async (filters: any, options: any) => {
       },
     ]);
 
-    console.log('allChatLists');
-    console.log(allChatLists);
+    // console.log('allChatLists');
+    // console.log(allChatLists);
 
     const totalResults =
       allChatLists[0]?.totalCount?.length > 0

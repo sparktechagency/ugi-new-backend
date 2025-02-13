@@ -10,7 +10,7 @@ const getAllMessages = catchAsync(async (req, res) => {
     limit: Number(req.query.limit) || 10,
   };
   const chatId = req.query.chatId;
-  console.log({ chatIdController: chatId });
+  // console.log({ chatIdController: chatId });
   if (!chatId) {
     throw new Error('ChatId is required in params');
   }

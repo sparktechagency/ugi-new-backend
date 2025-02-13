@@ -7,7 +7,7 @@ import { storeFile } from '../../utils/fileHelper';
 import httpStatus from 'http-status';
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
-  console.log("user body", req.body);
+  // console.log("user body", req.body);
   const createUserToken = await userService.createUserToken(req.body);
 
   sendResponse(res, {
@@ -27,6 +27,18 @@ const userCreateVarification = catchAsync(async (req, res) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'User create successfully',
+    data: newUser,
+  });
+});
+
+const userSwichRole = catchAsync(async (req, res) => {
+  const { userId } = req.user;
+  const newUser = await userService.userSwichRoleService(userId);
+
+  return sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Swich role successfully',
     data: newUser,
   });
 });
@@ -101,8 +113,6 @@ const getMyProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
-
 const updateMyProfile = catchAsync(async (req: Request, res: Response) => {
   if (req?.file) {
     req.body.image = storeFile('profile', req?.file?.filename);
@@ -140,6 +150,7 @@ const deleteMyAccount = catchAsync(async (req: Request, res: Response) => {
 export const userController = {
   createUser,
   userCreateVarification,
+  userSwichRole,
   getUserById,
   getMyProfile,
   updateMyProfile,

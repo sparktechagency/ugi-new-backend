@@ -20,9 +20,23 @@ serviceRouter
     businessServiceController.createBusinessService,
   )
   .get(
+    '/all',
+    businessServiceController.getAllBusinessService,
+  )
+  .get(
     '/',
     auth(USER_ROLE.BUSINESS),
     businessServiceController.getAllBusinessServiceByBusinessId,
+  )
+  .get(
+    '/admin',
+    // auth(USER_ROLE.ADMIN),
+    businessServiceController.getAllAdminServiceByBusinessId,
+  )
+  .get(
+    '/service-by-admin',
+    // auth(USER_ROLE.ADMIN),
+    businessServiceController.getAllAdminByService,
   )
   .get('/:id', businessServiceController.getSingleBusinessService)
   .patch(

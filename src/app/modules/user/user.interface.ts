@@ -19,6 +19,7 @@ export interface TUserCreate {
   role: (typeof USER_ROLE)[keyof typeof USER_ROLE];
   pegnensi: boolean;
   allergies: boolean;
+  asRole:string;
 }
 
 export interface TUser extends TUserCreate {

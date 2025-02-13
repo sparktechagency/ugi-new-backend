@@ -19,7 +19,7 @@ businessRouter
     // validateRequest(businessValidation.businessValidationSchema),
     businessController.createBusiness,
   )
-  
+
   .get('/', businessController.getAllBusiness)
   .get(
     '/filter',
@@ -44,6 +44,11 @@ businessRouter
     // auth(USER_ROLE.BUSINESS),
     businessController.getSingleBusiness,
   )
+  .get(
+    '/app/:id',
+    // auth(USER_ROLE.BUSINESS),
+    businessController.getAppSingleBusiness,
+  )
 
   .patch(
     '/',
@@ -54,11 +59,9 @@ businessRouter
   .patch(
     '/available-time',
     auth(USER_ROLE.BUSINESS),
-    validateRequest(businessValidation.businessAvailableTimeValidationSchema),
+    // validateRequest(businessValidation.businessAvailableTimeValidationSchema),
     businessController.updateAvailableBusinessTime,
   )
   .delete('/', auth(USER_ROLE.BUSINESS), businessController.deletedBusiness);
 
 export default businessRouter;
-
-
