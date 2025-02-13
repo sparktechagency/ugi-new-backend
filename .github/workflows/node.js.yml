@@ -25,5 +25,5 @@ jobs:
           cache: "npm"
       - run: npm ci
       - name: Change Directory
-        run: cd /home/masters/actions-uogi_backend/_work/uogi_backend/uogi_backend
+        run: cd /home/masters/actions-ugi-backend/_work/uogi_backend/uogi_backend
       - run: pm2 restart 22
