@@ -9,7 +9,7 @@ import Business from '../business/business.model';
 
 const createReviewService = async (payload: TReview) => {
   try {
-    console.log('Payload:', payload);
+    // console.log('Payload:', payload);
     const customer = await User.findById(payload.customerId);
     if (!customer) {
       throw new AppError(httpStatus.NOT_FOUND, 'User not found!');
@@ -18,22 +18,25 @@ const createReviewService = async (payload: TReview) => {
     if (!business) {
       throw new AppError(httpStatus.NOT_FOUND, 'Business not found!');
     }
-    console.log({ business });
+    // console.log({ business });
 
     const result = await Review.create(payload);
 
     if (!result) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to add Business review!');
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Failed to add Business review!',
+      );
     }
-    console.log({ result });
+    // console.log({ result });
 
     let { reviewCount, ratings } = business;
-    console.log({ ratings });
-    console.log({ reviewCount });
+    // console.log({ ratings });
+    // console.log({ reviewCount });
 
     const newRating =
       (ratings * reviewCount + result.rating) / (reviewCount + 1);
-      console.log({ newRating });
+    // console.log({ newRating });
 
     const updatedRegistration = await Business.findByIdAndUpdate(
       business._id,
@@ -139,19 +142,18 @@ const deletedReviewQuery = async (id: string, customerId: string) => {
   if (!business) {
     throw new AppError(404, 'Business not found!');
   }
- 
 
   const { reviewCount, ratings } = business;
-  console.log('reviewCount ratingCount', reviewCount, ratings);
-  console.log('result.rating', result.rating);
+  // console.log('reviewCount ratingCount', reviewCount, ratings);
+  // console.log('result.rating', result.rating);
 
   const newRatingCount = ratings - result.rating;
-  console.log('newRatingCount', newRatingCount);
+  // console.log('newRatingCount', newRatingCount);
   const newReviewCount = reviewCount - 1;
-  console.log('newReviewCount', newReviewCount);
+  // console.log('newReviewCount', newReviewCount);
 
   let newAverageRating = 0;
-  console.log('newAverageRating', newAverageRating);
+  // console.log('newAverageRating', newAverageRating);
   if (newReviewCount > 0) {
     newAverageRating = newRatingCount / newReviewCount;
   }
@@ -160,7 +162,7 @@ const deletedReviewQuery = async (id: string, customerId: string) => {
     newAverageRating = 0;
   }
 
-  console.log('newAverageRating-2', newAverageRating);
+  // console.log('newAverageRating-2', newAverageRating);
 
   const updateRatings = await Business.findByIdAndUpdate(
     business._id,

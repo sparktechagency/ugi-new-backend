@@ -29,7 +29,7 @@ const addWithdraw = catchAsync(async (req, res, next) => {
 
 const getAllWithdraw = catchAsync(async (req, res, next) => {
   const result = await withdrawService.getAllWithdrawService(req.query);
-  // console.log('result',result)
+  // // console.log('result',result)
 
   if (result) {
     sendResponse(res, {
@@ -50,12 +50,12 @@ const getAllWithdraw = catchAsync(async (req, res, next) => {
 
 const getAllWithdrawByBusinessMan = catchAsync(async (req, res, next) => {
   const { userId } = req.user;
-  console.log('user id', userId);
+  // console.log('user id', userId);
   const result = await withdrawService.getAllWithdrawBybusinessService(
     req.query,
     userId,
   );
-  // console.log('result',result)
+  // // console.log('result',result)
   if (result) {
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -92,9 +92,6 @@ const getSingleWithdraw = catchAsync(async (req, res, next) => {
     });
   }
 });
-
-
-
 
 const deleteSingleWithdraw = catchAsync(async (req, res, next) => {
   // give me validation data

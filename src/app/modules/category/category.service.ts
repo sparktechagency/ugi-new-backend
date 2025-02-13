@@ -1,4 +1,3 @@
-
 import QueryBuilder from '../../builder/QueryBuilder';
 import AppError from '../../error/AppError';
 import { TCategory } from './category.interface';
@@ -6,30 +5,28 @@ import { Category } from './category.model';
 import { access } from 'fs/promises';
 import { unlink } from 'fs/promises';
 const createCategoryService = async (files: any, payload: TCategory) => {
-    if(files && files['image'] && files['image'][0]) {
-      payload['image'] = files['image'][0].path.replace(/^public[\\/]/, '');
-    }
+  if (files && files['image'] && files['image'][0]) {
+    payload['image'] = files['image'][0].path.replace(/^public[\\/]/, '');
+  }
   const result = await Category.create(payload);
-  
-    if (!result) {
-      const imagePath = `public/${payload.image}`;
-      console.log('File path to delete:', imagePath);
 
-      try {
-        await access(imagePath); // Check if the file exists
-        console.log('File exists, proceeding to delete:', imagePath);
+  if (!result) {
+    const imagePath = `public/${payload.image}`;
+    // console.log('File path to delete:', imagePath);
 
-        await unlink(imagePath);
-        console.log('File successfully deleted:', imagePath);
-      } catch (error: any) {
-        console.error(`Error handling file at ${imagePath}:`, error.message);
-      }
+    try {
+      await access(imagePath); // Check if the file exists
+      // console.log('File exists, proceeding to delete:', imagePath);
+
+      await unlink(imagePath);
+      // console.log('File successfully deleted:', imagePath);
+    } catch (error: any) {
+      console.error(`Error handling file at ${imagePath}:`, error.message);
     }
+  }
 
   return result;
 };
-
-
 
 // const getAllCategoryService = async (query: Record<string, unknown>) => {
 //   const ServiceBookingQuery = new QueryBuilder(Category.find({}), query)
@@ -44,15 +41,13 @@ const createCategoryService = async (files: any, payload: TCategory) => {
 //   return { meta, result };
 // };
 
-
-
 const getAllCategoryService = async (query: Record<string, unknown>) => {
   const page = Number(query.page) || 1;
   const limit = Number(query.limit) || 10;
-  const skip = (page - 1) * limit; 
+  const skip = (page - 1) * limit;
 
   // const categoryQuery = await Category.aggregate([
-    
+
   //   {
   //     $lookup: {
   //       from: 'services',
@@ -61,28 +56,28 @@ const getAllCategoryService = async (query: Record<string, unknown>) => {
   //       as: 'services',
   //     },
   //   },
-    
+
   //   {
   //     $addFields: {
   //       addPrice: {
   //         $cond: {
-  //           if: { $gt: [{ $size: '$services' }, 0] }, 
-  //           then: { $min: '$services.servicePrice' }, 
-  //           else: 0, 
+  //           if: { $gt: [{ $size: '$services' }, 0] },
+  //           then: { $min: '$services.servicePrice' },
+  //           else: 0,
   //         },
   //       },
   //     },
   //   },
-    
+
   //   {
   //     $group: {
   //       _id: '$_id',
   //       name: { $first: '$name' },
   //       image: { $first: '$image' },
-  //       addPrice: { $first: '$addPrice' }, 
+  //       addPrice: { $first: '$addPrice' },
   //     },
   //   },
-    
+
   //   {
   //     $project: {
   //       _id: 1,
@@ -91,13 +86,12 @@ const getAllCategoryService = async (query: Record<string, unknown>) => {
   //       addPrice: 1,
   //     },
   //   },
-    
-  //   { $skip: skip }, 
-  //   { $limit: limit }, 
+
+  //   { $skip: skip },
+  //   { $limit: limit },
   // ]);
 
   const categoryQuery = await Category.aggregate([
-    
     {
       $lookup: {
         from: 'services',
@@ -106,7 +100,7 @@ const getAllCategoryService = async (query: Record<string, unknown>) => {
         as: 'services',
       },
     },
-    
+
     {
       $addFields: {
         addPrice: {
@@ -126,7 +120,7 @@ const getAllCategoryService = async (query: Record<string, unknown>) => {
         },
       },
     },
-    
+
     {
       $group: {
         _id: '$_id',
@@ -135,7 +129,7 @@ const getAllCategoryService = async (query: Record<string, unknown>) => {
         addPrice: { $first: '$addPrice' },
       },
     },
-    
+
     {
       $project: {
         _id: 1,
@@ -144,17 +138,15 @@ const getAllCategoryService = async (query: Record<string, unknown>) => {
         addPrice: 1,
       },
     },
-    
+
     { $skip: skip },
     { $limit: limit },
   ]);
-  
-  const totalDocuments = await Category.countDocuments({}); 
 
-  
+  const totalDocuments = await Category.countDocuments({});
+
   const totalPage = Math.ceil(totalDocuments / limit);
 
-  
   const meta = {
     page,
     limit,
@@ -162,18 +154,10 @@ const getAllCategoryService = async (query: Record<string, unknown>) => {
     totalPage,
   };
 
-  console.log({ categoryQuery, meta });
+  // console.log({ categoryQuery, meta });
 
-  return { meta,  categoryQuery };
+  return { meta, categoryQuery };
 };
-
-
-
-
-
-
-
-
 
 const getSingleCategoryService = async (id: string) => {
   const result = await Category.findById(id);
@@ -181,21 +165,21 @@ const getSingleCategoryService = async (id: string) => {
 };
 
 const deletedCategoryService = async (id: string) => {
-     const existingCategory = await Category.findById(id);
-     if (!existingCategory) {
-       throw new AppError(404, 'Category not found!');
-     }
+  const existingCategory = await Category.findById(id);
+  if (!existingCategory) {
+    throw new AppError(404, 'Category not found!');
+  }
   const result = await Category.findByIdAndDelete(id);
   if (result) {
     const imagePath = `public/${existingCategory.image}`;
-    console.log('File path to delete:', imagePath);
+    // console.log('File path to delete:', imagePath);
 
     try {
-      await access(imagePath); 
-      console.log('File exists, proceeding to delete:', imagePath);
+      await access(imagePath);
+      // console.log('File exists, proceeding to delete:', imagePath);
 
       await unlink(imagePath);
-      console.log('File successfully deleted:', imagePath);
+      // console.log('File successfully deleted:', imagePath);
     } catch (error: any) {
       console.error(`Error handling file at ${imagePath}:`, error.message);
     }
@@ -203,9 +187,13 @@ const deletedCategoryService = async (id: string) => {
   return result;
 };
 
-const updateCategoryService = async (id: string, files: any, payload: TCategory) => {
-  console.log('id', id);
-  console.log('payload', { payload });
+const updateCategoryService = async (
+  id: string,
+  files: any,
+  payload: TCategory,
+) => {
+  // console.log('id', id);
+  // console.log('payload', { payload });
   // Check if the document exists
   const existingCategory = await Category.findById(id);
   if (!existingCategory) {
@@ -224,20 +212,20 @@ const updateCategoryService = async (id: string, files: any, payload: TCategory)
 
   if (result) {
     const imagePath = `public/${existingCategory.image}`;
-    console.log('File path to delete:', imagePath);
+    // console.log('File path to delete:', imagePath);
 
     try {
       await access(imagePath); // Check if the file exists
-      console.log('File exists, proceeding to delete:', imagePath);
+      // console.log('File exists, proceeding to delete:', imagePath);
 
       await unlink(imagePath);
-      console.log('File successfully deleted:', imagePath);
+      // console.log('File successfully deleted:', imagePath);
     } catch (error: any) {
       console.error(`Error handling file at ${imagePath}:`, error.message);
     }
   }
 
-  console.log({ result });
+  // console.log({ result });
   return result;
 };
 

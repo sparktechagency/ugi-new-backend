@@ -28,7 +28,7 @@ function createFolderAndFiles(parentFolderPath, folderName) {
     `${folderName}.validation.ts`,
   ];
 
-  files.forEach(file => {
+  files.forEach((file) => {
     const filePath = path.join(folderPath, file);
     let content = '';
 
@@ -84,7 +84,7 @@ export const ${folderName}Routes = router;`;
     fs.writeFileSync(filePath, content, 'utf8');
   });
 
-  console.log(`Folder "${folderName}" and files created successfully.`);
+  // console.log(`Folder "${folderName}" and files created successfully.`);
 }
 
 // Prompting the user for the parent folder path and folder name
@@ -94,8 +94,8 @@ const readline = require('readline').createInterface({
   output: process.stdout,
 });
 
-readline.question('Enter parent folder path: ', parentFolderPath => {
-  readline.question('Enter folder name: ', folderName => {
+readline.question('Enter parent folder path: ', (parentFolderPath) => {
+  readline.question('Enter folder name: ', (folderName) => {
     createFolderAndFiles(parentFolderPath, folderName);
     readline.close();
   });

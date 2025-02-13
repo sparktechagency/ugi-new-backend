@@ -9,21 +9,24 @@ import mongoose from 'mongoose';
 
 const createServiceBooking = catchAsync(async (req: Request, res: Response) => {
   const session = await mongoose.startSession();
-  console.log("sdafafaf")
-    const bodyData = req.body;
-      const { userId } = req.user; 
-      bodyData.customerId = userId;
-        const startTime = moment(bodyData.bookingStartTime, 'hh:mm A');
-        const endTime = startTime.clone().add(bodyData.duration - 1, 'minutes');
-        bodyData.bookingStartTime = startTime.format('hh:mm A');
-        bodyData.bookingEndTime = endTime.format('hh:mm A');
-    // console.log('body1', req.body);
-    // const {userId} = req.user;
-    // bookingService.userId = userId
-    // console.log("body2", req.body);
-    // console.log({ bodyData });
-    
-  const result = await serviceBookingService.createServiceBooking(bodyData, session);
+  // console.log("sdafafaf")
+  const bodyData = req.body;
+  const { userId } = req.user;
+  bodyData.customerId = userId;
+  const startTime = moment(bodyData.bookingStartTime, 'hh:mm A');
+  const endTime = startTime.clone().add(bodyData.duration - 1, 'minutes');
+  bodyData.bookingStartTime = startTime.format('hh:mm A');
+  bodyData.bookingEndTime = endTime.format('hh:mm A');
+  // // console.log('body1', req.body);
+  // const {userId} = req.user;
+  // bookingService.userId = userId
+  // // console.log("body2", req.body);
+  console.log({ bodyData });
+
+  const result = await serviceBookingService.createServiceBooking(
+    bodyData,
+    session,
+  );
 
   sendResponse(res, {
     success: true,
@@ -65,7 +68,6 @@ const getAllServiceBookingByBusiness = catchAsync(async (req, res) => {
     message: 'My Service Booking All are requered successful!!',
   });
 });
-
 
 const getSingleServiceBooking = catchAsync(
   async (req: Request, res: Response) => {
@@ -116,12 +118,11 @@ const paymentStatusServiceBooking = catchAsync(
   },
 );
 
-
 const completeServiceBooking = catchAsync(
   async (req: Request, res: Response) => {
     // const userId = '64a1f32b3c9f536a2e9b1234';
     const { userId } = req.user;
-    console.log('userId ==', userId);
+    // console.log('userId ==', userId);
     const result = await serviceBookingService.completeServiceBooking(
       req.params.id,
       userId,
@@ -161,7 +162,7 @@ const reScheduleCompleteCencelServiceBooking = catchAsync(
   async (req: Request, res: Response) => {
     // const userId = '64a1f32b3c9f536a2e9b1234';
     const { userId } = req.user;
-    const status = req.query.status as string;  
+    const status = req.query.status as string;
     const result =
       await serviceBookingService.reSheduleCompleteCencelServiceBooking(
         req.params.id,
@@ -177,10 +178,6 @@ const reScheduleCompleteCencelServiceBooking = catchAsync(
     });
   },
 );
-
-
-
-
 
 export const serviceBookingController = {
   createServiceBooking,

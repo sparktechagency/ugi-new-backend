@@ -47,19 +47,19 @@ export const deleteChatList = async (chatId: any) => {
 
 // Get chats by participant ID with pagination and filtering
 export const getChatByParticipantId = async (filters: any, options: any) => {
-  // console.log(filters, options);
-  console.log('filters ----', filters);
+  // // console.log(filters, options);
+  // console.log('filters ----', filters);
   try {
     const page = Number(options.page) || 1;
     const limit = Number(options.limit) || 10;
     const skip = (page - 1) * limit;
 
     const participantId = new mongoose.Types.ObjectId(filters.participantId);
-    console.log('participantId===', participantId);
+    // console.log('participantId===', participantId);
 
     const name = filters.name || '';
 
-    console.log({ name });
+    // console.log({ name });
 
     const allChatLists = await Chat.aggregate([
       { $match: { participants: participantId } },
@@ -86,7 +86,6 @@ export const getChatByParticipantId = async (filters: any, options: any) => {
           as: 'participants',
         },
       },
-
 
       {
         $addFields: {
@@ -141,8 +140,8 @@ export const getChatByParticipantId = async (filters: any, options: any) => {
       },
     ]);
 
-    console.log('allChatLists');
-    console.log(allChatLists);
+    // console.log('allChatLists');
+    // console.log(allChatLists);
 
     const totalResults =
       allChatLists[0]?.totalCount?.length > 0

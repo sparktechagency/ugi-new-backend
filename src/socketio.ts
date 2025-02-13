@@ -7,19 +7,18 @@ import { handleMessageEvents } from './app/modules/socket/events/messageEvents';
 
 const socketIO = (io: Server) => {
   // Initialize an object to store the active users
-   const userSocketMap: Record<string, string> = {};
-const getReceiverSocketId = (receiverId: string): string | undefined => {
-  return userSocketMap[receiverId];
-};
- 
+  const userSocketMap: Record<string, string> = {};
+  const getReceiverSocketId = (receiverId: string): string | undefined => {
+    return userSocketMap[receiverId];
+  };
+
   // On new socket connection
   io.on('connection', (socket: Socket) => {
-    console.log('connected');
-    // console.log('socket decodedToken', socket.decodedToken);
+    // console.log('connected');
+    // // console.log('socket decodedToken', socket.decodedToken);
     try {
-      
-      // console.log('socket ---', socket);
-      // console.log('socket ---', data);
+      // // console.log('socket ---', socket);
+      // // console.log('socket ---', data);
 
       //  if (userId && userId !== 'undefined') {
       //    userSocketMap[userId] = socket.id;
@@ -27,7 +26,7 @@ const getReceiverSocketId = (receiverId: string): string | undefined => {
 
       //  io.emit('active-users', Object.keys(userSocketMap));
 
-      // console.log('activeUsers down', userSocketMap);
+      // // console.log('activeUsers down', userSocketMap);
 
       // Handle 'add-new-chat' event
       socket.on('add-new-chat', (data, callback) =>

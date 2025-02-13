@@ -15,7 +15,6 @@ import { notificationService } from '../notification/notification.service';
 import { paymentService } from '../payment/payment.service';
 import Notification from '../notification/notification.model';
 
-
 const createServiceBooking = async (
   payload: TServiceBooking,
   session: mongoose.ClientSession,
@@ -36,46 +35,39 @@ const createServiceBooking = async (
     );
   }
 
-  console.log({ payload });
+  // console.log({ payload });
 
-  const business = await Business.findOne({businessId});
-  console.log({ business });
+  const business = await Business.findOne({ businessId });
+  // console.log({ business });
 
-  if(!business){
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'Business not found',
-    );
+  if (!business) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Business not found');
   }
 
-console.log('before existing booking');
+  // console.log('before existing booking');
 
- const existingBooking = await ServiceBooking.findOne(
-   {
+  const existingBooking = await ServiceBooking.findOne({
+    businessId,
+    bookingDate,
+    status: 'booking',
+    $or: [
+      {
+        $and: [
+          { bookingStartTime: { $gte: bookingStartTime } },
+          { bookingStartTime: { $lte: bookingEndTime } },
+        ],
+      },
 
-     businessId,
-     bookingDate,
-     status: 'booking',
-     $or: [
-       {
-         $and: [
-           { bookingStartTime: { $gte: bookingStartTime } },
-           { bookingStartTime: { $lte: bookingEndTime } },
-         ],
-       },
-
-       {
-         $and: [
-           { bookingEndTime: { $gte: bookingStartTime } },
-           { bookingEndTime: { $lte: bookingEndTime } },
-         ],
-       },
-     ],
-   }
- ).session(session);
-   console.log('after existing booking');
- console.log({ existingBooking });
-
+      {
+        $and: [
+          { bookingEndTime: { $gte: bookingStartTime } },
+          { bookingEndTime: { $lte: bookingEndTime } },
+        ],
+      },
+    ],
+  }).session(session);
+  // console.log('after existing booking');
+  // console.log({ existingBooking });
 
   if (existingBooking) {
     throw new AppError(
@@ -84,13 +76,12 @@ console.log('before existing booking');
     );
   }
 
-console.log("before service create");
- console.log({ payload });
+  // console.log("before service create");
+  // console.log({ payload });
   const result = await ServiceBooking.create([payload], { session }); // Use session if provided
   // const result = await ServiceBooking.create(payload); // Use session if provided
-  console.log('after service create');
-  
-  
+  // console.log('after service create');
+
   return result;
 };
 
@@ -102,7 +93,7 @@ const getAllServiceBookingByUserQuery = async (
   query: Record<string, unknown>,
   customerId: string,
 ) => {
-  console.log('booking user id', customerId);
+  // console.log('booking user id', customerId);
   const ServiceBookingQuery = new QueryBuilder(
     ServiceBooking.find({ customerId })
       .populate('customerId')
@@ -122,7 +113,6 @@ const getAllServiceBookingByUserQuery = async (
   const meta = await ServiceBookingQuery.countTotal();
   return { meta, result };
 };
-
 
 const getAllServiceBookingByBusinessQuery = async (
   query: Record<string, unknown>,
@@ -145,16 +135,13 @@ const getAllServiceBookingByBusinessQuery = async (
   return { meta, result };
 };
 
-
 const getSingleServiceBooking = async (id: string) => {
   const result = await ServiceBooking.findById(id).populate('serviceId');
   return result;
 };
 
-
-
 // const cancelServiceBooking = async (id: string, customerId: string) => {
-//   console.log('customerid', customerId)
+//   // console.log('customerid', customerId)
 //   // Fetch the user by ID
 //   // const user = await User.findById(userId);
 //   // if (!user) {
@@ -163,7 +150,7 @@ const getSingleServiceBooking = async (id: string) => {
 
 //   // Fetch the service booking by ID
 //   const serviceBooking: any = await ServiceBooking.findById(id);
-//   console.log({ serviceBooking });
+//   // console.log({ serviceBooking });
 //   if (!serviceBooking) {
 //     throw new AppError(404, 'Booking Service not found!');
 //   }
@@ -181,7 +168,7 @@ const getSingleServiceBooking = async (id: string) => {
 //   if (serviceBooking.status === 'cencel') {
 //     throw new AppError(404, 'Booking Service is already Cenceled!');
 //   }
-//    console.log('step-2');
+//    // console.log('step-2');
 
 //   // Check if the user is authorized to cancel this booking
 //   if (serviceBooking.customerId.toString() !== customerId) {
@@ -190,17 +177,17 @@ const getSingleServiceBooking = async (id: string) => {
 //       'You are not authorized to cancel this ServiceBooking!!',
 //     );
 //   }
-//  console.log('step-3');
+//  // console.log('step-3');
 //   // Calculate the time difference in hours
 //   const currentTime = new Date();
-//   console.log({ currentTime });
+//   // console.log({ currentTime });
 //   const bookingTime = serviceBooking.bookingDate;
-//   console.log({ bookingTime });
+//   // console.log({ bookingTime });
 //   const timeDifferenceInHours =
 //     (currentTime.getTime() - bookingTime.getTime()) / (1000 * 60 * 60);
-//   console.log({ timeDifferenceInHours });
+//   // console.log({ timeDifferenceInHours });
 
-//    console.log('step-4');
+//    // console.log('step-4');
 //   let refundPercentage = 0;
 //   let ugiTokenParcentage = 0;
 
@@ -215,15 +202,15 @@ const getSingleServiceBooking = async (id: string) => {
 //     refundPercentage = 75; // Refund 75% of the deposit
 //     ugiTokenParcentage = 25;
 //   }
-//   console.log('step-5');
+//   // console.log('step-5');
 
 //   // Calculate refund amount
 //   const refundAmount = (serviceBooking.depositAmount * refundPercentage) / 100;
-//   console.log({ refundAmount });
+//   // console.log({ refundAmount });
 
 //   // Convert remaining amount into Uogi Token
 //   const uogiTokenAmount = serviceBooking.depositAmount - refundAmount;
-//  console.log({ uogiTokenAmount });
+//  // console.log({ uogiTokenAmount });
 //   // Update booking status to 'cancel'
 
 //   serviceBooking.status = 'cencel';
@@ -231,10 +218,10 @@ const getSingleServiceBooking = async (id: string) => {
 //   serviceBooking.cencelationAmount = refundAmount;
 //   serviceBooking.cencelationHours = Math.floor(timeDifferenceInHours);
 //   // await serviceBooking.save();
-//   // console.log({ serviceBooking });
-//   console.log('Before Save:', serviceBooking);
+//   // // console.log({ serviceBooking });
+//   // console.log('Before Save:', serviceBooking);
 //   await serviceBooking.save();
-//   console.log('After Save:', serviceBooking);
+//   // console.log('After Save:', serviceBooking);
 
 //   const paymentData = await Payment.findOne({
 //     serviceBookingId: serviceBooking._id,
@@ -263,14 +250,8 @@ const getSingleServiceBooking = async (id: string) => {
 
 //   }
 
-
 //    serviceBooking.refundStatus = 'pending';
 //    await serviceBooking.save();
-
-
-
-  
-
 
 //   const ugiTokenData: any = {
 //     businessId: serviceBooking.businessId,
@@ -310,17 +291,14 @@ const getSingleServiceBooking = async (id: string) => {
 //   };
 // };
 
-
-
 const cancelServiceBooking = async (id: string, customerId: string) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    
     const serviceBooking: any =
       await ServiceBooking.findById(id).session(session);
-    console.log({ serviceBooking });
+    // console.log({ serviceBooking });
 
     if (!serviceBooking) {
       throw new AppError(404, 'Booking Service not found!');
@@ -342,7 +320,7 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
       throw new AppError(404, 'Booking Service is already canceled!');
     }
 
-    console.log('step-2');
+    // console.log('step-2');
 
     // Check if the user is authorized to cancel this booking
     if (serviceBooking.customerId.toString() !== customerId) {
@@ -352,19 +330,19 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
       );
     }
 
-    console.log('step-3');
+    // console.log('step-3');
 
     // Calculate the time difference in hours
     const currentTime = new Date();
     currentTime.setUTCHours(0, 0, 0, 0);
-    console.log({ currentTime });
+    // console.log({ currentTime });
     const bookingTime = serviceBooking.bookingDate;
-    console.log({ bookingTime });
+    // console.log({ bookingTime });
     const timeDifferenceInHours =
       (currentTime.getTime() - bookingTime.getTime()) / (1000 * 60 * 60);
-    console.log({ timeDifferenceInHours });
+    // console.log({ timeDifferenceInHours });
 
-    console.log('step-4');
+    // console.log('step-4');
 
     let refundPercentage = 0;
     let ugiTokenParcentage = 0;
@@ -380,21 +358,21 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
       refundPercentage = 75; // Refund 75% of the deposit
       ugiTokenParcentage = 25;
     }
-    console.log('step-5');
-    console.log('refundPercentage', refundPercentage);
-    console.log('ugiTokenParcentage', ugiTokenParcentage);
+    // console.log('step-5');
+    // console.log('refundPercentage', refundPercentage);
+    // console.log('ugiTokenParcentage', ugiTokenParcentage);
 
     // Calculate refund amount
-    const refundAmount =Math.floor((serviceBooking.depositAmount * refundPercentage) / 100);
-    console.log({ refundAmount });
+    const refundAmount = Math.floor(
+      (serviceBooking.depositAmount * refundPercentage) / 100,
+    );
+    // console.log({ refundAmount });
 
     // Convert remaining amount into Uogi Token
     const uogiTokenAmount = Math.floor(
       serviceBooking.depositAmount - refundAmount,
-    ); 
-    console.log({ uogiTokenAmount });
-
-
+    );
+    // console.log({ uogiTokenAmount });
 
     // Update booking status to 'cancel'
     serviceBooking.status = 'cencel';
@@ -406,10 +384,10 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
     serviceBooking.markModified('cencelationAmount');
     serviceBooking.markModified('cencelationHours');
 
-console.log('Before Save:', serviceBooking.toObject());
-// await serviceBooking.save({ session });
-const result = await serviceBooking.save({ session });
-console.log('After Save:', result.toObject());
+    // console.log('Before Save:', serviceBooking.toObject());
+    // await serviceBooking.save({ session });
+    const result = await serviceBooking.save({ session });
+    // console.log('After Save:', result.toObject());
 
     // Fetch the payment data for the booking
     // const paymentData = await Payment.findOne({
@@ -506,9 +484,6 @@ console.log('After Save:', result.toObject());
   }
 };
 
-
-
-
 const paymentStatusServiceBooking = async (id: string, customerId: string) => {
   const idCheck = mongoose.Types.ObjectId.isValid(id);
   if (!idCheck) {
@@ -531,24 +506,20 @@ const paymentStatusServiceBooking = async (id: string, customerId: string) => {
   bookingService.paymentStatus = 'processing';
   const result = await bookingService.save();
 
-  const notificationData:any = {
+  const notificationData: any = {
     userId: customerId,
     message: `Payment Done Successfully!`,
     type: 'success',
   };
 
-
   const notification =
     await notificationService.createNotification(notificationData);
-    if(!notification){
-      throw new AppError(500, 'Notification not created');
-    }
-
+  if (!notification) {
+    throw new AppError(500, 'Notification not created');
+  }
 
   return result;
 };
-
-
 
 // const completeServiceBooking = async (id: string, customerId: string) => {
 //   const bookingService = await ServiceBooking.findById(id);
@@ -563,7 +534,6 @@ const paymentStatusServiceBooking = async (id: string, customerId: string) => {
 //       'You are not authorized to complete this ServiceBooking!!',
 //     );
 //   }
- 
 
 //   bookingService.status = 'complete';
 //   bookingService.paymentStatus = 'paid';
@@ -588,12 +558,10 @@ const paymentStatusServiceBooking = async (id: string, customerId: string) => {
 //   return result;
 // };
 
-
-
 const completeServiceBooking = async (id: string, customerId: string) => {
   const session = await mongoose.startSession();
   session.startTransaction();
-  console.log('id*****+++',id)
+  // console.log('id*****+++',id)
 
   try {
     // 1️⃣ Find the Service Booking inside the transaction
@@ -652,12 +620,8 @@ const completeServiceBooking = async (id: string, customerId: string) => {
   }
 };
 
-
-const reSheduleRequestServiceBooking = async (
-  id: string,
-  payload: any,
-) => {
-  const bookingService:any = await ServiceBooking.findById(id);
+const reSheduleRequestServiceBooking = async (id: string, payload: any) => {
+  const bookingService: any = await ServiceBooking.findById(id);
 
   if (!bookingService) {
     throw new AppError(404, 'Booking Service not found!');
@@ -670,14 +634,15 @@ const reSheduleRequestServiceBooking = async (
     );
   }
 
-
-  if (bookingService.status === 'complete' || bookingService.status === 'cencel') {
+  if (
+    bookingService.status === 'complete' ||
+    bookingService.status === 'cencel'
+  ) {
     throw new AppError(
       403,
       'This ServiceBooking is not available for re-shedule service is complete!!',
     );
   }
-
 
   if (bookingService.reSheduleStatus !== 'no-shuedule') {
     throw new AppError(
@@ -690,14 +655,11 @@ const reSheduleRequestServiceBooking = async (
     throw new AppError(403, 'Already pending re-shedule request!');
   }
 
-   const startTime = moment(payload.bookingStartTime, 'hh:mm A');
-   const endTime = startTime
-     .clone()
-     .add(bookingService.duration - 1, 'minutes');
-   payload.bookingStartTime = startTime.format('hh:mm A');
-   payload.bookingEndTime = endTime.format('hh:mm A');
+  const startTime = moment(payload.bookingStartTime, 'hh:mm A');
+  const endTime = startTime.clone().add(bookingService.duration - 1, 'minutes');
+  payload.bookingStartTime = startTime.format('hh:mm A');
+  payload.bookingEndTime = endTime.format('hh:mm A');
 
-   
   const isValidTimeFormat = (time: string) =>
     moment(time, 'hh:mm A', true).isValid();
   if (
@@ -712,22 +674,24 @@ const reSheduleRequestServiceBooking = async (
     );
   }
 
-  const business = await Business.findOne({ businessId:bookingService.businessId });
-  console.log({ business });
+  const business = await Business.findOne({
+    businessId: bookingService.businessId,
+  });
+  // console.log({ business });
 
   if (!business) {
     throw new AppError(httpStatus.BAD_REQUEST, 'Business not found');
   }
 
-  console.log(payload.bookingDate);
-  console.log(payload.bookingStartTime);
-  console.log(payload.bookingEndTime);
+  // console.log(payload.bookingDate);
+  // console.log(payload.bookingStartTime);
+  // console.log(payload.bookingEndTime);
 
   const existingBooking = await ServiceBooking.findOne(
     {
       businessId: bookingService.businessId,
       bookingDate: payload.bookingDate,
-      status:"booking",
+      status: 'booking',
       $or: [
         {
           $and: [
@@ -747,7 +711,7 @@ const reSheduleRequestServiceBooking = async (
     // { session },
   );
 
-  console.log({ existingBooking });
+  // console.log({ existingBooking });
 
   if (existingBooking) {
     throw new AppError(
@@ -755,7 +719,6 @@ const reSheduleRequestServiceBooking = async (
       'Booking time is overlapping with an existing booking',
     );
   }
-
 
   bookingService.reSheduleStartTime = payload.bookingStartTime;
   bookingService.reSheduleEndTime = payload.bookingEndTime;
@@ -767,14 +730,13 @@ const reSheduleRequestServiceBooking = async (
   const notificationData = {
     userId: bookingService.businessId,
     message: `Re-shedule Request Service Booking Successfully!`,
-    status: "pending",
+    status: 'pending',
     type: 'reshedule',
     serviceBookingId: bookingService._id,
   };
 
-  const notification = await notificationService.createNotification(
-    notificationData,
-  );
+  const notification =
+    await notificationService.createNotification(notificationData);
 
   if (!notification) {
     throw new AppError(500, 'Notification not created');
@@ -786,9 +748,9 @@ const reSheduleRequestServiceBooking = async (
 const reSheduleCompleteCencelServiceBooking = async (
   id: string,
   businessId: string,
-  status:string,
+  status: string,
 ) => {
-  const bookingService:any = await ServiceBooking.findById(id);
+  const bookingService: any = await ServiceBooking.findById(id);
 
   if (!bookingService) {
     throw new AppError(404, 'Booking Service not found!');
@@ -816,36 +778,32 @@ const reSheduleCompleteCencelServiceBooking = async (
       'You are not authorized to re-shedule this ServiceBooking!!',
     );
   }
-  
 
-
-  if (status == "cencel") {
+  if (status == 'cencel') {
     bookingService.reSheduleStatus = 'cencel-re-shedule';
 
     const result = await bookingService.save();
 
-     if (notification && notification._id) {
-       await Notification.findByIdAndUpdate(
-         notification._id,
-         { status: 'cancel' },
-         { new: true },
-       );
-       console.log('Notification updated: cancel');
-     }
-
-
+    if (notification && notification._id) {
+      await Notification.findByIdAndUpdate(
+        notification._id,
+        { status: 'cancel' },
+        { new: true },
+      );
+      // console.log('Notification updated: cancel');
+    }
 
     return result;
-  }else if (status == "conform") {
+  } else if (status == 'conform') {
     bookingService.reSheduleStatus = 'conform-re-shedule';
-    console.log('date date', bookingService.reSheduleDate);
-      if (bookingService.reSheduleDate) {
-        console.log('ture', bookingService.reSheduleDate);
-        bookingService.bookingDate = new Date(bookingService.reSheduleDate);
-      }
+    // console.log('date date', bookingService.reSheduleDate);
+    if (bookingService.reSheduleDate) {
+      // console.log('ture', bookingService.reSheduleDate);
+      bookingService.bookingDate = new Date(bookingService.reSheduleDate);
+    }
 
-      console.log('new =========',new Date(bookingService.reSheduleDate));
-      console.log('new date', bookingService.bookingDate);
+    // console.log('new =========',new Date(bookingService.reSheduleDate));
+    // console.log('new date', bookingService.bookingDate);
 
     bookingService.bookingStartTime = bookingService.reSheduleStartTime;
     bookingService.bookingEndTime = bookingService.reSheduleEndTime;
@@ -860,23 +818,14 @@ const reSheduleCompleteCencelServiceBooking = async (
         { status: 'accept' },
         { new: true },
       );
-      console.log('Notification updated: accept');
+      // console.log('Notification updated: accept');
     }
 
-
     return result;
-  }else{
+  } else {
     throw new AppError(403, 'You are not authorized to this ServiceBooking!!');
   }
-
- 
 };
-
-
-
-
-
-
 
 export const serviceBookingService = {
   createServiceBooking,

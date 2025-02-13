@@ -25,8 +25,7 @@ export interface OTPVerifyAndCreateUserProps {
 }
 
 const createUserToken = async (payload: TUserCreate) => {
-  const { role, email, fullName, password, asRole} =
-    payload;
+  const { role, email, fullName, password, asRole } = payload;
 
   // user role check
   if (!(role === USER_ROLE.CUSTOMER || role === USER_ROLE.BUSINESS)) {
@@ -41,12 +40,12 @@ const createUserToken = async (payload: TUserCreate) => {
   }
 
   const { isExist, isExpireOtp } = await otpServices.checkOtpByEmail(email);
-  console.log({ isExist });
-  console.log({ isExpireOtp });
+  // console.log({ isExist });
+  // console.log({ isExpireOtp });
 
   const { otp, expiredAt } = generateOptAndExpireTime();
-    console.log({ otp });
-    console.log({ expiredAt });
+  // console.log({ otp });
+  // console.log({ expiredAt });
 
   let otpPurpose: TPurposeType = 'email-verification';
 
@@ -75,11 +74,10 @@ const createUserToken = async (payload: TUserCreate) => {
     fullName,
     password,
     role,
-    asRole
+    asRole,
   };
 
-  console.log({ otpBody });
-
+  // console.log({ otpBody });
 
   // send email
   process.nextTick(async () => {
@@ -90,7 +88,7 @@ const createUserToken = async (payload: TUserCreate) => {
       otp,
       expiredAt: expiredAt,
     });
-    // console.log({alala})
+    // // console.log({alala})
   });
 
   // crete token
@@ -107,7 +105,7 @@ const otpVerifyAndCreateUser = async ({
   otp,
   token,
 }: OTPVerifyAndCreateUserProps) => {
-  console.log('otp',otp)
+  // console.log('otp',otp)
   if (!token) {
     throw new AppError(httpStatus.BAD_REQUEST, 'Token not found');
   }
@@ -116,14 +114,13 @@ const otpVerifyAndCreateUser = async ({
     token,
     access_secret: config.jwt_access_secret as string,
   });
-  // console.log({ decodeData });
+  // // console.log({ decodeData });
 
   if (!decodeData) {
     throw new AppError(httpStatus.BAD_REQUEST, 'You are not authorised');
   }
 
-  const { password, email, fullName, role, asRole} =
-    decodeData;
+  const { password, email, fullName, role, asRole } = decodeData;
 
   const isOtpMatch = await otpServices.otpMatch(email, otp);
 
@@ -146,7 +143,7 @@ const otpVerifyAndCreateUser = async ({
     email,
     fullName,
     role,
-    asRole
+    asRole,
   };
 
   const isExist = await User.isUserExist(email as string);
@@ -175,7 +172,6 @@ const otpVerifyAndCreateUser = async ({
     userId: user?._id?.toString() as string,
     role: user?.role,
   };
- 
 
   const userToken = createToken({
     payload: jwtPayload,
@@ -186,32 +182,34 @@ const otpVerifyAndCreateUser = async ({
   return { user, userToken };
 };
 
-
-
-
-
-const userSwichRoleService = async (id:string) => {
+const userSwichRoleService = async (id: string) => {
   const swichUser = await User.findById(id);
 
-  if (!swichUser) { 
+  if (!swichUser) {
     throw new AppError(httpStatus.BAD_REQUEST, 'User not found');
   }
 
   if (swichUser.asRole !== 'customer_business') {
-    throw new AppError(httpStatus.BAD_REQUEST, 'You are not allowed to switch role');
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You are not allowed to switch role',
+    );
   }
 
   let swichRole;
 
-  if(swichUser.role === 'customer') {
+  if (swichUser.role === 'customer') {
     swichRole = 'business';
   } else {
     swichRole = 'customer';
-
   }
 
-  console.log('swichRole', swichRole);
-  const user = await User.findByIdAndUpdate(id, {role: swichRole}, { new: true });
+  // console.log('swichRole', swichRole);
+  const user = await User.findByIdAndUpdate(
+    id,
+    { role: swichRole },
+    { new: true },
+  );
 
   if (!user) {
     throw new AppError(httpStatus.BAD_REQUEST, 'User swich failed');
@@ -219,7 +217,6 @@ const userSwichRoleService = async (id:string) => {
 
   return user;
 };
-
 
 const updateUser = async (id: string, payload: Partial<TUser>) => {
   const { role, email, ...rest } = payload;
@@ -249,16 +246,18 @@ const getAllUserQuery = async (query: Record<string, unknown>) => {
 };
 
 const getAllUserCount = async () => {
-  const allCustomerCount = await User.countDocuments({role: USER_ROLE.CUSTOMER});
-  const allBusinessCount = await User.countDocuments({role: USER_ROLE.BUSINESS});
+  const allCustomerCount = await User.countDocuments({
+    role: USER_ROLE.CUSTOMER,
+  });
+  const allBusinessCount = await User.countDocuments({
+    role: USER_ROLE.BUSINESS,
+  });
   const result = {
     allCustomerCount,
     allBusinessCount,
-  }
+  };
   return result;
 };
-
-
 
 const getAllUserRatio = async (year: number) => {
   const startOfYear = new Date(year, 0, 1); // January 1st of the given year
@@ -305,7 +304,6 @@ const getAllUserRatio = async (year: number) => {
 
   return fullUserRatios;
 };
-
 
 const getUserById = async (id: string) => {
   const result = await User.findById(id);

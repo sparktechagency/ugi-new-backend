@@ -1,9 +1,9 @@
 import { chatService } from '../../chat/chat.service';
 
 interface IChat {
-  _id: string; 
+  _id: string;
   status: string;
-  participants: string[]; 
+  participants: string[];
 }
 
 export const handleChatEvents = async (
@@ -11,11 +11,9 @@ export const handleChatEvents = async (
   data: any,
   callback: any,
 ) => {
-  
   try {
+    // console.log('new chat===========', data);
 
-    console.log('new chat===========', data);
-    
     if (!data.participant || !data.userId) {
       callback({
         status: 'Error',
@@ -25,7 +23,6 @@ export const handleChatEvents = async (
     }
     let chat = {};
     if (data.participant && data.userId) {
-
       const existingChat = await chatService.getChatByParticipants(
         data.userId,
         data.participant,
@@ -39,26 +36,23 @@ export const handleChatEvents = async (
         return;
       }
 
-      chat = await chatService.createChat(
-        data.userId,
-        data.participant,
-      );
+      chat = await chatService.createChat(data.userId, data.participant);
 
-      console.log('chat=======****======', chat);
-        
-        if (chat && '_id' in chat) {
-          callback({
-            status: 'Success',
-            chatId: chat._id,
-            message: 'Chat created successfully',
-          });
-        } else {
-          console.error('❌ Error: Chat creation failed!', chat);
-          callback({
-            status: 'Error',
-            message: 'Failed to create chat',
-          });
-        }
+      // console.log('chat=======****======', chat);
+
+      if (chat && '_id' in chat) {
+        callback({
+          status: 'Success',
+          chatId: chat._id,
+          message: 'Chat created successfully',
+        });
+      } else {
+        console.error('❌ Error: Chat creation failed!', chat);
+        callback({
+          status: 'Error',
+          message: 'Failed to create chat',
+        });
+      }
     } else {
       callback({
         status: 'Error',

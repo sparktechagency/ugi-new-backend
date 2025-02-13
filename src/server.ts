@@ -18,7 +18,7 @@ const io: SocketIOServer = new SocketIOServer(socketServer, {
 
 async function main() {
   try {
-    // console.log('config.database_url', config.database_url);
+    // // console.log('config.database_url', config.database_url);
     // Connect to MongoDB
     await mongoose.connect(config.database_url as string);
     // await mongoose.connect(
@@ -47,7 +47,7 @@ async function main() {
     global.io = io;
   } catch (err) {
     console.error('Error starting the server:', err);
-    console.log(err);
+    // console.log(err);
     process.exit(1); // Exit after error
   }
 }

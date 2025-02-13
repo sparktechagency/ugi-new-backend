@@ -9,11 +9,11 @@ const getAllChats = catchAsync(async (req, res) => {
     page: Number(req.query.page) || 1,
   };
   const { userId } = req.user;
-  console.log('userId=====================', userId);
+  // console.log('userId=====================', userId);
   const filter: any = { participantId: userId };
 
   const search = req.query.search;
-  console.log('serch', search);
+  // console.log('serch', search);
 
   if (search && search !== 'null' && search !== '' && search !== undefined) {
     const searchRegExp = new RegExp('.*' + search + '.*', 'i');
@@ -21,8 +21,8 @@ const getAllChats = catchAsync(async (req, res) => {
     // filter._id = search;
   }
   //  const { userId } = req.user;
-  // console.log({ filter });
-  // console.log({ options });
+  // // console.log({ filter });
+  // // console.log({ options });
 
   const result = await getChatByParticipantId(filter, options);
 

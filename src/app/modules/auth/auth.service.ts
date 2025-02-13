@@ -23,9 +23,9 @@ import { OTPVerifyAndCreateUserProps, userService } from '../user/user.service';
 
 // Login
 const login = async (payload: TLogin) => {
-  console.log("payload", payload)
+  // console.log("payload", payload)
   const user = await User.isUserActive(payload?.email);
-console.log('user', user);
+  // console.log('user', user);
   if (!user) {
     throw new AppError(httpStatus.BAD_REQUEST, 'User not found');
   }
@@ -34,14 +34,19 @@ console.log('user', user);
     throw new AppError(httpStatus.BAD_REQUEST, 'Password does not match');
   }
 
-  const jwtPayload: { userId: string; role: string, fullName:string, email:string} = {
+  const jwtPayload: {
+    userId: string;
+    role: string;
+    fullName: string;
+    email: string;
+  } = {
     fullName: user?.fullName,
     email: user.email,
     userId: user?._id?.toString() as string,
     role: user?.role,
   };
 
-  console.log({ jwtPayload });
+  // console.log({ jwtPayload });
 
   const accessToken = createToken({
     payload: jwtPayload,
@@ -49,7 +54,7 @@ console.log('user', user);
     expity_time: config.jwt_access_expires_in as string,
   });
 
-  console.log({ accessToken });
+  // console.log({ accessToken });
 
   const refreshToken = createToken({
     payload: jwtPayload,
@@ -85,7 +90,7 @@ const forgotPassword = async (email: string) => {
 
     await otpServices.updateOtpByEmail(email, otpUpdateData);
   } else {
-    const otpUpdateData:any = {
+    const otpUpdateData: any = {
       name: '',
       sentTo: email,
       receiverType: 'email',
@@ -126,7 +131,7 @@ const forgotPasswordOtpMatch = async ({
   otp,
   token,
 }: OTPVerifyAndCreateUserProps) => {
-  console.log({ otp, token });
+  // console.log({ otp, token });
   if (!token) {
     throw new AppError(httpStatus.BAD_REQUEST, 'Token not found');
   }
@@ -184,7 +189,7 @@ const resetPassword = async ({
   newPassword: string;
   confirmPassword: string;
 }) => {
-  console.log(newPassword, confirmPassword);
+  // console.log(newPassword, confirmPassword);
   if (newPassword !== confirmPassword) {
     throw new AppError(httpStatus.BAD_REQUEST, 'Password does not match');
   }
@@ -277,18 +282,18 @@ const refreshToken = async (token: string) => {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found');
   }
 
-   const jwtPayload: {
-     userId: string;
-     role: string;
-     fullName: string;
-     email: string;
-   } = {
-     fullName: activeUser?.fullName,
-     email: activeUser.email,
-     userId: activeUser?._id?.toString() as string,
-     role: activeUser?.role,
-   };
- 
+  const jwtPayload: {
+    userId: string;
+    role: string;
+    fullName: string;
+    email: string;
+  } = {
+    fullName: activeUser?.fullName,
+    email: activeUser.email,
+    userId: activeUser?._id?.toString() as string,
+    role: activeUser?.role,
+  };
+
   const accessToken = createToken({
     payload: jwtPayload,
     access_secret: config.jwt_access_secret as string,

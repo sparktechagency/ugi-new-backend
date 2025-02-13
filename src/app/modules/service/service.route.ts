@@ -20,6 +20,10 @@ serviceRouter
     businessServiceController.createBusinessService,
   )
   .get(
+    '/all',
+    businessServiceController.getAllBusinessService,
+  )
+  .get(
     '/',
     auth(USER_ROLE.BUSINESS),
     businessServiceController.getAllBusinessServiceByBusinessId,

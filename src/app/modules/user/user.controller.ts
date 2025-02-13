@@ -7,7 +7,7 @@ import { storeFile } from '../../utils/fileHelper';
 import httpStatus from 'http-status';
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
-  console.log("user body", req.body);
+  // console.log("user body", req.body);
   const createUserToken = await userService.createUserToken(req.body);
 
   sendResponse(res, {
@@ -32,7 +32,7 @@ const userCreateVarification = catchAsync(async (req, res) => {
 });
 
 const userSwichRole = catchAsync(async (req, res) => {
-  const {userId} = req.user;
+  const { userId } = req.user;
   const newUser = await userService.userSwichRoleService(userId);
 
   return sendResponse(res, {
@@ -112,8 +112,6 @@ const getMyProfile = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-
-
 
 const updateMyProfile = catchAsync(async (req: Request, res: Response) => {
   if (req?.file) {

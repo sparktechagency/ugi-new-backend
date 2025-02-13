@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import { Types } from 'mongoose';
 
 export type TBusiness = {
   businessId: Types.ObjectId;
@@ -8,15 +8,14 @@ export type TBusiness = {
   businessDescription: string;
   businessLocation: string;
   businessType: string[];
-  // businessDuration: string;
-  // dipositAmount: string;
   paymentMethod: 'Card' | 'Cash' | 'Cash & Card';
-  availableDays?: string[];
-  businessStartTime: string;
-  businessEndTime: string;
-  specialDays?: string[];
-  specialStartTime?: string;
-  specialEndTime?: string;
+  availableDaysTime?: [
+    {
+      day: string;
+      startTime: string;
+      endTime: string;
+    }
+  ];
   specifigDate?: string[];
   specifigStartTime?: string;
   specifigEndTime?: string;
@@ -32,3 +31,38 @@ export type TBusiness = {
     coordinates: [number, number]; // [longitude, latitude]
   };
 };
+
+// import { Types } from 'mongoose';
+
+// export type TBusiness = {
+//   businessId: Types.ObjectId;
+
+//   businessName: string;
+//   businessImage: string;
+//   businessDescription: string;
+//   businessLocation: string;
+//   businessType: string[];
+//   // businessDuration: string;
+//   // dipositAmount: string;
+//   paymentMethod: 'Card' | 'Cash' | 'Cash & Card';
+//   availableDays?: string[];
+//   businessStartTime: string;
+//   businessEndTime: string;
+//   specialDays?: string[];
+//   specialStartTime?: string;
+//   specialEndTime?: string;
+//   specifigDate?: string[];
+//   specifigStartTime?: string;
+//   specifigEndTime?: string;
+//   bookingBreak: string;
+//   launchbreakStartTime: string;
+//   launchbreakEndTime: string;
+//   ratings: number;
+//   reviewCount: number;
+//   latitude: number;
+//   longitude: number;
+//   location: {
+//     type: 'Point';
+//     coordinates: [number, number]; // [longitude, latitude]
+//   };
+// };

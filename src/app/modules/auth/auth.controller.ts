@@ -10,7 +10,6 @@ import httpStatus from 'http-status';
 
 // login
 const login = catchAsync(async (req: Request, res: Response) => {
- 
   const result = await authServices.login(req.body);
 
   const cookieOptions: any = {
@@ -52,8 +51,8 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
 
 // forgot password
 const forgotPassword = catchAsync(async (req: Request, res: Response) => {
-  // console.log("email");
-  // console.log(req?.body?.email);
+  // // console.log("email");
+  // // console.log(req?.body?.email);
   const { email } = req.body;
   const result = await authServices.forgotPassword(email);
 
@@ -89,7 +88,7 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
 
   const { newPassword, confirmPassword } = req.body;
 
-  console.log(newPassword, confirmPassword);
+  // console.log(newPassword, confirmPassword);
 
   const result = await authServices.resetPassword({
     token,

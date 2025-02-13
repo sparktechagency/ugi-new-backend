@@ -37,45 +37,34 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
       enum: ['Card', 'Cash', 'Cash & Card'],
       required: true,
     },
-    availableDays: {
-      type: [String],
+    availableDaysTime: {
+      type: [
+        {
+          day: String,
+          startTime: String,
+          endTime: String,
+        },
+      ],
       required: true,
-      default: ['Monday', 'Tuesday', 'Wednesday'],
-    },
-    businessStartTime: {
-      type: String,
-      required: true,
-      default: '08:00 AM',
-    },
-    businessEndTime: {
-      type: String,
-      required: true,
-      default: '06:00 PM',
-    },
-    specialDays: {
-      type: [String],
-      required: true,
-      default: ['Monday'],
-    },
-    specialStartTime: {
-      type: String,
-      required: true,
-      default: '09:00 AM',
-    },
-    specialEndTime: {
-      type: String,
-      required: true,
-      default: '06:00 PM',
+      default: [
+        { day: 'Monday', startTime: '09:00 AM', endTime: '06:00 PM' },
+        { day: 'Tuesday', startTime: '10:00 AM', endTime: '07:00 PM' },
+        { day: 'Wednesday', startTime: '11:00 AM', endTime: '05:00 PM' },
+        { day: 'Thursday', startTime: '08:00 AM', endTime: '06:00 PM' },
+        { day: 'Friday', startTime: '10:00 AM', endTime: '04:00 PM' },
+        { day: 'Saturday', startTime: '08:00 AM', endTime: '06:00 PM' },
+        { day: 'Sunday', startTime: '10:00 AM', endTime: '06:00 PM' },
+      ],
     },
     specifigDate: {
       type: [String],
       required: true,
-      default: ['02/10/2025', '02/11/2025'],
+      default: ['2025-02-10', '2025-02-11'],
     },
     specifigStartTime: {
       type: String,
       required: true,
-      default: '10:00 PM',
+      default: '10:00 AM',
     },
     specifigEndTime: {
       type: String,
@@ -117,7 +106,7 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
     },
     location: {
       type: { type: String, enum: ['Point'], default: 'Point' },
-      coordinates: { type: [Number], required: false }, // [longitude, latitude]
+      coordinates: { type: [Number], required: false },
     },
   },
   {

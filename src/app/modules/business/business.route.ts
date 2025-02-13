@@ -19,7 +19,7 @@ businessRouter
     // validateRequest(businessValidation.businessValidationSchema),
     businessController.createBusiness,
   )
-  
+
   .get('/', businessController.getAllBusiness)
   .get(
     '/filter',
@@ -44,6 +44,11 @@ businessRouter
     // auth(USER_ROLE.BUSINESS),
     businessController.getSingleBusiness,
   )
+  .get(
+    '/app/:id',
+    // auth(USER_ROLE.BUSINESS),
+    businessController.getAppSingleBusiness,
+  )
 
   .patch(
     '/',
@@ -60,5 +65,3 @@ businessRouter
   .delete('/', auth(USER_ROLE.BUSINESS), businessController.deletedBusiness);
 
 export default businessRouter;
-
-
