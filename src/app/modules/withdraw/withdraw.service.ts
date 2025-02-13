@@ -3,7 +3,7 @@ import { User } from '../user/user.models';
 import QueryBuilder from '../../builder/QueryBuilder';
 import { TWithdraw } from './withdraw.interface';
 import { Withdraw } from './withdraw.model';
-import { Wallet } from '../wallet/wallet.model';
+// import { Wallet } from '../wallet/wallet.model';
 
 const addWithdrawService = async (payload: TWithdraw) => {
   const {
