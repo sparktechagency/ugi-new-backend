@@ -183,36 +183,66 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
 
     // console.log('step-3');
 
-    // Calculate the time difference in hours
-    const currentTime = new Date();
-    currentTime.setUTCHours(0, 0, 0, 0);
-    // console.log({ currentTime });
-    const bookingTime = serviceBooking.bookingDate;
-    // console.log({ bookingTime });
-    const timeDifferenceInHours =
-      (currentTime.getTime() - bookingTime.getTime()) / (1000 * 60 * 60);
-    // console.log({ timeDifferenceInHours });
+    // // Calculate the time difference in hours
+    // const currentTime = new Date();
+    // currentTime.setUTCHours(0, 0, 0, 0);
+    // // console.log({ currentTime });
+    // const bookingTime = serviceBooking.bookingDate;
+    // // console.log({ bookingTime });
+    // const timeDifferenceInHours =
+    //   (currentTime.getTime() - bookingTime.getTime()) / (1000 * 60 * 60);
+    // // console.log({ timeDifferenceInHours });
 
-    // console.log('step-4');
+    // // console.log('step-4');
+
+    // let refundPercentage = 0;
+    // let ugiTokenParcentage = 0;
+
+    // // Apply refund policy
+    // if (timeDifferenceInHours <= 24) {
+    //   refundPercentage = 0; // No refund
+    //   ugiTokenParcentage = 100;
+    // } else if (timeDifferenceInHours <= 36) {
+    //   refundPercentage = 20; // Refund 20% of the deposit
+    //   ugiTokenParcentage = 80;
+    // } else if (timeDifferenceInHours <= 48) {
+    //   refundPercentage = 75; // Refund 75% of the deposit
+    //   ugiTokenParcentage = 25;
+    // }
+
+    const currentTime = new Date();
+    currentTime.setUTCHours(0, 0, 0, 0); // Normalize current date to midnight
+
+    const bookingTime = new Date(serviceBooking.bookingDate);
+    bookingTime.setUTCHours(0, 0, 0, 0); // Normalize booking date to midnight
+
+    // Calculate the difference in hours
+    const timeDifferenceInHours =
+      (bookingTime.getTime() - currentTime.getTime()) / (1000 * 60 * 60);
+
+    console.log({ timeDifferenceInHours });
 
     let refundPercentage = 0;
-    let ugiTokenParcentage = 0;
+    let ugiTokenPercentage = 0;
 
-    // Apply refund policy
-    if (timeDifferenceInHours <= 24) {
-      refundPercentage = 0; // No refund
-      ugiTokenParcentage = 100;
-    } else if (timeDifferenceInHours <= 36) {
-      refundPercentage = 20; // Refund 20% of the deposit
-      ugiTokenParcentage = 80;
-    } else if (timeDifferenceInHours <= 48) {
+    // Apply refund policy based on time remaining until booking
+    if (timeDifferenceInHours >= 48) {
       refundPercentage = 75; // Refund 75% of the deposit
-      ugiTokenParcentage = 25;
+      ugiTokenPercentage = 25;
+    } else if (timeDifferenceInHours >= 36) {
+      refundPercentage = 20; // Refund 20% of the deposit
+      ugiTokenPercentage = 80;
+    } else if (timeDifferenceInHours >= 24) {
+      refundPercentage = 0; // No refund
+      ugiTokenPercentage = 100;
+    } else {
+      refundPercentage = 0; // No refund
+      ugiTokenPercentage = 100;
     }
     // console.log('step-5');
     // console.log('refundPercentage', refundPercentage);
     // console.log('ugiTokenParcentage', ugiTokenParcentage);
-
+// ugiTokenParcentage; ugiTokenParcentage; 
     // Calculate refund amount
     const refundAmount = Math.floor(
       (serviceBooking.depositAmount * refundPercentage) / 100,
@@ -279,7 +309,7 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
     // Create Ugi Token data
     const ugiTokenData: any = {
       businessId: serviceBooking.businessId,
-      ugiTokenParcentage: ugiTokenParcentage,
+      ugiTokenParcentage: ugiTokenPercentage,
       ugiTokenAmount: uogiTokenAmount,
     };
 
