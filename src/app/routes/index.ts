@@ -6,9 +6,9 @@ import { authRoutes } from '../modules/auth/auth.route';
 import settingsRouter from '../modules/settings/setting.route';
 import notificationRoutes from '../modules/notification/notification.route';
 import paymentRouter from '../modules/payment/payment.route';
-import walletRouter from '../modules/wallet/wallet.route';
+// import walletRouter from '../modules/wallet/wallet.route';
 import withdrawRouter from '../modules/withdraw/withdraw.route';
-import cencelBookingRoutes from '../modules/cencelBooking/cencelBooking.route';
+// import cencelBookingRoutes from '../modules/cencelBooking/cencelBooking.route';
 import serviceBookingRoutes from '../modules/serviceBooking/serviceBooking.route';
 import categoryRouter from '../modules/category/category.route';
 import subCategoryRouter from '../modules/subCategory/subCategory.route';
@@ -44,10 +44,10 @@ const moduleRoutes = [
     path: '/notification',
     route: notificationRoutes,
   },
-  {
-    path: '/wallet',
-    route: walletRouter,
-  },
+  // {
+  //   path: '/wallet',
+  //   route: walletRouter,
+  // },
   {
     path: '/payment',
     route: paymentRouter,
@@ -60,10 +60,10 @@ const moduleRoutes = [
     path: '/service-booking',
     route: serviceBookingRoutes,
   },
-  {
-    path: '/cencel-booking',
-    route: cencelBookingRoutes,
-  },
+  // {
+  //   path: '/cencel-booking',
+  //   route: cencelBookingRoutes,
+  // },
   {
     path: '/category',
     route: categoryRouter,

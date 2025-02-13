@@ -1,6 +1,6 @@
-import { Types } from "mongoose";
+// import { Types } from "mongoose";
 
-export type TWallet = {
-  mentorId: Types.ObjectId;
-  amount: number;
-};
+// export type TWallet = {
+//   mentorId: Types.ObjectId;
+//   amount: number;
+// };
