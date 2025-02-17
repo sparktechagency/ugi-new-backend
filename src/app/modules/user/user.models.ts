@@ -32,6 +32,7 @@ const userSchema = new Schema<TUser>(
     phone: {
       type: String,
       required: false,
+      default: ' ',
     },
     dateOfBirth: {
       type: Date,
