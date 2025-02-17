@@ -49,6 +49,7 @@ const addPaymentService = async (payload: any) => {
       applePayDetails,
       ugiTokenAmount,
       ugiTokenId,
+      businessType
     } = payload;
 
     const user = await User.findById(customerId).session(session);
@@ -130,6 +131,7 @@ const addPaymentService = async (payload: any) => {
       bookingEndTime: endTime,
       ugiTokenAmount: ugiTokenAmount || null,
       ugiTokenId: ugiTokenId || null,
+      businessType
     };
 
     console.log('bookingData========================' );
