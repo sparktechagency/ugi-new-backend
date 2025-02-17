@@ -28,4 +28,5 @@ export type TServiceBooking = {
   refundStatus?: 'pending' | 'success' | 'failed';
   ugiTokenAmount?: number;
   ugiTokenId?: Types.ObjectId;
+  businessType: string;
 };
