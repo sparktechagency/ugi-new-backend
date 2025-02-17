@@ -16,6 +16,7 @@ import { UgiToken } from '../ugiToken/ugiToken.model';
 import { StripeAccount } from '../stripeAccount/stripeAccount.model';
 import { withdrawService } from '../withdraw/withdraw.service';
 import { Withdraw } from '../withdraw/withdraw.model';
+import cron from 'node-cron';
 
 // console.log({ first: config.stripe.stripe_api_secret });
 
@@ -485,7 +486,7 @@ const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
         // console.log('=======serviceBookingId', serviceBookingId);
         const customerId =
           session.metadata && (session.metadata.userId as string);
-        // console.log('=======customerId', customerId);
+        console.log('=======customerId', customerId);
         // session.metadata && (session.metadata.serviceBookingId as string);
         if (!paymentIntentId) {
           throw new AppError(
@@ -941,37 +942,37 @@ const transferBalanceService = async (
 };
 // 0 0 */7 * *
 
-// cron.schedule('* * * * *', async () => {
-//   // console.log('Executing transferBalanceService every 7 days...');
-//   const businessUser = await User.find({
-//     role: 'business',
-//     isDeleted: false,
-//   });
-//   // console.log('businessUser==', businessUser);
+cron.schedule('* * * * *', async () => {
+  // console.log('Executing transferBalanceService every 7 days...');
+  const businessUser = await User.find({
+    role: 'business',
+    isDeleted: false,
+  });
+  // console.log('businessUser==', businessUser);
 
-//   for (const user of businessUser) {
-//     // console.log('usr=====');
-//     const isExiststripeAccount:any = await StripeAccount.findOne({
-//       userId: user._id,
-//       isCompleted: true,
-//     });
-//     // console.log('isExiststripeAccount', isExiststripeAccount);
+  for (const user of businessUser) {
+    // console.log('usr=====');
+    const isExiststripeAccount:any = await StripeAccount.findOne({
+      userId: user._id,
+      isCompleted: true,
+    });
+    // console.log('isExiststripeAccount', isExiststripeAccount);
 
-//     if (!isExiststripeAccount) {
-//       throw new AppError(httpStatus.BAD_REQUEST, 'Account not found');
-//     }
+    if (!isExiststripeAccount) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Account not found');
+    }
 
-//      // console.log('=====1')
-//     await transferBalanceService(
-//       isExiststripeAccount.accountId,
-//       0,
-//       isExiststripeAccount.userId,
-//     );
-//     // console.log('=====2');
-//   }
+     // console.log('=====1')
+    await transferBalanceService(
+      isExiststripeAccount.accountId,
+      0,
+      isExiststripeAccount.userId,
+    );
+    // console.log('=====2');
+  }
 
-//   // await transferBalanceService();
-// });
+  // await transferBalanceService();
+});
 
 export const paymentService = {
   addPaymentService,

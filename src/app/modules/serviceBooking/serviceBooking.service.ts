@@ -220,19 +220,18 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
     let refundPercentage = 0;
     let ugiTokenPercentage = 0;
 
-    // Apply refund policy based on time remaining until booking
-    if (timeDifferenceInHours >= 48) {
-      refundPercentage = 75; // Refund 75% of the deposit
-      ugiTokenPercentage = 25;
-    } else if (timeDifferenceInHours >= 36) {
-      refundPercentage = 20; // Refund 20% of the deposit
+    if (timeDifferenceInHours <= 24) {
+      refundPercentage = 0; // No refund within 24 hours
+      ugiTokenPercentage = 100;
+    } else if (timeDifferenceInHours <= 36) {
+      refundPercentage = 20; // Refund 20% within 24-36 hours
       ugiTokenPercentage = 80;
-    } else if (timeDifferenceInHours >= 24) {
-      refundPercentage = 0; // No refund
-      ugiTokenPercentage = 100;
+    } else if (timeDifferenceInHours <= 48) {
+      refundPercentage = 75; // Refund 75% within 36-48 hours
+      ugiTokenPercentage = 25;
     } else {
-      refundPercentage = 0; // No refund
-      ugiTokenPercentage = 100;
+      refundPercentage = 100; // No refund for bookings more than 48 hours ahead
+      ugiTokenPercentage = 0;
     }
     // console.log('step-5');
     // console.log('refundPercentage', refundPercentage);
