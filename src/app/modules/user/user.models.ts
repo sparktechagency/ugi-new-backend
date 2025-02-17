@@ -55,6 +55,11 @@ const userSchema = new Schema<TUser>(
       required: false,
       default: false,
     },
+    address: {
+      type: String,
+      required: false,
+      default: ' ',
+    },
     aleargiesDetails: {
       type: String,
       required: false,

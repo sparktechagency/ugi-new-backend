@@ -17,9 +17,10 @@ export interface TUserCreate {
   phone: string;
   dateOfBirth: Date;
   role: (typeof USER_ROLE)[keyof typeof USER_ROLE];
+  address: string;
   pegnensi: boolean;
   allergies: boolean;
-  asRole:string;
+  asRole: string;
   aleargiesDetails: string;
 }
 
