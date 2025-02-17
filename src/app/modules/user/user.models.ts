@@ -55,6 +55,11 @@ const userSchema = new Schema<TUser>(
       required: false,
       default: false,
     },
+    aleargiesDetails: {
+      type: String,
+      required: false,
+      default: ' ',
+    },
     asRole: {
       type: String,
       enum: ['customer_business', 'customer', 'business'],

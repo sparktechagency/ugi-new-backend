@@ -20,6 +20,7 @@ export interface TUserCreate {
   pegnensi: boolean;
   allergies: boolean;
   asRole:string;
+  aleargiesDetails: string;
 }
 
 export interface TUser extends TUserCreate {
