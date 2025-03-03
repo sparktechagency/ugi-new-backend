@@ -72,6 +72,32 @@ const userSchema = new Schema<TUser>(
       required: false,
       default: ' ',
     },
+    postalCode: {
+      type: String,
+      required: false,
+      default: ' ',
+    },
+    addressLine1: {
+      type: String,
+      required: false,
+      default: ' ',
+    },
+    addressLine2: {
+      type: String,
+      required: false,
+      default: ' ',
+    },
+    townCity: {
+      type: String,
+      required: false,
+      default: ' ',
+    },
+    country: {
+      type: String,
+      required: false,
+      default: ' ',
+    },
+    
   },
   {
     timestamps: true,

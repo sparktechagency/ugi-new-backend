@@ -22,6 +22,11 @@ export interface TUserCreate {
   allergies: boolean;
   asRole: string;
   aleargiesDetails: string;
+  postalCode: string;
+  addressLine1: string;
+  addressLine2: string;
+  townCity: string;
+  country: string;
 }
 
 export interface TUser extends TUserCreate {
