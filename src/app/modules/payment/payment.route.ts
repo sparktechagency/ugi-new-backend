@@ -30,6 +30,7 @@ paymentRouter
   .get('/cancel', paymentController.cancelPage)
 
   .get('/', auth(USER_ROLE.ADMIN), paymentController.getAllPayment)
+  // .get('/payment-tracking', auth(USER_ROLE.CUSTOMER), paymentController.getAllPaymentByCustomer)
   .get('/all-income-rasio', paymentController.getAllIncomeRasio)
   .get('/all-income-rasio-by-days', paymentController.getAllIncomeRasioBy7days)
   .get(
@@ -49,7 +50,7 @@ paymentRouter
   )
 
   .get(
-    '/customer',
+    '/customer-purchase-tracking',
     auth(USER_ROLE.CUSTOMER),
     paymentController.getAllPaymentByCustormer,
   )

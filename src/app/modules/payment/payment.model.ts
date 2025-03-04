@@ -7,12 +7,12 @@ const paymentSchema = new Schema<TPayment>(
     customerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     serviceId: {
       type: Schema.Types.ObjectId,
-      ref: 'ServiceBooking',
+      ref: 'Service',
       required: true,
     },
     businessId: {
       type: Schema.Types.ObjectId,
-      ref: 'Buisness',
+      ref: 'Business',
       required: true,
     },
     bookingprice: { type: Number, required: true },

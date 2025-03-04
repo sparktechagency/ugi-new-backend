@@ -235,7 +235,7 @@ const getAllPaymentService = async (query: Record<string, unknown>) => {
         path: 'serviceId',
         select: 'businessId',
         populate: { path: 'businessId', select: 'businessName' },
-      }, // Populate mentorRegistrationId inside mentorId
+      },
     }),
     query,
   )
@@ -253,7 +253,15 @@ const getAllPaymentByCustomerService = async (
   query: Record<string, unknown>,
   customerId: string,
 ) => {
-  const PaymentQuery = new QueryBuilder(Payment.find({ customerId }), query)
+  const PaymentQuery = new QueryBuilder(
+    Payment.find({ customerId, status: 'paid' }).populate({
+      path: 'serviceId',
+      select: 'serviceName servicePrice',
+      populate: { path: 'businessId', select: 'businessName' },
+    }),
+    // .populate('businessId'),
+    query,
+  )
     .search(['name'])
     .filter()
     .sort()
@@ -263,6 +271,7 @@ const getAllPaymentByCustomerService = async (
   const result = await PaymentQuery.modelQuery;
   const meta = await PaymentQuery.countTotal();
   return { meta, result };
+
 };
 
 const singlePaymentService = async (id: string) => {
