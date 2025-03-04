@@ -54,6 +54,7 @@ const getAllPayment = catchAsync(async (req, res, next) => {
 
 const getAllPaymentByCustormer = catchAsync(async (req, res, next) => {
   const { userId } = req.user;
+  console.log('customer id', userId); 
   const result = await paymentService.getAllPaymentByCustomerService(
     req.query,
     userId,
