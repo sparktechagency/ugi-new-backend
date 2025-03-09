@@ -29,6 +29,7 @@ const login = async (payload: TLogin) => {
   if (!user) {
     throw new AppError(httpStatus.BAD_REQUEST, 'User not found');
   }
+  
 
   if (!(await User.isPasswordMatched(payload.password, user.password))) {
     throw new AppError(httpStatus.BAD_REQUEST, 'Password does not match');

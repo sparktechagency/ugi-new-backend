@@ -51,7 +51,7 @@ const checkOtpByEmail = async (email: string) => {
 };
 
 const otpMatch = async (email: string, otp: string) => {
-  // console.log(email, otp);
+  console.log(email, otp);
   const isOtpMatch = await Otp.findOne({
     sentTo: email,
     otp,
