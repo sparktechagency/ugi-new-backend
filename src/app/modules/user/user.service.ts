@@ -12,6 +12,9 @@ import { generateOptAndExpireTime } from '../otp/otp.utils';
 import { TPurposeType } from '../otp/otp.interface';
 import { otpSendEmail } from '../../utils/eamilNotifiacation';
 import { createToken, verifyToken } from '../../utils/tokenManage';
+import mongoose from 'mongoose';
+import Business from '../business/business.model';
+import bcrypt from 'bcrypt';
 
 export type IFilter = {
   searchTerm?: string;
@@ -33,11 +36,11 @@ const createUserToken = async (payload: TUserCreate) => {
   }
 
   // user exist check
-  const userExist = await userService.getUserByEmail(email);
+  // const userExist = await userService.getUserByEmail(email);
 
-  if (userExist) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'User already exist!!');
-  }
+  // if (userExist) {
+  //   throw new AppError(httpStatus.BAD_REQUEST, 'User already exist!!');
+  // }
 
   const { isExist, isExpireOtp } = await otpServices.checkOtpByEmail(email);
   // console.log({ isExist });
@@ -55,6 +58,7 @@ const createUserToken = async (payload: TUserCreate) => {
     const otpUpdateData = {
       otp,
       expiredAt,
+      status: 'pending',
     };
 
     await otpServices.updateOtpByEmail(email, otpUpdateData);
@@ -77,7 +81,8 @@ const createUserToken = async (payload: TUserCreate) => {
     asRole,
   };
 
-  // console.log({ otpBody });
+  console.log({ otpBody });
+  console.log({ otp });
 
   // send email
   process.nextTick(async () => {
@@ -138,22 +143,68 @@ const otpVerifyAndCreateUser = async ({
     throw new AppError(httpStatus.BAD_REQUEST, 'User data is not valid !!');
   }
 
-  const userData = {
-    password,
-    email,
-    fullName,
-    role,
-    asRole,
-  };
+ 
 
-  const isExist = await User.isUserExist(email as string);
+  // const isExist = await User.isUserExist(email as string);
 
-  if (isExist) {
-    throw new AppError(
-      httpStatus.FORBIDDEN,
-      'User already exists with this email',
+  // if (isExist) {
+  //   throw new AppError(
+  //     httpStatus.FORBIDDEN,
+  //     'User already exists with this email',
+  //   );
+  // }
+
+  const userExist = await User.isUserExist(email as string);
+
+  // const userExist = await User.findOne({ email: email, role: role });
+
+  if (userExist) {
+    console.log('userExist');
+    
+    const passwordEncript = await bcrypt.hash(password, 10);
+
+    const user = await User.findOneAndUpdate(
+      { email: email },
+      { role: role, asRole: asRole, password: passwordEncript },
+      {
+        new: true,
+      },
     );
+
+    if (!user) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'User creation failed');
+    }
+
+    const jwtPayload: {
+      userId: string;
+      role: string;
+      fullName: string;
+      email: string;
+    } = {
+      fullName: user?.fullName,
+      email: user.email,
+      userId: user?._id?.toString() as string,
+      role: user?.role,
+    };
+
+    const userToken = createToken({
+      payload: jwtPayload,
+      access_secret: config.jwt_access_secret as string,
+      expity_time: config.jwt_access_expires_in as string | number,
+    });
+
+    return { user, userToken };
+
   }
+
+
+ const userData = {
+   password,
+   email,
+   fullName,
+   role,
+   asRole,
+ };
 
   const user = await User.create(userData);
 
@@ -184,39 +235,100 @@ const otpVerifyAndCreateUser = async ({
 
 const userSwichRoleService = async (id: string) => {
   const swichUser = await User.findById(id);
+  console.log('swichUser', swichUser);
 
   if (!swichUser) {
     throw new AppError(httpStatus.BAD_REQUEST, 'User not found');
   }
+  console.log('as role', swichUser.asRole)
 
-  if (swichUser.asRole !== 'customer_business') {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'You are not allowed to switch role',
+  if (swichUser.role == 'business') {
+    let swichRole;
+
+    if (swichUser.role === 'business') {
+      swichRole = 'customer';
+    } else {
+
+      const business = await Business.findOne({ businessId: id });
+
+      if (!business) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'Please create business account first!!');
+      }
+
+      swichRole = 'business';
+
+    }
+
+    console.log('swichRole', swichRole);
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      { role: swichRole },
+      { new: true },
     );
+
+    if (!user) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'User swich failed');
+    }
+
+    return user;
   }
 
-  let swichRole;
-
-  if (swichUser.role === 'customer') {
-    swichRole = 'business';
-  } else {
-    swichRole = 'customer';
-  }
-
-  // console.log('swichRole', swichRole);
-  const user = await User.findByIdAndUpdate(
-    id,
-    { role: swichRole },
-    { new: true },
-  );
-
-  if (!user) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'User swich failed');
-  }
-
-  return user;
 };
+
+// const userSwichRoleService = async (id: string) => {
+//   const session = await mongoose.startSession();
+//   session.startTransaction();
+
+//   try {
+//     const swichUser = await User.findById(id).session(session);
+
+//     if (!swichUser) {
+//       throw new AppError(httpStatus.BAD_REQUEST, 'User not found');
+//     }
+
+//     const swichRole =
+//       swichUser.asRole === 'customer_business'
+//         ? swichUser.role === 'customer'
+//           ? 'business'
+//           : 'customer'
+//         : swichUser.role === 'customer'
+//           ? 'business'
+//           : 'customer';
+
+//     const [user, oppositeRoleUser] = await Promise.all([
+//       User.findByIdAndUpdate(
+//         id,
+//         { role: swichRole, asRole: swichRole },
+//         { new: true, session },
+//       ),
+//       User.findOneAndUpdate(
+//         {
+//           email: swichUser.email,
+//           role: swichRole === 'customer' ? 'business' : 'customer',
+//         },
+//         {
+//           role: swichRole === 'customer' ? 'business' : 'customer',
+//           asRole: swichRole === 'customer' ? 'business' : 'customer',
+//         },
+//         { new: true, session },
+//       ),
+//     ]);
+
+//     if (!user || !oppositeRoleUser) {
+//       throw new AppError(httpStatus.BAD_REQUEST, 'User switch failed');
+//     }
+
+//     await session.commitTransaction();
+//     session.endSession();
+
+//     return user;
+//   } catch (error) {
+//     await session.abortTransaction();
+//     session.endSession();
+//     throw error;
+//   }
+// };
 
 const updateUser = async (id: string, payload: Partial<TUser>) => {
   const { role, email, ...rest } = payload;
