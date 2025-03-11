@@ -235,20 +235,18 @@ const otpVerifyAndCreateUser = async ({
 
 const userSwichRoleService = async (id: string) => {
   const swichUser = await User.findById(id);
-  console.log('swichUser', swichUser);
+  // console.log('swichUser', swichUser);
 
   if (!swichUser) {
     throw new AppError(httpStatus.BAD_REQUEST, 'User not found');
   }
-  console.log('as role', swichUser.asRole)
-
+  // console.log('as role', swichUser.asRole)
+   let swichRole;
   if (swichUser.role == 'business') {
-    let swichRole;
-
-    if (swichUser.role === 'business') {
+ 
       swichRole = 'customer';
-    } else {
-
+    
+    }else{
       const business = await Business.findOne({ businessId: id });
 
       if (!business) {
@@ -256,7 +254,6 @@ const userSwichRoleService = async (id: string) => {
       }
 
       swichRole = 'business';
-
     }
 
     console.log('swichRole', swichRole);
@@ -272,8 +269,6 @@ const userSwichRoleService = async (id: string) => {
     }
 
     return user;
-  }
-
 };
 
 // const userSwichRoleService = async (id: string) => {
