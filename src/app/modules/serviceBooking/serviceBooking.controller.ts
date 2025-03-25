@@ -100,6 +100,24 @@ const cencelServiceBooking = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const cancelBookingServiceByBusinessman = catchAsync(
+  async (req: Request, res: Response) => {
+    // const  userId  = '64a1f32b3c9f536a2e9b1234';
+    const { userId } = req.user;
+    const result = await serviceBookingService.businessmanCancelBookingService(
+      req.params.id,
+      userId,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      data: result,
+      message: 'Cencel Service Booking successful',
+    });
+  },
+);
+
 const paymentStatusServiceBooking = catchAsync(
   async (req: Request, res: Response) => {
     // const  userId  = '64a1f32b3c9f536a2e9b1234';
@@ -186,6 +204,7 @@ export const serviceBookingController = {
   getSingleServiceBooking,
   paymentStatusServiceBooking,
   cencelServiceBooking,
+  cancelBookingServiceByBusinessman,
   completeServiceBooking,
   reScheduleRequestServiceBooking,
   reScheduleCompleteCencelServiceBooking,

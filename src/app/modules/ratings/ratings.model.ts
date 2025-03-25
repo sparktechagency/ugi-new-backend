@@ -13,6 +13,10 @@ const reviewSchema = new Schema<TReview>(
       required: true,
       ref: 'Business',
     },
+    tag: {
+      type: String,
+      required: true,
+    },
     rating: {
       type: Number,
       required: true,

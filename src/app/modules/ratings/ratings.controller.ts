@@ -20,11 +20,32 @@ const createReview = catchAsync(async (req, res) => {
   });
 });
 
+const createReviewByBussinessMan = catchAsync(async (req, res) => {
+  const {id} = req.params;
+  const reviewData = req.body;
+  const { userId } = req.user;
+  // console.log({ userId });
+  reviewData.businessId = userId;
+
+  const result = await reviewService.createReviewByBusinessManService(
+    id,
+    reviewData,
+  );
+
+  // Send response
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Review added successfully!',
+    data: result,
+  });
+});
+
 const getReviewByCustomer = catchAsync(async (req, res) => {
-  const { businessId }: any = req.query;
+  const { userId }: any = req.user;
   const { meta, result } = await reviewService.getAllReviewByBusinessQuery(
     req.query,
-    businessId,
+    userId,
   );
 
   sendResponse(res, {
@@ -76,6 +97,7 @@ const deleteSingleReview = catchAsync(async (req, res) => {
 
 export const reviewController = {
   createReview,
+  createReviewByBussinessMan,
   getReviewByCustomer,
   getSingleReview,
   updateSingleReview,

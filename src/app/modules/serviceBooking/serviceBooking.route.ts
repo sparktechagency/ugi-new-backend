@@ -33,6 +33,11 @@ serviceBookingRoutes
     serviceBookingController.cencelServiceBooking,
   )
   .patch(
+    '/cencel/business-man/:id',
+    auth(USER_ROLE.BUSINESS),
+    serviceBookingController.cancelBookingServiceByBusinessman,
+  )
+  .patch(
     '/payment/:id',
     auth(USER_ROLE.CUSTOMER),
     serviceBookingController.paymentStatusServiceBooking,
