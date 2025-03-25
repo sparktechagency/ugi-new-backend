@@ -27,6 +27,8 @@ export interface TUserCreate {
   addressLine2: string;
   townCity: string;
   country: string;
+  ratings: number;
+  reviewCount: number;
 }
 
 export interface TUser extends TUserCreate {

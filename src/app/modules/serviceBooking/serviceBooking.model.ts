@@ -56,7 +56,7 @@ const bookingServiceSchema = new Schema<TServiceBooking>(
     },
     ugiTokenAmount: { type: Number, required: false, default: null },
     ugiTokenId: { type: Schema.Types.ObjectId, required: false, default: null },
-    businessType: { type: String, required: true},
+    businessType: { type: String, required: false },
   },
   {
     timestamps: true,

@@ -14,8 +14,15 @@ reviewRouter
     // validateRequest(videoValidation.VideoSchema),
     reviewController.createReview,
   )
-  .get('/', reviewController.getReviewByCustomer)
+
+  .get('/', auth(USER_ROLE.CUSTOMER), reviewController.getReviewByCustomer)
   .get('/:id', reviewController.getSingleReview)
+  .patch(
+    '/business-man/:id',
+    auth(USER_ROLE.BUSINESS),
+    // validateRequest(videoValidation.VideoSchema),
+    reviewController.createReviewByBussinessMan,
+  )
   .patch('/:id', auth(USER_ROLE.CUSTOMER), reviewController.updateSingleReview)
   .delete(
     '/:id',

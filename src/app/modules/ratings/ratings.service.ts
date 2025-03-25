@@ -6,6 +6,7 @@ import { User } from '../user/user.models';
 import { TReview } from './ratings.interface';
 import { Review } from './ratings.model';
 import Business from '../business/business.model';
+import ServiceBooking from '../serviceBooking/serviceBooking.model';
 
 const createReviewService = async (payload: TReview) => {
   try {
@@ -69,12 +70,86 @@ const createReviewService = async (payload: TReview) => {
   }
 };
 
+
+const createReviewByBusinessManService = async (id:string, payload: TReview) => {
+  try {
+    // console.log('Payload:', payload);
+
+    const serviceBooking = await ServiceBooking.findById(id);
+
+    if(!serviceBooking){
+      throw new AppError(404, "Service booking is not found!!")
+    }
+
+
+    payload.customerId = serviceBooking.customerId;
+
+    const customer = await User.findById(payload.customerId);
+    if (!customer) {
+      throw new AppError(httpStatus.NOT_FOUND, 'User not found!');
+    }
+    const business = await Business.findOne({businessId:payload.businessId});
+    if (!business) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Business not found!');
+    }
+    // console.log({ business });
+
+    const result = await Review.create(payload);
+
+    if (!result) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Failed to add Business review!',
+      );
+    }
+    // console.log({ result });
+
+    let { reviewCount, ratings } = customer;
+    // console.log({ ratings });
+    // console.log({ reviewCount });
+
+    const newRating =
+      (ratings * reviewCount + result.rating) / (reviewCount + 1);
+    // console.log({ newRating });
+
+    const updatedRegistration = await User.findByIdAndUpdate(
+      customer._id,
+      {
+        reviewCount: reviewCount + 1,
+        ratings: newRating,
+      },
+      { new: true },
+    );
+
+    if (!updatedRegistration) {
+      throw new AppError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        'Failed to update Business Ratings!',
+      );
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Error creating review:', error);
+
+    if (error instanceof AppError) {
+      throw error;
+    }
+
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'An unexpected error occurred while creating the review.',
+    );
+  }
+};
+
+
 const getAllReviewByBusinessQuery = async (
   query: Record<string, unknown>,
-  businessId: string,
+  customerId: string,
 ) => {
   const reviewQuery = new QueryBuilder(
-    Review.find({ businessId }).populate('businessId').populate('customerId'),
+    Review.find({ customerId }).populate('customerId'),
     query,
   )
     .search([''])
@@ -182,6 +257,7 @@ const deletedReviewQuery = async (id: string, customerId: string) => {
 
 export const reviewService = {
   createReviewService,
+  createReviewByBusinessManService,
   getAllReviewByBusinessQuery,
   getSingleReviewQuery,
   updateReviewQuery,
