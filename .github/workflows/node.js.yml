@@ -26,4 +26,4 @@ jobs:
       - run: npm ci
       - name: Change Directory
         run: cd /home/masters/actions-uogiapp-backend/_work/ugi-new-backend/ugi-new-backend
-      - run: pm2 restart 1
+      - run: pm2 restart 0
