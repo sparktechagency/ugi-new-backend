@@ -10,8 +10,9 @@ const createSubCategoryService = async (payload: TSubCategory) => {
 };
 
 const getAllSubCategoryService = async (query: Record<string, unknown>) => {
+  console.log("query", query)
   const subCategoryQuery = new QueryBuilder(SubCategory.find({}), query)
-    .search([''])
+    .search(['subCategoryname'])
     .filter()
     .sort()
     .paginate()

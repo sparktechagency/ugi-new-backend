@@ -250,9 +250,7 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
     const refundAmount = Math.floor(
       (serviceBooking.depositAmount * refundPercentage) / 100,
     );
-    // console.log({ refundAmount });
 
-    // Convert remaining amount into Uogi Token
     const uogiTokenAmount = Math.floor(
       serviceBooking.depositAmount - refundAmount,
     );
