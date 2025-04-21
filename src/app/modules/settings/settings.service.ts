@@ -34,6 +34,7 @@ const getSettings = async (
 const updateSettings = async (
   settingsBody: Partial<ISettings>,
 ): Promise<ISettings | null> => {
+  console.log('settingsBody,', settingsBody);
   // Find the existing settings document and update it
   const settings = await Settings.findOneAndUpdate({}, settingsBody, {
     new: true,
@@ -47,3 +48,7 @@ export const settingsService = {
   updateSettings,
   getSettings,
 };
+
+
+
+

@@ -46,51 +46,7 @@ const getAllCategoryService = async (query: Record<string, unknown>) => {
   const limit = Number(query.limit) || 10;
   const skip = (page - 1) * limit;
 
-  // const categoryQuery = await Category.aggregate([
-
-  //   {
-  //     $lookup: {
-  //       from: 'services',
-  //       localField: '_id',
-  //       foreignField: 'categoryId',
-  //       as: 'services',
-  //     },
-  //   },
-
-  //   {
-  //     $addFields: {
-  //       addPrice: {
-  //         $cond: {
-  //           if: { $gt: [{ $size: '$services' }, 0] },
-  //           then: { $min: '$services.servicePrice' },
-  //           else: 0,
-  //         },
-  //       },
-  //     },
-  //   },
-
-  //   {
-  //     $group: {
-  //       _id: '$_id',
-  //       name: { $first: '$name' },
-  //       image: { $first: '$image' },
-  //       addPrice: { $first: '$addPrice' },
-  //     },
-  //   },
-
-  //   {
-  //     $project: {
-  //       _id: 1,
-  //       name: 1,
-  //       image: 1,
-  //       addPrice: 1,
-  //     },
-  //   },
-
-  //   { $skip: skip },
-  //   { $limit: limit },
-  // ]);
-
+  
   const categoryQuery = await Category.aggregate([
     {
       $lookup: {
@@ -138,7 +94,7 @@ const getAllCategoryService = async (query: Record<string, unknown>) => {
         addPrice: 1,
       },
     },
-
+    { $sort: { name: 1 } },
     { $skip: skip },
     { $limit: limit },
   ]);
