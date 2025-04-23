@@ -654,6 +654,14 @@ const updateBusinessService = async (
   // console.log('id', businessId);
   // console.log('payload', payload);
   // Check if the document exists
+  console.log('payload==', payload);
+
+  if(payload.businessType && typeof payload.businessType === 'string'){
+    payload.businessType = JSON.parse(payload.businessType);
+  }
+
+  
+  console.log('payload==2', payload);
   const existingBusiness = await Business.findOne({ businessId });
   if (!existingBusiness) {
     throw new AppError(404, 'Business not found!');
