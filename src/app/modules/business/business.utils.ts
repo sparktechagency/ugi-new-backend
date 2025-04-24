@@ -82,12 +82,22 @@ function generateAvailableSlots({
   const allSlots = generateTimeSlots(startTime, endTime, minimumSlotTime);
 
   // console.log({ allSlots });
-
+  let breakStart:any;
+  let breakEnd:any;
   // Convert break times and bookings to comparable date objects
-  const breakStart = convertToDate(startBreakTime);
+  if (startBreakTime && endBreakTime) {
+     breakStart = convertToDate(startBreakTime);
 
-  // console.log({ breakStart });
-  const breakEnd = convertToDate(endBreakTime);
+    // console.log({ breakStart });
+     breakEnd = convertToDate(endBreakTime);
+  }
+
+  /////////////
+  // const breakStart = convertToDate(startBreakTime);
+
+  // // console.log({ breakStart });
+  // const breakEnd = convertToDate(endBreakTime);
+  /////////////
 
   // console.log({ breakEnd });
 
@@ -128,7 +138,8 @@ function generateAvailableSlots({
     // // console.log('.........end............');
 
     // Check if the slot is during the break time
-    if (slotStart >= breakStart && slotStart <= breakEnd) {
+    
+    if (breakStart && breakEnd && slotStart >= breakStart && slotStart <= breakEnd) {
       // // console.log('ttttttttttttttttttttttttttttttttttttttttttttttttttttttttt');
       return false; // Slot is during break time
     }
