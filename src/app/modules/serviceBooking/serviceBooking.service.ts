@@ -140,7 +140,13 @@ const getAllServiceBookingByBusinessQuery = async (
 };
 
 const getSingleServiceBooking = async (id: string) => {
-  const result = await ServiceBooking.findById(id).populate('serviceId');
+  const result = await ServiceBooking.findById(id).populate({
+    path: 'serviceId',
+    populate: {
+      path: 'businessId',
+      select: 'paymentMethod',
+    },
+  });;
   return result;
 };
 

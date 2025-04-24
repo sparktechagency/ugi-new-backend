@@ -76,15 +76,25 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
       required: true,
       default: '10',
     },
+    // launchbreakStartTime: {
+    //   type: String,
+    //   required: true,
+    //   default: '01:00 PM',
+    // },
+    // launchbreakEndTime: {
+    //   type: String,
+    //   required: true,
+    //   default: '02:00 PM',
+    // },
     launchbreakStartTime: {
       type: String,
       required: true,
-      default: '01:00 PM',
+      default: '',
     },
     launchbreakEndTime: {
       type: String,
       required: true,
-      default: '02:00 PM',
+      default: '',
     },
     reviewCount: {
       type: Number,

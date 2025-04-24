@@ -140,8 +140,8 @@ const getBusinessAvailableSlots = async (payload: any) => {
     availableSlots = generateAvailableSlots({
       startTime: business.specifigStartTime as string,
       endTime: business.specifigEndTime as string,
-      startBreakTime: business.launchbreakStartTime as string,
-      endBreakTime: business.launchbreakEndTime as string,
+      startBreakTime: business.launchbreakStartTime ? business.launchbreakStartTime as string : undefined,
+      endBreakTime: business.launchbreakEndTime ? business.launchbreakEndTime as string : undefined,
       bookings,
       duration: durationNum,
       minimumSlotTime: durationNum,
@@ -155,8 +155,12 @@ const getBusinessAvailableSlots = async (payload: any) => {
     availableSlots = generateAvailableSlots({
       startTime: isAvailable.startTime as string,
       endTime: isAvailable.endTime as string,
-      startBreakTime: business.launchbreakStartTime as string,
-      endBreakTime: business.launchbreakEndTime as string,
+      startBreakTime: business.launchbreakStartTime
+        ? (business.launchbreakStartTime as string)
+        : undefined,
+      endBreakTime: business.launchbreakEndTime
+        ? (business.launchbreakEndTime as string)
+        : undefined,
       bookings,
       duration: durationNum,
       minimumSlotTime: durationNum,
@@ -589,6 +593,19 @@ const getAllFilterByBusinessByPostcodeService = async (postCode: number) => {
 
 const getSingleBusinessByBusinessIdService = async (businessId: string) => {
   const result = await Business.findOne({ businessId });
+  //03:15pm //09:25pm
+
+
+  // console.log(
+  //   'launchbreakStartTime ====',
+  //   result?.launchbreakStartTime ? 'true' : 'false',
+  // );
+  // console.log(
+  //   'launchbreakEndTime ====',
+  //   result?.launchbreakEndTime ? 'true' : 'false',
+  // );
+
+
   if (!result) {
     throw new AppError(404, 'Business not found!');
   }
@@ -597,8 +614,10 @@ const getSingleBusinessByBusinessIdService = async (businessId: string) => {
 };
 
 const getSingleBusinessService = async (id: string) => {
+  
   const result = await Business.findById(id);
   // console.log({ result });
+ 
   if (!result) {
     throw new AppError(404, 'Business not found!');
   }
