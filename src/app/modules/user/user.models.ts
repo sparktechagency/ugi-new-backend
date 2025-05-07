@@ -107,6 +107,10 @@ const userSchema = new Schema<TUser>(
       required: true,
       default: 0,
     },
+    gender: {
+      type: String,
+      required: false,
+    },
   },
   {
     timestamps: true,
