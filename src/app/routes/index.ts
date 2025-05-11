@@ -19,6 +19,8 @@ import favoriteBusinessRoutes from '../modules/favorite/favorite.route';
 import reviewRouter from '../modules/ratings/ratings.route';
 import chatRouter from '../modules/chat/chat.route';
 import messageRouter from '../modules/message/message.route';
+import subscriptionRouter from '../modules/subscription/subscription.route';
+import subscriptionPurchaseRouter from '../modules/purchestSubscription/purchestSubscription.route';
 
 const router = Router();
 
@@ -99,7 +101,15 @@ const moduleRoutes = [
   {
     path: '/message',
     route: messageRouter,
-  }
+  },
+  {
+    path: '/subscription',
+    route: subscriptionRouter,
+  },
+  {
+    path: '/subscription-purchase',
+    route: subscriptionPurchaseRouter,
+  },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
 
