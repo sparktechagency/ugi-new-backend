@@ -8,13 +8,23 @@ const subscriptionPurchaseSchema = new Schema(
       ref: 'User',
       required: true,
     },
-    subscriptionId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Subscription',
+    amount: {
+      type: Number,
       required: true,
     },
-    duration: { type: Number, required: true },
-    createdDate: { type: Date, required: true, default: Date.now() },
+    type: {
+      type: String,
+      enum: ['monthly', 'yearly'],
+      required: true,
+    },
+    startDate: {
+      type: Date,
+      required: true,
+    },
+    endDate: {
+      type: Date,
+      required: true,
+    },
   },
   {
     timestamps: true,
@@ -27,6 +37,5 @@ const SubscriptionPurchase = mongoose.model<TPurchestSubscription>(
 );
 
 export default SubscriptionPurchase;
-
 
 

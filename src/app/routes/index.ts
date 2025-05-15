@@ -19,7 +19,7 @@ import favoriteBusinessRoutes from '../modules/favorite/favorite.route';
 import reviewRouter from '../modules/ratings/ratings.route';
 import chatRouter from '../modules/chat/chat.route';
 import messageRouter from '../modules/message/message.route';
-import subscriptionRouter from '../modules/subscription/subscription.route';
+import subscriptionRouter from '../modules/subscription_plan/subscription_plan.route';
 import subscriptionPurchaseRouter from '../modules/purchestSubscription/purchestSubscription.route';
 
 const router = Router();

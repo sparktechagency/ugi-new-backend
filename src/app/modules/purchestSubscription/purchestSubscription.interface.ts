@@ -3,8 +3,11 @@ import { Types } from "mongoose";
 
 export type TPurchestSubscription = {
   businessUserId: Types.ObjectId;
-  subscriptionId: Types.ObjectId;
-  duration: number;
-  createdDate: Date;
+  amount: number;
+  type: string;
+  startDate: Date;
+  endDate: Date;
 };
+
+
 

@@ -3,12 +3,14 @@ import catchAsync from '../../utils/catchAsync';
 import { Request, Response } from 'express';
 import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
-import AppError from '../../error/AppError';
-import { purchestsubscriptionService } from './purchestSubscription.service';
+import { purchestsubscriptionService, stripe } from './purchestSubscription.service';
 
 const createPurchestSubscription = catchAsync(async (req: Request, res: Response) => {
   // // console.log('hit hoise')
+  const { userId } = req.user;
   const bodyData = req.body;
+  bodyData.businessUserId = userId;
+
 
   const result =
     await purchestsubscriptionService.createPurchestSubscriptionService(
@@ -23,10 +25,14 @@ const createPurchestSubscription = catchAsync(async (req: Request, res: Response
   });
 });
 
+
+
 const getAllPurchestSubscription = catchAsync(async (req, res) => {
+  const { userId } = req.user;
   const result =
     await purchestsubscriptionService.getAllPurchestSubscriptionService(
       req.query,
+      userId,
     );
 
   sendResponse(res, {
@@ -38,20 +44,24 @@ const getAllPurchestSubscription = catchAsync(async (req, res) => {
   });
 });
 
-const getAllPurchestSubscriptionByAdmin = catchAsync(async (req, res) => {
-  const result =
-    await purchestsubscriptionService.getAllPurchestSubscriptionByAdminService(
-      req.query,
-    );
+const getRunningPurchestSubscriptionByBusinessman = catchAsync(
+  async (req, res) => {
+    const { userId } = req.user;
+    const result =
+      await purchestsubscriptionService.getRunningPurchestSubscriptionByBusinessmanService(
+        userId,
+      );
 
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    meta: result.meta,
-    data: result.result,
-    message: 'Get All PurchestSubscription successful!!',
-  });
-});
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      data: result,
+      message: 'Get Running Purchest Subscription successful!!',
+    });
+  },
+);
+
+
 
 const getSinglePurchestSubscription = catchAsync(
   async (req: Request, res: Response) => {
@@ -101,11 +111,13 @@ const updatePurchestSubscriptionActiveDeactive = catchAsync(
   },
 );
 
+
+
 export const purchestsubscriptionController = {
   createPurchestSubscription,
   getAllPurchestSubscription,
-  getAllPurchestSubscriptionByAdmin,
+  getRunningPurchestSubscriptionByBusinessman,
   getSinglePurchestSubscription,
   deletedPurchestSubscription,
-  updatePurchestSubscriptionActiveDeactive,
+  updatePurchestSubscriptionActiveDeactive
 };

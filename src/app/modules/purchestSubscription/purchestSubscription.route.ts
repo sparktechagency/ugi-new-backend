@@ -8,24 +8,28 @@ const subscriptionPurchaseRouter = express.Router();
 subscriptionPurchaseRouter
   .post(
     '/create-purchase-subscription',
-    auth(USER_ROLE.ADMIN),
+    auth(USER_ROLE.BUSINESS),
     purchestsubscriptionController.createPurchestSubscription,
   )
   .get(
-    '/admin',
-    auth(USER_ROLE.ADMIN),
-    purchestsubscriptionController.getAllPurchestSubscriptionByAdmin,
+    '/running',
+    auth(USER_ROLE.BUSINESS),
+    purchestsubscriptionController.getRunningPurchestSubscriptionByBusinessman,
   )
-  .get('/', purchestsubscriptionController.getAllPurchestSubscription)
+  .get(
+    '/',
+    auth(USER_ROLE.BUSINESS),
+    purchestsubscriptionController.getAllPurchestSubscription,
+  )
   .get('/:id', purchestsubscriptionController.getSinglePurchestSubscription)
   .patch(
     '/:id',
-    auth(USER_ROLE.ADMIN),
+    auth(USER_ROLE.BUSINESS),
     purchestsubscriptionController.updatePurchestSubscriptionActiveDeactive,
   )
   .delete(
     '/:id',
-    auth(USER_ROLE.ADMIN),
+    auth(USER_ROLE.BUSINESS),
     purchestsubscriptionController.deletedPurchestSubscription,
   );
 
