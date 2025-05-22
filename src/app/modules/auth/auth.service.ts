@@ -20,12 +20,14 @@ import { generateOptAndExpireTime } from '../otp/otp.utils';
 import { otpServices } from '../otp/otp.service';
 import { otpSendEmail } from '../../utils/eamilNotifiacation';
 import { OTPVerifyAndCreateUserProps, userService } from '../user/user.service';
+import SubscriptionPurchase from '../purchestSubscription/purchestSubscription.model';
 
 // Login
 const login = async (payload: TLogin) => {
   // console.log("payload", payload)
-  const user = await User.isUserActive(payload?.email);
-  // console.log('user', user);
+  // const user = await User.isUserActive(payload?.email);
+  const user = await User.findOne({ email: payload?.email }).select('password fullName email role isDeleted isActive');
+  console.log('user222222222', user);
   if (!user) {
     throw new AppError(httpStatus.BAD_REQUEST, 'User not found');
   }
@@ -46,6 +48,11 @@ const login = async (payload: TLogin) => {
     userId: user?._id?.toString() as string,
     role: user?.role,
   };
+  const result = await SubscriptionPurchase.find({ businessUserId: user._id , endDate: { $gte: new Date() }});
+
+  const currentRunningSubscription = result.find(
+    (item: any) => item.endDate >= new Date(),
+  );
 
   // console.log({ jwtPayload });
 
@@ -67,6 +74,9 @@ const login = async (payload: TLogin) => {
     user,
     accessToken,
     refreshToken,
+    ...(user.role === 'business'
+      ? { isSubcriptionActive: currentRunningSubscription ? true : false }
+      : {}),
   };
 };
 
