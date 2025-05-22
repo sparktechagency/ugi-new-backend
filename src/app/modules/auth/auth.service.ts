@@ -26,7 +26,7 @@ import SubscriptionPurchase from '../purchestSubscription/purchestSubscription.m
 const login = async (payload: TLogin) => {
   // console.log("payload", payload)
   // const user = await User.isUserActive(payload?.email);
-  const user = await User.findOne({ email: payload?.email }).select('password fullName email role isDeleted isActive');
+  const user = await User.findOne({ email: payload?.email, isDeleted: false, isActive: true }).select('password fullName email role isDeleted isActive');
   console.log('user222222222', user);
   if (!user) {
     throw new AppError(httpStatus.BAD_REQUEST, 'User not found');
