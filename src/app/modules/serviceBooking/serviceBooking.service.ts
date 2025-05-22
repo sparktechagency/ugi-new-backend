@@ -251,7 +251,7 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
     // console.log('step-5');
     // console.log('refundPercentage', refundPercentage);
     // console.log('ugiTokenParcentage', ugiTokenParcentage);
-// ugiTokenParcentage; ugiTokenParcentage; 
+    // ugiTokenParcentage; ugiTokenParcentage; 
     // Calculate refund amount
     const refundAmount = Math.floor(
       (serviceBooking.depositAmount * refundPercentage) / 100,
