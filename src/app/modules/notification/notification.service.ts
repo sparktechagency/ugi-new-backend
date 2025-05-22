@@ -7,6 +7,7 @@ import { TNotification } from './notification.interface';
 
 const createNotification = async (payload: any, session?: any) => {
   const result = await Notification.create([payload], { session });
+   io.emit('notification', result);
   return result;
 };
 

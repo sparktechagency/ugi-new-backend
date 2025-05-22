@@ -13,6 +13,8 @@ const createNotification = catchAsync(async (req: Request, res: Response) => {
     session,
   );
 
+ 
+
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,

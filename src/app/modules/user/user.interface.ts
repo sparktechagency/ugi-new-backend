@@ -29,6 +29,7 @@ export interface TUserCreate {
   country: string;
   ratings: number;
   reviewCount: number;
+  gender: string;
 }
 
 export interface TUser extends TUserCreate {

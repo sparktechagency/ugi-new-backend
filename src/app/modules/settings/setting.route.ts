@@ -12,6 +12,9 @@ settingsRouter
     settingsController.addSetting,
   )
   .get('/', settingsController.getSettings)
+  .get('/privacy-policy', settingsController.getPrivacyPolicy)
+  .get('/account-delete-policy', settingsController.getAccountDelete)
+  .get('/support', settingsController.getSupport)
   .patch('/', settingsController.updateSetting);
 
 export default settingsRouter;

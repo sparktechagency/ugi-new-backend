@@ -32,6 +32,24 @@ const getSettings = catchAsync(
   },
 );
 
+const getPrivacyPolicy = catchAsync(
+  async (req: Request, res: Response): Promise<void> => {
+    res.render('setting.privacyPolicy.ejs');
+  },
+);
+
+const getAccountDelete = catchAsync(
+  async (req: Request, res: Response): Promise<void> => {
+     res.render('setting.accountDeletePolicy.ejs');
+  },
+);
+
+const getSupport = catchAsync(
+  async (req: Request, res: Response): Promise<void> => {
+    res.render('setting.support.ejs');
+  },
+);
+
 const updateSetting = catchAsync(async (req, res) => {
   //   const { id } = req.params;
   const settingData = { ...req.body };
@@ -46,6 +64,9 @@ const updateSetting = catchAsync(async (req, res) => {
 
 export const settingsController = {
   addSetting,
-  updateSetting,
   getSettings,
+  getPrivacyPolicy,
+  getAccountDelete,
+  getSupport,
+  updateSetting,
 };
