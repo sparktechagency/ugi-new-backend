@@ -13,7 +13,7 @@ const categoryRouter = express.Router();
 categoryRouter
   .post(
     '/create-category',
-    // auth(USER_ROLE.ADMIN),
+    auth(USER_ROLE.ADMIN),
     // upload.single('image'),
     upload.fields([{ name: 'image', maxCount: 1 }]),
     validateRequest(categoryValidation.categorySchema),
