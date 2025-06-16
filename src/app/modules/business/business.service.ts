@@ -733,7 +733,7 @@ const getAllFilterByBusinessByPostcodeService = async (postCode: number) => {
 };
 
 const getSingleBusinessByBusinessIdService = async (businessId: string) => {
-  const result = await Business.findOne({ businessId });
+  const result = await Business.findOne({ businessId }).populate('businessId');
   //03:15pm //09:25pm
 
 

@@ -118,6 +118,26 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
       type: { type: String, enum: ['Point'], default: 'Point' },
       coordinates: { type: [Number], required: false },
     },
+    postalCode: {
+      type: String,
+      required: false,
+      default: ' ',
+    },
+    addressLine1: {
+      type: String,
+      required: false,
+      default: ' ',
+    },
+    addressLine2: {
+      type: String,
+      required: false,
+      default: ' ',
+    },
+    townCity: {
+      type: String,
+      required: false,
+      default: ' ',
+    },
   },
   {
     timestamps: true,
