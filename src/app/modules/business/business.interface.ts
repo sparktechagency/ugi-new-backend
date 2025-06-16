@@ -30,6 +30,10 @@ export type TBusiness = {
     type: 'Point';
     coordinates: [number, number]; // [longitude, latitude]
   };
+  postalCode: string;
+  addressLine1: string;
+  addressLine2: string;
+  townCity: string;
 };
 
 // import { Types } from 'mongoose';
