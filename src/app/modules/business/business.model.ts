@@ -88,12 +88,12 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
     // },
     launchbreakStartTime: {
       type: String,
-      required: true,
+      required: false,
       default: '',
     },
     launchbreakEndTime: {
       type: String,
-      required: true,
+      required: false,
       default: '',
     },
     reviewCount: {
