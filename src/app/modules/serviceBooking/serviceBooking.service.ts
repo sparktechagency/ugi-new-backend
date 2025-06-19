@@ -13,6 +13,7 @@ import Business from '../business/business.model';
 import { notificationService } from '../notification/notification.service';
 import { paymentService } from '../payment/payment.service';
 import Notification from '../notification/notification.model';
+import { User } from '../user/user.models';
 
 const createServiceBooking = async (
   payload: TServiceBooking,
@@ -610,6 +611,11 @@ const reSheduleRequestServiceBooking = async (id: string, payload: any) => {
     );
   }
 
+  const customer = await User.findById(payload.customerId);
+  if (!customer) {
+    throw new AppError(404, 'Customer not found!');
+  }
+
   if (
     bookingService.status === 'complete' ||
     bookingService.status === 'cencel'
@@ -705,7 +711,7 @@ const reSheduleRequestServiceBooking = async (id: string, payload: any) => {
 
   const notificationData = {
     userId: bookingService.businessId,
-    message: `Re-shedule Request Service Booking Successfully!`,
+    message: `${customer?.fullName} has requested to schedule a booking from ${bookingService.bookingDate} & ${bookingService.bookingStartTime} to ${bookingService.reSheduleDate} & ${bookingService.reSheduleStartTime}. Please review and confirm the request`,
     status: 'pending',
     type: 'reshedule',
     serviceBookingId: bookingService._id,
