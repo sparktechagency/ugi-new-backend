@@ -581,7 +581,7 @@ export const settingSupportTemplete = `<!doctype html>
 
       .highlight {
         font-weight: bold;
-        color: #007bff;
+        color: #fe3372;
         animation: colorPop 1.5s ease-out;
       }
 
@@ -622,13 +622,13 @@ export const settingSupportTemplete = `<!doctype html>
 
       @keyframes colorPop {
         0% {
-          color: #007bff;
+          color: #fe3372;
         }
         50% {
-          color: #0056b3;
+          color: #fe3372;
         }
         100% {
-          color: #007bff;
+          color: #fe3372;
         }
       }
 
@@ -812,7 +812,7 @@ export const settingDeleteTemplete = `<!doctype html>
 
       h1 {
         text-align: center;
-        color: #007bff;
+        color: #fe3372;
         font-size: 24px;
         margin-bottom: 20px;
       }
@@ -827,7 +827,7 @@ export const settingDeleteTemplete = `<!doctype html>
       }
 
       .highlight {
-        background-color: #ffeeba;
+        background-color: #fe3372;
         padding: 2px 4px;
         border-radius: 4px;
       }
