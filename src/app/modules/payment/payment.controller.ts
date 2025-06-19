@@ -6,6 +6,7 @@ import Stripe from 'stripe';
 import AppError from '../../error/AppError';
 import config from '../../config';
 import { StripeAccount } from '../stripeAccount/stripeAccount.model';
+import { cancelTemplete, successAccountTemplete, successTemplete } from '../../../templete/templete';
 
 const addPayment = catchAsync(async (req, res, next) => {
   const { userId } = req.user;
@@ -160,11 +161,13 @@ const getAllIncomeRasioBy7days = catchAsync(async (req, res) => {
 
 const successPage = catchAsync(async (req, res) => {
   // console.log('hit hoise');
-  res.render('success.ejs');
+  // res.render('success.ejs');
+  res.send(successTemplete);
 });
 
 const cancelPage = catchAsync(async (req, res) => {
-  res.render('cancel.ejs');
+  // res.render('cancel.ejs');
+  res.send(cancelTemplete);
 });
 
 const successPageAccount = catchAsync(async (req, res) => {
@@ -211,7 +214,8 @@ const successPageAccount = catchAsync(async (req, res) => {
   }
   await StripeAccount.updateOne({ accountId: id }, { isCompleted: true });
 
-  res.render('success-account.ejs');
+  // res.render('success-account.ejs');
+  res.send(successAccountTemplete);
 });
 
 //webhook
