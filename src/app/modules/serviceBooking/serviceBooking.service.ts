@@ -327,19 +327,20 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
     );
 
     if (!tokenCreate) {
-      throw new AppError(500, 'Ugi token not created');
+      throw new AppError(500, 'Ugi token not created!!');
     }
 
     // Create Notifications
     const notificationData: any = {
       userId: business.businessId,
-      message: `Booking Cancelled Successfully! Refund is ${refundPercentage}% of the deposit. Remaining ${uogiTokenAmount} converted to Uogi Tokens.`,
+      // message: `Booking Cancelled Successfully! Refund is ${refundPercentage}% of the deposit. Remaining ${uogiTokenAmount} converted to Uogi Tokens.`,
+      message: `Your Uogi token has now been applied successfully.`,
       type: 'success',
     };
 
     const notificationData1: any = {
       userId: business.businessId,
-      message: `Create Ugi Token Request Successfully!`,
+      message: `You are now eligible for a Uogi token. Please confirm`,
       type: 'ugiToken',
       isUgiToken: tokenCreate[0]._id,
     };
@@ -769,7 +770,10 @@ const reSheduleCompleteCencelServiceBooking = async (
     if (notification && notification._id) {
       await Notification.findByIdAndUpdate(
         notification._id,
-        { status: 'cancel' },
+        {
+          status: 'cancel',
+          message: 'You have cancelled the booking request.',
+        },
         { new: true },
       );
       // console.log('Notification updated: cancel');
@@ -797,7 +801,10 @@ const reSheduleCompleteCencelServiceBooking = async (
     if (notification && notification._id) {
       await Notification.findByIdAndUpdate(
         notification._id,
-        { status: 'accept' },
+        {
+          status: 'accept',
+          message: 'You have successfully accepted the booking request.',
+        },
         { new: true },
       );
       // console.log('Notification updated: accept');
