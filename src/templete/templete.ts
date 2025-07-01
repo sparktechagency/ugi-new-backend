@@ -432,7 +432,7 @@ export const serverRunningTemplete = `<!doctype html>
         <div class="icon">⚡</div>
         <h1>Server is Running</h1>
         <p>
-          Everything is online and fully operational. Ready for your requests!
+          Everything is online and fully operational.${process.env.SERVER_NAME}!
         </p>
       </div>
     </div>

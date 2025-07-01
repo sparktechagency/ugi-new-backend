@@ -777,9 +777,9 @@ const reSheduleCompleteCencelServiceBooking = async (
         { new: true },
       );
       // console.log('Notification updated: cancel');
-    }
+    } 
 
-    return result;
+    http: return result;
   } else if (status == 'conform') {
     bookingService.reSheduleStatus = 'conform-re-shedule';
     // console.log('date date', bookingService.reSheduleDate);

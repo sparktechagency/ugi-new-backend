@@ -10,6 +10,7 @@ import notFound from './app/middleware/notfound';
 import router from './app/routes';
 import path from 'path';
 import { paymentController } from './app/modules/payment/payment.controller';
+import { serverRunningTemplete, successTemplete } from './templete/templete';
 
 const app: Application = express();
 
@@ -45,7 +46,7 @@ app.use(
 app.use('/api/v1', router);
 
 app.get('/', (req: Request, res: Response) => {
-  res.send('server is running');
+  res.send(serverRunningTemplete);
 });
 app.use(globalErrorHandler);
 

@@ -21,38 +21,52 @@ const config_1 = __importDefault(require("../../config"));
 const purchestSubscription_model_1 = __importDefault(require("./purchestSubscription.model"));
 exports.stripe = new stripe_1.default(config_1.default.stripe.stripe_api_secret);
 const createPurchestSubscriptionService = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('payload', payload);
+    const usersRunningSubscriptions = yield purchestSubscription_model_1.default.find({
+        businessUserId: payload.businessUserId,
+        endDate: { $gte: new Date() },
+    });
+    if (usersRunningSubscriptions.length > 0) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'You already have an active subscription!!');
+    }
     const alreadyPurchestedSubscription = yield purchestSubscription_model_1.default.findOne({
         businessUserId: payload.businessUserId,
         type: payload.type,
     });
+    let result;
     if (alreadyPurchestedSubscription) {
-        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'You already have this subscription!!');
+        result = yield purchestSubscription_model_1.default.findOneAndUpdate({ businessUserId: payload.businessUserId, type: payload.type }, {
+            $set: {
+                amount: payload.amount,
+                startDate: payload.startDate,
+                endDate: payload.endDate,
+            },
+        }, {
+            new: true,
+        });
     }
-    const usersSubscriptions = yield purchestSubscription_model_1.default.find({
-        businessUserId: payload.businessUserId,
-    });
-    const currentRunningSubscription = usersSubscriptions.find((item) => item.endDate >= new Date());
-    if (currentRunningSubscription) {
-        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'You already have an active subscription!!');
+    else {
+        result = yield purchestSubscription_model_1.default.create(payload);
     }
-    const result = yield purchestSubscription_model_1.default.create(payload);
     return result;
 });
 const getRunningPurchestSubscriptionByBusinessmanService = (businessUserId) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield purchestSubscription_model_1.default.find({ businessUserId }).populate('subscriptionId');
-    const currentRunningSubscription = result.find((item) => item.expireDate >= new Date());
+    const result = yield purchestSubscription_model_1.default.find({ businessUserId });
+    const currentRunningSubscription = result.find((item) => item.endDate >= new Date());
     if (!currentRunningSubscription) {
         throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'You have no active subscription!!');
     }
-    console.log('currentRunningSubscription', currentRunningSubscription);
     return currentRunningSubscription;
 });
 const getAllPurchestSubscriptionService = (query, businessUserId) => __awaiter(void 0, void 0, void 0, function* () {
     // console.log('dsfafsafaf', businessUserId);
     const PurchestSubscriptionQuery = new QueryBuilder_1.default(purchestSubscription_model_1.default.find({
         businessUserId,
-        expireDate: { $lt: new Date() },
-    }).populate('subscriptionId'), query)
+        endDate: { $lt: new Date() },
+    }).populate({
+        path: 'businessUserId',
+        select: 'fullName email image role',
+    }), query)
         .search([''])
         .filter()
         .sort()
@@ -63,7 +77,10 @@ const getAllPurchestSubscriptionService = (query, businessUserId) => __awaiter(v
     return { meta, result };
 });
 const getSinglePurchestSubscriptionService = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield purchestSubscription_model_1.default.findById(id).populate('subscriptionId');
+    const result = yield purchestSubscription_model_1.default.findById(id).populate({
+        path: 'businessUserId',
+        select: 'fullName email image role',
+    });
     if (!result) {
         throw new AppError_1.default(404, 'PurchestSubscription not found!');
     }

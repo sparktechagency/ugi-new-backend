@@ -27,6 +27,7 @@ const business_model_1 = __importDefault(require("../business/business.model"));
 const notification_service_1 = require("../notification/notification.service");
 const payment_service_1 = require("../payment/payment.service");
 const notification_model_1 = __importDefault(require("../notification/notification.model"));
+const user_models_1 = require("../user/user.models");
 const createServiceBooking = (payload, session) => __awaiter(void 0, void 0, void 0, function* () {
     const { bookingDate, bookingStartTime, bookingEndTime, businessId } = payload;
     const isValidTimeFormat = (time) => (0, moment_1.default)(time, 'hh:mm A', true).isValid();
@@ -255,17 +256,18 @@ const cancelServiceBooking = (id, customerId) => __awaiter(void 0, void 0, void 
         };
         const tokenCreate = yield ugiToken_service_1.ugiTokenService.createUgiTokenService(ugiTokenData, session);
         if (!tokenCreate) {
-            throw new AppError_1.default(500, 'Ugi token not created');
+            throw new AppError_1.default(500, 'Ugi token not created!!');
         }
         // Create Notifications
         const notificationData = {
             userId: business.businessId,
-            message: `Booking Cancelled Successfully! Refund is ${refundPercentage}% of the deposit. Remaining ${uogiTokenAmount} converted to Uogi Tokens.`,
+            // message: `Booking Cancelled Successfully! Refund is ${refundPercentage}% of the deposit. Remaining ${uogiTokenAmount} converted to Uogi Tokens.`,
+            message: `Your Uogi token has now been applied successfully.`,
             type: 'success',
         };
         const notificationData1 = {
             userId: business.businessId,
-            message: `Create Ugi Token Request Successfully!`,
+            message: `You are now eligible for a Uogi token. Please confirm`,
             type: 'ugiToken',
             isUgiToken: tokenCreate[0]._id,
         };
@@ -463,6 +465,10 @@ const reSheduleRequestServiceBooking = (id, payload) => __awaiter(void 0, void 0
     if (bookingService.customerId.toString() !== payload.customerId) {
         throw new AppError_1.default(403, 'You are not authorized to complete this ServiceBooking!!');
     }
+    const customer = yield user_models_1.User.findById(payload.customerId);
+    if (!customer) {
+        throw new AppError_1.default(404, 'Customer not found!');
+    }
     if (bookingService.status === 'complete' ||
         bookingService.status === 'cencel') {
         throw new AppError_1.default(403, 'This ServiceBooking is not available for re-shedule service is complete!!');
@@ -524,7 +530,7 @@ const reSheduleRequestServiceBooking = (id, payload) => __awaiter(void 0, void 0
     const result = yield bookingService.save();
     const notificationData = {
         userId: bookingService.businessId,
-        message: `Re-shedule Request Service Booking Successfully!`,
+        message: `${customer === null || customer === void 0 ? void 0 : customer.fullName} has requested to schedule a booking from ${bookingService.bookingDate} & ${bookingService.bookingStartTime} to ${bookingService.reSheduleDate} & ${bookingService.reSheduleStartTime}. Please review and confirm the request`,
         status: 'pending',
         type: 'reshedule',
         serviceBookingId: bookingService._id,
@@ -558,10 +564,13 @@ const reSheduleCompleteCencelServiceBooking = (id, businessId, status) => __awai
         bookingService.reSheduleStatus = 'cencel-re-shedule';
         const result = yield bookingService.save();
         if (notification && notification._id) {
-            yield notification_model_1.default.findByIdAndUpdate(notification._id, { status: 'cancel' }, { new: true });
+            yield notification_model_1.default.findByIdAndUpdate(notification._id, {
+                status: 'cancel',
+                message: 'You have cancelled the booking request.',
+            }, { new: true });
             // console.log('Notification updated: cancel');
         }
-        return result;
+        http: return result;
     }
     else if (status == 'conform') {
         bookingService.reSheduleStatus = 'conform-re-shedule';
@@ -579,7 +588,10 @@ const reSheduleCompleteCencelServiceBooking = (id, businessId, status) => __awai
         bookingService.reSheduleEndTime = ' ';
         const result = yield bookingService.save();
         if (notification && notification._id) {
-            yield notification_model_1.default.findByIdAndUpdate(notification._id, { status: 'accept' }, { new: true });
+            yield notification_model_1.default.findByIdAndUpdate(notification._id, {
+                status: 'accept',
+                message: 'You have successfully accepted the booking request.',
+            }, { new: true });
             // console.log('Notification updated: accept');
         }
         return result;

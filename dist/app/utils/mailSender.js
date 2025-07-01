@@ -28,7 +28,7 @@ const sendEmail = (to, subject, html) => __awaiter(void 0, void 0, void 0, funct
         },
     });
     yield transporter.sendMail({
-        from: 'stagpt2024@gmail.com', // sender address
+        from: 'dev.humayonforid44@gmail.com', // sender address
         to, // list of receivers
         subject,
         text: '', // plain text body
