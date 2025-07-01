@@ -70,7 +70,7 @@ const userSchema = new Schema<TUser>(
       type: String,
       enum: ['customer_business', 'customer', 'business'],
       required: false,
-      default: ' ',
+      // default: ' ',
     },
     postalCode: {
       type: String,

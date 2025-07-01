@@ -89,12 +89,12 @@ const BusinessSchema = new mongoose_1.default.Schema({
     // },
     launchbreakStartTime: {
         type: String,
-        required: true,
+        required: false,
         default: '',
     },
     launchbreakEndTime: {
         type: String,
-        required: true,
+        required: false,
         default: '',
     },
     reviewCount: {
@@ -118,6 +118,26 @@ const BusinessSchema = new mongoose_1.default.Schema({
     location: {
         type: { type: String, enum: ['Point'], default: 'Point' },
         coordinates: { type: [Number], required: false },
+    },
+    postalCode: {
+        type: String,
+        required: false,
+        default: ' ',
+    },
+    addressLine1: {
+        type: String,
+        required: false,
+        default: ' ',
+    },
+    addressLine2: {
+        type: String,
+        required: false,
+        default: ' ',
+    },
+    townCity: {
+        type: String,
+        required: false,
+        default: ' ',
     },
 }, {
     timestamps: true,

@@ -27,6 +27,7 @@ const ugiToken_model_1 = require("../ugiToken/ugiToken.model");
 // import { parse, isBefore, isAfter } from 'date-fns'; // You can use another library if preferred
 const axios_1 = __importDefault(require("axios"));
 const config_1 = __importDefault(require("../../config"));
+const purchestSubscription_model_1 = __importDefault(require("../purchestSubscription/purchestSubscription.model"));
 const createBusinessService = (files, payload) => __awaiter(void 0, void 0, void 0, function* () {
     // console.log('businesss-1', { payload });
     payload.businessType = JSON.parse(payload.businessType);
@@ -209,10 +210,174 @@ const convertTo24HourFormat11 = (time) => {
 //   const meta = await businessQuery.countTotal();
 //   return { meta, result };
 // };
+// const getAllFilterByBusinessService = async (
+//   query: Record<string, unknown>,
+//   customerId: string,
+// ) => {
+//   const {
+//     categoryName,
+//     subCategoryName,
+//     availableDays,
+//     timeSlots,
+//     page = 1,
+//     limit = 10,
+//   }: any = query;
+//   let formattedAvailableDays = [];
+//   let formattedTimeSlots = [];
+//   try {
+//     formattedAvailableDays = JSON.parse(
+//       availableDays.replace(/(\w+)/g, '"$1"'),
+//     );
+//   } catch (error) {
+//     console.error('Error parsing availableDays:', error);
+//   }
+//   try {
+//     formattedTimeSlots = JSON.parse(
+//       timeSlots.replace(/^\[/, '["').replace(/]$/, '"]').replace(/, /g, '", "'),
+//     );
+//   } catch (error) {
+//     console.error('Error parsing timeSlots:', error);
+//   }
+//   const formattedQuery = {
+//     categoryName,
+//     subCategoryName,
+//     availableDays: formattedAvailableDays,
+//     timeSlots: formattedTimeSlots,
+//   };
+//   const skip = (page - 1) * limit;
+//   const serviceQuery = await Service.find({
+//     categoryName: formattedQuery.categoryName,
+//     subCategoryName: formattedQuery.subCategoryName,
+//   })
+//     .select('businessId')
+//     .populate('businessId');
+//   console.log('serviceQuery===', serviceQuery);
+//   const uniqueServiceQuery = serviceQuery.filter((value, index, self) => {
+//     return (
+//       self.findIndex(
+//         (item) =>
+//           item.businessId._id.toString() === value.businessId._id.toString(),
+//       ) === index
+//     );
+//   });
+//   console.log('Unique Service Query:', uniqueServiceQuery);
+// const businessesWithinRadius = await Business.find({
+//   _id: { $in: uniqueServiceQuery.map((service) => service.businessId._id) },
+//   location: {
+//     $nearSphere: {
+//       $geometry: {
+//         type: 'Point',
+//         coordinates: [90.1225, 21.8225], // [longitude, latitude]
+//       },
+//       $maxDistance: 20000, // 20 km in meters
+//     },
+//   },
+// });
+// console.log('businessesWithinRadius', businessesWithinRadius);
+//   let filteredBusinesses: any = [];
+//   if (formattedQuery.availableDays) {
+//     filteredBusinesses = uniqueServiceQuery.filter(({ businessId }: any) => {
+//       if (
+//         !businessId ||
+//         !businessId.specifigDate ||
+//         !businessId.availableDaysTime
+//       )
+//         return false;
+//       return (formattedQuery.availableDays as string[]).some(
+//         (day: string) =>
+//           businessId.specifigDate.includes(getDayDate(day)) ||
+//           businessId.availableDaysTime.some((item: any) => item.day === day),
+//       );
+//     });
+//   }
+//   let newTimeSlots;
+//   if (formattedQuery.timeSlots) {
+//     newTimeSlots = await generateNewTimeSlot(formattedQuery.timeSlots);
+//   }
+//   let filteredResult: any = [];
+//   if (newTimeSlots && typeof newTimeSlots === 'string') {
+//     const [queryStartTime, queryEndTime] = newTimeSlots.split(' - ');
+//     const queryStart = convertTo24HourFormat11(queryStartTime.trim());
+//     const queryEnd = convertTo24HourFormat11(queryEndTime.trim());
+//     filteredResult = filteredBusinesses.filter((business: any) => {
+//       let startTime: string | undefined, endTime: string | undefined;
+//       let specifigstartTime: string | undefined,
+//         specifigendTime: string | undefined;
+//       if (
+//         business.businessId.specifigStartTime?.trim() &&
+//         business.businessId.specifigEndTime?.trim() &&
+//         business.businessId.specifigDate?.length > 0
+//       ) {
+//         specifigstartTime = convertTo24HourFormat11(
+//           business.businessId.specifigStartTime,
+//         );
+//         specifigendTime = convertTo24HourFormat11(
+//           business.businessId.specifigEndTime,
+//         );
+//       }
+//       if (formattedQuery.availableDays.length > 0) {
+//         const availableDaysTime = business.businessId.availableDaysTime;
+//         availableDaysTime.forEach((item: any) => {
+//           if (formattedQuery.availableDays.includes(item.day)) {
+//             startTime = convertTo24HourFormat11(item.startTime);
+//             endTime = convertTo24HourFormat11(item.endTime);
+//           }
+//         });
+//       }
+//       return (
+//         (specifigstartTime !== undefined &&
+//           specifigendTime !== undefined &&
+//           specifigstartTime >= queryStart &&
+//           specifigstartTime < queryEnd &&
+//           specifigendTime > queryStart) ||
+//         (startTime !== undefined &&
+//           endTime !== undefined &&
+//           startTime >= queryStart &&
+//           startTime < queryEnd &&
+//           endTime > queryStart)
+//       );
+//     });
+//   }
+//   const favoriteData = await FavoriteBusiness.find({ customerId });
+//   const enhancedResult = filteredResult.map((business: any) => {
+//     const isFavorite = favoriteData.some(
+//       (fav) => fav.businessId.toString() === business.businessId._id.toString(),
+//     );
+//     return { ...business._doc, isFavorite };
+//   });
+//   const enhancedResult2 = await Promise.all(
+//     enhancedResult.map(async (business: any) => {
+//       const ugiTokenData = await UgiToken.findOne({
+//         businessId: business.businessId.businessId,
+//         status: 'accept',
+//       });
+//       const ugiToken = ugiTokenData ? ugiTokenData.ugiTokenAmount : 'false';
+//       return {
+//         _id: business._id,
+//         businessId: business.businessId, 
+//         isFavorite: business.isFavorite,
+//         ugiToken, 
+//       };
+//     }),
+//   );
+//   const sortedEnhancedResult2 = enhancedResult2.sort((a, b) => {
+//     if (b.ugiToken && !a.ugiToken) return 1;
+//     if (a.ugiToken && !b.ugiToken) return -1;
+//     return 0; 
+//   });
+//   const total = sortedEnhancedResult2?.length;
+//   const totalPage = Math.ceil(total / limit);
+//   const paginatedResult = sortedEnhancedResult2.slice(skip, skip + limit);
+//   const meta = {
+//     page: Number(page),
+//     limit: Number(limit),
+//     total,
+//     totalPage,
+//   };
+//   return { meta, result: paginatedResult };
+// };
 const getAllFilterByBusinessService = (query, customerId) => __awaiter(void 0, void 0, void 0, function* () {
-    // console.log('Service query:==', query);
-    const { categoryName, subCategoryName, availableDays, timeSlots, page = 1, limit = 10, } = query;
-    // console.log('****');
+    const { categoryName, subCategoryName, availableDays, timeSlots, page = 1, limit = 10, longitude, latitude, } = query;
     let formattedAvailableDays = [];
     let formattedTimeSlots = [];
     try {
@@ -233,8 +398,6 @@ const getAllFilterByBusinessService = (query, customerId) => __awaiter(void 0, v
         availableDays: formattedAvailableDays,
         timeSlots: formattedTimeSlots,
     };
-    // console.log({ formattedQuery });
-    // Pagination variables
     const skip = (page - 1) * limit;
     const serviceQuery = yield service_model_1.default.find({
         categoryName: formattedQuery.categoryName,
@@ -242,126 +405,74 @@ const getAllFilterByBusinessService = (query, customerId) => __awaiter(void 0, v
     })
         .select('businessId')
         .populate('businessId');
-    // console.log('serviceQuery===', serviceQuery);
+    console.log('serviceQuery===', serviceQuery);
     const uniqueServiceQuery = serviceQuery.filter((value, index, self) => {
-        // Check if the businessId has appeared before by comparing the index
         return (self.findIndex((item) => item.businessId._id.toString() === value.businessId._id.toString()) === index);
     });
-    // console.log('Unique Service Query:', uniqueServiceQuery);
-    // const dayFromDate = getDayDate('Saturday');
-    // // console.log('dayFromDate', dayFromDate);
+    console.log('Unique Service Query:', uniqueServiceQuery);
+    const activeSubscriptions = yield purchestSubscription_model_1.default.find({
+        endDate: { $gte: new Date() },
+        // startDate: { $lte: new Date() },
+    }).select('businessUserId');
+    // console.log('activeSubscriptions', activeSubscriptions);
+    const activeBusinessIds = activeSubscriptions.map((sub) => sub.businessUserId.toString());
+    // console.log('activeBusinessIds', activeBusinessIds);
+    const businessesWithinRadius = yield business_model_1.default.find({
+        _id: {
+            $in: uniqueServiceQuery === null || uniqueServiceQuery === void 0 ? void 0 : uniqueServiceQuery.map((service) => { var _a; return (_a = service === null || service === void 0 ? void 0 : service.businessId) === null || _a === void 0 ? void 0 : _a._id; }),
+        },
+        location: {
+            $nearSphere: {
+                $geometry: {
+                    type: 'Point',
+                    coordinates: [longitude, latitude], // [longitude, latitude]
+                },
+                $maxDistance: 20000, // 20 km in meters
+            },
+        },
+    });
+    // console.log('businessesWithinRadius', businessesWithinRadius);
+    const subscriptionActiveBusiness = businessesWithinRadius.filter((business) => activeBusinessIds.includes(business.businessId.toString()));
+    // console.log('subscriptionActiveBusiness', subscriptionActiveBusiness);
     let filteredBusinesses = [];
     if (formattedQuery.availableDays) {
-        filteredBusinesses = uniqueServiceQuery.filter(({ businessId }) => {
-            // // console.log('Business Available Days:', businessId?.availableDaysTime);
-            if (!businessId ||
-                !businessId.specifigDate ||
-                !businessId.availableDaysTime)
+        filteredBusinesses = subscriptionActiveBusiness.filter((businessId) => {
+            if (!businessId.specifigDate || !businessId.availableDaysTime)
                 return false;
             return formattedQuery.availableDays.some((day) => businessId.specifigDate.includes((0, business_utils_1.getDayDate)(day)) ||
                 businessId.availableDaysTime.some((item) => item.day === day));
         });
     }
-    // console.log('filteredBusinesses pelei hobe=', filteredBusinesses);
-    // if (formattedQuery.availableDays) {
-    //   filteredBusinesses = serviceQuery.filter(({ businessId }: any) => {
-    //     // console.log('Business Available Days:', businessId?.availableDays);
-    //     if (!businessId || !businessId.availableDays || !businessId.specialDays)
-    //       return false;
-    //     return (formattedQuery.availableDays as string[]).some(
-    //       (day: string) =>
-    //         businessId.availableDays.includes(day) ||
-    //         businessId.specialDays.includes(day),
-    //     );
-    //   });
-    // }
-    // // console.log('oo', filteredBusinesses);
-    // // console.log({filteredBusinesses});
+    // console.log('filteredBusinesses', filteredBusinesses);
     let newTimeSlots;
     if (formattedQuery.timeSlots) {
         newTimeSlots = yield (0, business_utils_1.generateNewTimeSlot)(formattedQuery.timeSlots);
     }
-    // const timeSlote = "10:00 AM - 11:00 AM";
-    // // console.log('timeSlots', { timeSlots });
-    // // console.log('newTimeSlots', { newTimeSlots });
-    // Handle timeSlots filtering
-    // Handle timeSlots filtering
     let filteredResult = [];
     if (newTimeSlots && typeof newTimeSlots === 'string') {
         const [queryStartTime, queryEndTime] = newTimeSlots.split(' - ');
-        // console.log({ queryStartTime, queryEndTime });
         const queryStart = convertTo24HourFormat11(queryStartTime.trim());
         const queryEnd = convertTo24HourFormat11(queryEndTime.trim());
-        // // console.log({ queryStart, queryEnd });
-        // Filter businesses based on time slots
         filteredResult = filteredBusinesses.filter((business) => {
-            // // console.log('Business:', business);
             var _a, _b, _c;
-            // // console.log('specifigDate', business.businessId.specifigDate);
-            // // console.log('specialStartTime', business.businessId.specifigStartTime);
-            // // console.log('specialEndTime', business.businessId.specifigEndTime);
-            // if (
-            //   business.businessId.specifigStartTime?.trim() &&
-            //   business.businessId.specifigEndTime?.trim() &&
-            //   business.businessId.specifigDate?.length > 0
-            // ) {
-            //   // console.log('business special', business);
-            //   // console.log('business.specialStartTime', business.specialStartTime);
-            //   // console.log('business.specialEndTime', business.specialEndTime);
-            //   startTime = convertTo24HourFormat11(business.businessId.specifigStartTime);
-            //   endTime = convertTo24HourFormat11(business.businessId.specifigEndTime);
-            // } else {
-            //   // console.log('business businessTime', business);
-            //   startTime = convertTo24HourFormat11(
-            //     business.businessId.businessStartTime,
-            //   );
-            //   endTime = convertTo24HourFormat11(business.businessId.businessEndTime);
-            // }
-            //  let startTime, endTime;
-            // let specifigstartTime, specifigendTime;
             let startTime, endTime;
             let specifigstartTime, specifigendTime;
-            if (((_a = business.businessId.specifigStartTime) === null || _a === void 0 ? void 0 : _a.trim()) &&
-                ((_b = business.businessId.specifigEndTime) === null || _b === void 0 ? void 0 : _b.trim()) &&
-                ((_c = business.businessId.specifigDate) === null || _c === void 0 ? void 0 : _c.length) > 0) {
-                // // console.log('business special', business);
-                // // console.log(
-                //   'business.specialStartTime',
-                //   business.businessId.specialStartTime,
-                // );
-                // // console.log(
-                //   'business.specialEndTime',
-                //   business.businessId.specialEndTime,
-                // );
-                specifigstartTime = convertTo24HourFormat11(business.businessId.specifigStartTime);
-                specifigendTime = convertTo24HourFormat11(business.businessId.specifigEndTime);
+            if (((_a = business.specifigStartTime) === null || _a === void 0 ? void 0 : _a.trim()) &&
+                ((_b = business.specifigEndTime) === null || _b === void 0 ? void 0 : _b.trim()) &&
+                ((_c = business.specifigDate) === null || _c === void 0 ? void 0 : _c.length) > 0) {
+                specifigstartTime = convertTo24HourFormat11(business.specifigStartTime);
+                specifigendTime = convertTo24HourFormat11(business.specifigEndTime);
             }
             if (formattedQuery.availableDays.length > 0) {
-                const availableDaysTime = business.businessId.availableDaysTime;
-                // // console.log('availableDaysTime', availableDaysTime);
+                const availableDaysTime = business.availableDaysTime;
                 availableDaysTime.forEach((item) => {
-                    // console.log('item ==== 100', item.day);
                     if (formattedQuery.availableDays.includes(item.day)) {
                         startTime = convertTo24HourFormat11(item.startTime);
                         endTime = convertTo24HourFormat11(item.endTime);
                     }
                 });
-                // // console.log('business businessTime', business);
             }
-            // // console.log('=*=*=*=*=*=',{ startTime, endTime, specifigstartTime, specifigendTime });
-            // // console.log('=*=*=*=*=*=222222', {
-            //   queryStart,
-            //   queryEnd
-            // });
-            // Check if business falls within the queried time slot
-            // return (
-            //   startTime   >= queryStart || specifigstartTime >= queryStart && // Start time should be >= query start
-            //   startTime   < queryEnd || specifigstartTime < queryEnd && // Start time should be < query end
-            //   endTime   > queryStart  || specifigendTime > queryStart // End time should overlap with query start
-            // );
-            return (
-            // If specific times exist, use them
-            (specifigstartTime !== undefined &&
+            return ((specifigstartTime !== undefined &&
                 specifigendTime !== undefined &&
                 specifigstartTime >= queryStart &&
                 specifigstartTime < queryEnd &&
@@ -373,53 +484,31 @@ const getAllFilterByBusinessService = (query, customerId) => __awaiter(void 0, v
                     endTime > queryStart));
         });
     }
-    // else {
-    //   // If no timeSlots filter, fetch businesses matching other filters
-    //   filteredResult = filteredBusinesses;
-    // }
-    // // console.log('33333333333333333333333', filteredResult );
-    // // console.log('customerId', customerId);
-    // Fetch favorite data for the customer
     const favoriteData = yield favorite_model_1.default.find({ customerId });
     const enhancedResult = filteredResult.map((business) => {
-        const isFavorite = favoriteData.some((fav) => fav.businessId.toString() === business.businessId._id.toString());
+        const isFavorite = favoriteData.some((fav) => fav.businessId.toString() === business._id.toString());
         return Object.assign(Object.assign({}, business._doc), { isFavorite });
     });
-    // console.log('enhancedResult', enhancedResult);
-    // const ugiTokenData = await UgiToken.findOne({ businessId: });
-    // // console.log({ favoriteData });
-    // Add isFavorite property to businesses
+    console.log('enhancedResult', enhancedResult);
     const enhancedResult2 = yield Promise.all(enhancedResult.map((business) => __awaiter(void 0, void 0, void 0, function* () {
-        // Fetch ugiToken data asynchronously
         const ugiTokenData = yield ugiToken_model_1.UgiToken.findOne({
-            businessId: business.businessId.businessId,
+            businessId: business.businessId,
             status: 'accept',
         });
         const ugiToken = ugiTokenData ? ugiTokenData.ugiTokenAmount : 'false';
-        return {
-            _id: business._id,
-            businessId: business.businessId, // Keep the nested businessId object
-            isFavorite: business.isFavorite,
-            ugiToken, // Add the new ugiToken field
-        };
+        return Object.assign(Object.assign({}, business), { ugiToken });
     })));
-    // Sort businesses to place those with ugiToken at the top
+    console.log('enhancedResult2', enhancedResult2);
     const sortedEnhancedResult2 = enhancedResult2.sort((a, b) => {
-        // Place businesses with ugiToken at the top
         if (b.ugiToken && !a.ugiToken)
             return 1;
         if (a.ugiToken && !b.ugiToken)
             return -1;
-        return 0; // If both have or don't have ugiToken, maintain original order
+        return 0;
     });
-    // console.log('enhancedResult2', sortedEnhancedResult2);
-    // // console.log('Filtered result with favorites:', enhancedResult);
-    // Calculate pagination metadata
     const total = sortedEnhancedResult2 === null || sortedEnhancedResult2 === void 0 ? void 0 : sortedEnhancedResult2.length;
     const totalPage = Math.ceil(total / limit);
-    // Apply pagination to the enhanced result
     const paginatedResult = sortedEnhancedResult2.slice(skip, skip + limit);
-    // console.log({ paginatedResult });
     const meta = {
         page: Number(page),
         limit: Number(limit),
@@ -427,7 +516,6 @@ const getAllFilterByBusinessService = (query, customerId) => __awaiter(void 0, v
         totalPage,
     };
     return { meta, result: paginatedResult };
-    // return filteredResult;
 });
 const getAllFilterByBusinessByPostcodeService = (postCode) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -472,7 +560,7 @@ const getAllFilterByBusinessByPostcodeService = (postCode) => __awaiter(void 0, 
     }
 });
 const getSingleBusinessByBusinessIdService = (businessId) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield business_model_1.default.findOne({ businessId });
+    const result = yield business_model_1.default.findOne({ businessId }).populate('businessId');
     //03:15pm //09:25pm
     // console.log(
     //   'launchbreakStartTime ====',

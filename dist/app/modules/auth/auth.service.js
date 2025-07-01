@@ -23,12 +23,14 @@ const otp_utils_1 = require("../otp/otp.utils");
 const otp_service_1 = require("../otp/otp.service");
 const eamilNotifiacation_1 = require("../../utils/eamilNotifiacation");
 const user_service_1 = require("../user/user.service");
+const purchestSubscription_model_1 = __importDefault(require("../purchestSubscription/purchestSubscription.model"));
 // Login
 const login = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     // console.log("payload", payload)
-    const user = yield user_models_1.User.isUserActive(payload === null || payload === void 0 ? void 0 : payload.email);
-    // console.log('user', user);
+    // const user = await User.isUserActive(payload?.email);
+    const user = yield user_models_1.User.findOne({ email: payload === null || payload === void 0 ? void 0 : payload.email, isDeleted: false, isActive: true }).select('password fullName email role isDeleted isActive');
+    console.log('user222222222', user);
     if (!user) {
         throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'User not found');
     }
@@ -41,6 +43,8 @@ const login = (payload) => __awaiter(void 0, void 0, void 0, function* () {
         userId: (_a = user === null || user === void 0 ? void 0 : user._id) === null || _a === void 0 ? void 0 : _a.toString(),
         role: user === null || user === void 0 ? void 0 : user.role,
     };
+    const result = yield purchestSubscription_model_1.default.find({ businessUserId: user._id, endDate: { $gte: new Date() } });
+    const currentRunningSubscription = result.find((item) => item.endDate >= new Date());
     // console.log({ jwtPayload });
     const accessToken = (0, tokenManage_1.createToken)({
         payload: jwtPayload,
@@ -53,11 +57,11 @@ const login = (payload) => __awaiter(void 0, void 0, void 0, function* () {
         access_secret: config_1.default.jwt_refresh_secret,
         expity_time: config_1.default.jwt_refresh_expires_in,
     });
-    return {
-        user,
+    return Object.assign({ user,
         accessToken,
-        refreshToken,
-    };
+        refreshToken }, (user.role === 'business'
+        ? { isSubcriptionActive: currentRunningSubscription ? true : false }
+        : {}));
 });
 // forgot Password
 const forgotPassword = (email) => __awaiter(void 0, void 0, void 0, function* () {

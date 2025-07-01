@@ -1,5 +1,5 @@
 {
-  "name": "pro-mentors-backend",
+  "name": "uogi-backend",
   "version": "1.0.0",
   "main": "src/server.ts",
   "scripts": {
@@ -8,7 +8,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "lint:check": "eslint --ignore-path .eslintignore --ext .js,.ts .",
     "lint:fix": "eslint . --fix",
-    "start": "tsc --watch",
+    "start": "node ./dist/server.js",
     "prettier:check": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "prettier:fix": "prettier --write .",
     "lint-prettier": "npm run lint:check && npm run prettier:check",
@@ -16,7 +16,7 @@
     "start:prod": "node ./dist/server.js",
     "prepare": "husky"
   },
-  "author": "Md. Sohag Hossain",
+  "author": "Md. Humayon Forid",
   "license": "ISC",
   "description": "",
   "lint-staged": {

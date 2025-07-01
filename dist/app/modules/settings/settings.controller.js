@@ -17,6 +17,7 @@ const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const settings_service_1 = require("./settings.service");
 const http_status_1 = __importDefault(require("http-status"));
+const templete_1 = require("../../../templete/templete");
 const addSetting = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const settingData = {
         privacyPolicy: '',
@@ -41,6 +42,18 @@ const getSettings = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
         data: result,
     });
 }));
+const getPrivacyPolicy = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // res.render('setting.privacyPolicy.ejs');
+    res.send(templete_1.settingPrivacyPolicyTemplete);
+}));
+const getAccountDelete = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    //  res.render('setting.accountDeletePolicy.ejs');
+    res.send(templete_1.settingDeleteTemplete);
+}));
+const getSupport = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // res.render('setting.support.ejs');
+    res.send(templete_1.settingSupportTemplete);
+}));
 const updateSetting = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     //   const { id } = req.params;
     const settingData = Object.assign({}, req.body);
@@ -54,6 +67,9 @@ const updateSetting = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
 }));
 exports.settingsController = {
     addSetting,
-    updateSetting,
     getSettings,
+    getPrivacyPolicy,
+    getAccountDelete,
+    getSupport,
+    updateSetting,
 };

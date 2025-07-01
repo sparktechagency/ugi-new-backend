@@ -82,7 +82,7 @@ const userSchema = new mongoose_1.Schema({
         type: String,
         enum: ['customer_business', 'customer', 'business'],
         required: false,
-        default: ' ',
+        // default: ' ',
     },
     postalCode: {
         type: String,

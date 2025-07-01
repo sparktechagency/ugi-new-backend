@@ -13,8 +13,7 @@ const fileUpload_1 = __importDefault(require("../../middleware/fileUpload"));
 const upload = (0, fileUpload_1.default)('./public/uploads/category');
 const categoryRouter = express_1.default.Router();
 categoryRouter
-    .post('/create-category', 
-// auth(USER_ROLE.ADMIN),
+    .post('/create-category', (0, auth_1.default)(user_constants_1.USER_ROLE.ADMIN), 
 // upload.single('image'),
 upload.fields([{ name: 'image', maxCount: 1 }]), (0, validateRequest_1.default)(category_validation_1.categoryValidation.categorySchema), category_controller_1.categoryController.createCategory)
     .get('/', category_controller_1.categoryController.getAllCategory)

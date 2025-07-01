@@ -20,6 +20,7 @@ const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const AppError_1 = __importDefault(require("../../error/AppError"));
 const config_1 = __importDefault(require("../../config"));
 const stripeAccount_model_1 = require("../stripeAccount/stripeAccount.model");
+const templete_1 = require("../../../templete/templete");
 const addPayment = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.user;
     const paymentData = req.body;
@@ -156,10 +157,12 @@ const getAllIncomeRasioBy7days = (0, catchAsync_1.default)((req, res) => __await
 //payment
 const successPage = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // console.log('hit hoise');
-    res.render('success.ejs');
+    // res.render('success.ejs');
+    res.send(templete_1.successTemplete);
 }));
 const cancelPage = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.render('cancel.ejs');
+    // res.render('cancel.ejs');
+    res.send(templete_1.cancelTemplete);
 }));
 const successPageAccount = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j;
@@ -190,7 +193,8 @@ const successPageAccount = (0, catchAsync_1.default)((req, res) => __awaiter(voi
         // return res.redirect(`${req.protocol + '://' + req.get('host')}/payment/refreshAccountConnect/${id}`);
     }
     yield stripeAccount_model_1.StripeAccount.updateOne({ accountId: id }, { isCompleted: true });
-    res.render('success-account.ejs');
+    // res.render('success-account.ejs');
+    res.send(templete_1.successAccountTemplete);
 }));
 //webhook
 const createCheckout = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {

@@ -15,12 +15,11 @@ const notfound_1 = __importDefault(require("./app/middleware/notfound"));
 const routes_1 = __importDefault(require("./app/routes"));
 const path_1 = __importDefault(require("path"));
 const payment_controller_1 = require("./app/modules/payment/payment.controller");
-const purchestSubscription_controller_1 = require("./app/modules/purchestSubscription/purchestSubscription.controller");
+const templete_1 = require("./templete/templete");
 const app = (0, express_1.default)();
 app.set('views', path_1.default.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.post('/api/v1/webhook', express_1.default.raw({ type: 'application/json' }), payment_controller_1.paymentController.conformWebhook);
-app.post('/api/v1/subscription-payment-webhook', express_1.default.raw({ type: 'application/json' }), purchestSubscription_controller_1.purchestsubscriptionController.conformWebhook);
 app.use(express_1.default.static('public'));
 app.use(express_1.default.urlencoded({ extended: true }));
 //parsers
@@ -37,7 +36,7 @@ app.use((0, cors_1.default)({
 // application routes
 app.use('/api/v1', routes_1.default);
 app.get('/', (req, res) => {
-    res.send('server is running');
+    res.send(templete_1.serverRunningTemplete);
 });
 app.use(globalErrorhandler_1.default);
 //Not Found
