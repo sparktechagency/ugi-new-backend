@@ -61,7 +61,7 @@ services:
     volumes:
       - shared-data:/shared
     ports:
-      - "80:${PORT}"
+      - "5252:${PORT}"
     networks:
       - server-net
     depends_on:
