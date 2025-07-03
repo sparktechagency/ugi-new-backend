@@ -26,6 +26,107 @@ services:
           cpus: '0.25'      # minimum CPU reserved
           memory: 256M      # minimum memory reserved
 
+  nginx:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.nginx
+    ports:
+      - "80:80"
+    env_file:
+      - .env
+    depends_on:
+      - application
+      - application2
+      - application3
+    networks:
+      - server-net
+    # volumes:
+    #   - ./conf/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+ 
+  application:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    container_name: application
+    hostname: application
+    env_file:
+      - .env
+    volumes:
+      - shared-data:/shared
+    ports:
+      - "1111:${PORT}"
+    networks:
+      - server-net
+    depends_on:
+      - mongo
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+ 
+  application2:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    container_name: application2F
+    hostname: application2
+    env_file:
+      - .env
+    volumes:
+      - shared-data:/shared
+    ports:
+      - "2222:${PORT}"
+    networks:
+      - server-net
+    depends_on:
+      - mongo
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M  
+        reservations:
+          cpus: '0.25'  
+          memory: 256M
+ 
+  application3:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    container_name: application3
+    hostname: application3
+    env_file:
+      - .env
+    volumes:
+      - shared-data:/shared
+    ports:
+      - "3333:${PORT}"
+    networks:
+      - server-net
+    depends_on:
+      - mongo
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+ 
+
 
   # frontend:
   #   build:
@@ -51,29 +152,29 @@ services:
   #         cpus: '0.50'
   #         memory: 256M 
 
-  server:
-    build:
-      context: .
-      dockerfile: ./docker/Dockerfile
-    container_name: server
-    env_file:
-      - .env
-    volumes:
-      - shared-data:/shared
-    ports:
-      - "5252:${PORT}"
-    networks:
-      - server-net
-    depends_on:
-      - mongo
-    deploy:
-      resources:
-        limits:
-          cpus: '1.5'
-          memory: 3584M 
-        reservations:
-          cpus: '0.25'
-          memory: 256M 
+  # server:
+  #   build:
+  #     context: .
+  #     dockerfile: ./docker/Dockerfile
+  #   container_name: server
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - shared-data:/shared
+  #   ports:
+  #     - "5252:${PORT}"
+  #   networks:
+  #     - server-net
+  #   depends_on:
+  #     - mongo
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '1.5'
+  #         memory: 3584M 
+  #       reservations:
+  #         cpus: '0.25'
+  #         memory: 256M 
 
 
 networks:
