@@ -29,7 +29,11 @@ paymentRouter
   .get('/success', paymentController.successPage)
   .get('/cancel', paymentController.cancelPage)
 
-  .get('/', auth(USER_ROLE.ADMIN), paymentController.getAllPayment)
+  .get(
+    '/',
+    auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN),
+    paymentController.getAllPayment,
+  )
   // .get('/payment-tracking', auth(USER_ROLE.CUSTOMER), paymentController.getAllPaymentByCustomer)
   .get('/all-income-rasio', paymentController.getAllIncomeRasio)
   .get('/all-income-rasio-by-days', paymentController.getAllIncomeRasioBy7days)

@@ -13,7 +13,7 @@ const categoryRouter = express.Router();
 categoryRouter
   .post(
     '/create-category',
-    auth(USER_ROLE.ADMIN),
+    auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN),
     // upload.single('image'),
     upload.fields([{ name: 'image', maxCount: 1 }]),
     validateRequest(categoryValidation.categorySchema),
@@ -23,14 +23,10 @@ categoryRouter
   .get('/:id', categoryController.getSingleCategory)
   .patch(
     '/:id',
-     auth(USER_ROLE.ADMIN),
+    auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN),
     upload.fields([{ name: 'image', maxCount: 1 }]),
     categoryController.updateCategory,
   )
-  .delete(
-    '/:id',
-    auth(USER_ROLE.ADMIN),
-    categoryController.deletedCategory,
-  );
+  .delete('/:id', auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN), categoryController.deletedCategory);
 
 export default categoryRouter;

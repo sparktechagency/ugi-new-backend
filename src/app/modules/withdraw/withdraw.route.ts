@@ -12,7 +12,7 @@ withdrawRouter
     auth(USER_ROLE.BUSINESS),
     withdrawController.addWithdraw,
   )
-  .get('/', auth(USER_ROLE.ADMIN), withdrawController.getAllWithdraw)
+  .get('/', auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN), withdrawController.getAllWithdraw)
   .get(
     '/business',
     auth(USER_ROLE.BUSINESS),

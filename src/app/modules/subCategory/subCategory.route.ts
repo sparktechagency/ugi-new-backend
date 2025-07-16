@@ -11,7 +11,7 @@ const subCategoryRouter = express.Router();
 subCategoryRouter
   .post(
     '/create-sub-category',
-    auth(USER_ROLE.ADMIN),
+    auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN),
     // upload.single('image'),
     validateRequest(subCategoryValidation.subCategorySchema),
     subCategoryController.createSubCategory,
@@ -20,12 +20,12 @@ subCategoryRouter
   .get('/:id', subCategoryController.getSingleSubCategory)
   .patch(
     '/:id',
-     auth(USER_ROLE.ADMIN),
+    auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN),
     subCategoryController.updateSubCategory,
   )
   .delete(
     '/:id',
-    auth(USER_ROLE.ADMIN),
+    auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN),
     subCategoryController.deletedSubCategory,
   );
 
