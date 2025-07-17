@@ -778,6 +778,10 @@ export const settingPrivacyPolicyTemplete = `<!doctype html>
         13. We do not knowingly collect or solicit personal information from
         children.
       </p>
+      <h2>Contact Us</h2>
+      <p>
+        If you have any questions about this Privacy Policy or your data, you can contact us at helpdesk@uogi.com.
+      </p>
 
       <footer>&copy; 2025 Uogi App. All rights reserved.</footer>
     </div>
@@ -854,27 +858,17 @@ export const settingDeleteTemplete = `<!doctype html>
     <div class="container">
       <h1>Steps to Delete Account</h1>
       <ol>
-        <li>
-          After logged in, first route to the
-          <span class="highlight">Profile</span> screen.
-        </li>
-        <div class="image-container">
-          <img
-            src="/uploads/delete/image-1.jpg"
-            alt="Delete Account Illustration"
-          />
-        </div>
         <li>Tap on <span class="highlight">Settings</span>.</li>
         <div class="image-container">
           <img
-            src="/uploads/delete/image-2.jpg"
+            src="/uploads/delete/image-1.png"
             alt="Delete Account Illustration"
           />
         </div>
         <li>Then tap on <span class="highlight">Delete</span>.</li>
         <div class="image-container">
           <img
-            src="/uploads/delete/image-3.jpg"
+            src="/uploads/delete/image-2.png"
             alt="Delete Account Illustration"
           />
         </div>
@@ -883,14 +877,14 @@ export const settingDeleteTemplete = `<!doctype html>
         </li>
         <div class="image-container">
           <img
-            src="/uploads/delete/image-4.jpg"
+            src="/uploads/delete/image-3.jpg"
             alt="Delete Account Illustration"
           />
         </div>
-        <li>Press the <span class="highlight">Delete</span> button.</li>
+        <li>Press the <span class="highlight">Done</span> button.</li>
         <div class="image-container">
           <img
-            src="/uploads/delete/image-5.jpg"
+            src="/uploads/delete/image-4.jpg"
             alt="Delete Account Illustration"
           />
         </div>

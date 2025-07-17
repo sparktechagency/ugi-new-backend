@@ -61,7 +61,12 @@ pids/
 *.pm2.log
  
 # Static data
-/public
+/public/uploads/business/*
+/public/uploads/category/*
+/public/uploads/profile/*
+/public/uploads/service/*
+# /public/*
+!/public/uploads/delete/*
 /data
 
 env.copy

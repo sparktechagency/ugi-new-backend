@@ -66,6 +66,7 @@ const updateSetting = catchAsync(async (req, res) => {
   });
 });
 
+
 export const settingsController = {
   addSetting,
   getSettings,

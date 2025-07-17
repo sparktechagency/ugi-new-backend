@@ -712,7 +712,8 @@ const reSheduleRequestServiceBooking = async (id: string, payload: any) => {
 
   const notificationData = {
     userId: bookingService.businessId,
-    message: `${customer?.fullName} has requested to schedule a booking from ${bookingService.bookingDate} & ${bookingService.bookingStartTime} to ${bookingService.reSheduleDate} & ${bookingService.reSheduleStartTime}. Please review and confirm the request`,
+    // message: `${customer?.fullName} has requested to schedule a booking from ${bookingService.bookingDate} & ${bookingService.bookingStartTime} to ${bookingService.reSheduleDate} & ${bookingService.reSheduleStartTime}. Please review and confirm the request`,
+    message:`${customer?.fullName} has requested to schedule a booking from ${new Date(bookingService.bookingDate).toLocaleDateString()} at ${bookingService.bookingStartTime} to ${new Date(bookingService.reSheduleDate).toLocaleDateString()} at ${bookingService.reSheduleStartTime}. Please review and confirm the request`,
     status: 'pending',
     type: 'reshedule',
     serviceBookingId: bookingService._id,
