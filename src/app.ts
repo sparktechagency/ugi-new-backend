@@ -32,7 +32,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: true,
+    origin: 'http://localhost:5173',
     // origin: 'https://memorial-moments-website.vercel.app',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
