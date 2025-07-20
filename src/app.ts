@@ -34,7 +34,7 @@ app.use(
   cors({
     origin: '*',
     // origin: 'https://memorial-moments-website.vercel.app',
-    credentials: true,
+    // credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   }),
 );
