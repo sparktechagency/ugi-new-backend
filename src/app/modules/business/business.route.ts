@@ -59,6 +59,7 @@ businessRouter
   .patch(
     '/available-time',
     auth(USER_ROLE.BUSINESS),
+    
     // validateRequest(businessValidation.businessAvailableTimeValidationSchema),
     businessController.updateAvailableBusinessTime,
   )

@@ -2,11 +2,12 @@ import { Types } from 'mongoose';
 
 export type TPayment = {
   customerId: Types.ObjectId;
-  serviceId: Types.ObjectId;
+  serviceIds: [Types.ObjectId];
   businessId: Types.ObjectId;
+  business_id: Types.ObjectId;
   bookingprice: number;
   depositAmount: number;
-  dipositParsentage: number;
+  // dipositParsentage: number;
   method: string;
   status: string;
   // bankDetails?: {

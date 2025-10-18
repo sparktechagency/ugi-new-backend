@@ -37,10 +37,15 @@ const createBusinessService = async (files: any, payload: any) => {
     throw new AppError(400, 'Business already exist');
   }
 
-  if (files && files['businessImage'] && files['businessImage'][0]) {
-    payload['businessImage'] = files['businessImage'][0].path.replace(
-      /^public[\\/]/,
-      '',
+  // if (files && files['businessImage'] && files['businessImage'][0]) {
+  //   payload['businessImage'] = files['businessImage'][0].path.replace(
+  //     /^public[\\/]/,
+  //     '',
+  //   );
+  // }
+  if (files && files.businessImage && files.businessImage.length > 0) {
+    payload.businessImage = files.businessImage.map((file:any) =>
+      file.path.replace(/^public[\\/]/, ''),
     );
   }
   const result = await Business.create(payload);
@@ -81,9 +86,20 @@ const getAllBusinessService = async (query: Record<string, unknown>) => {
 };
 
 const getBusinessAvailableSlots = async (payload: any) => {
-  const { businessId, date, serviceId }: any = payload;
+  const { businessId, date }: any = payload;
+  console.log('payload serivce ids', payload);
 
   // console.log('======slot', payload);
+  let serviceIds: string[] = [];
+
+  if (payload.serviceId && typeof payload.serviceId === 'string') {
+    serviceIds = (payload.serviceId as string)
+      .replace(/^\[|\]$/g, '') // remove the square brackets
+      .split(',') // split by comma
+      .map((s) => s.trim()); // trim whitespace
+  }
+
+console.log('serviceIds', serviceIds);
 
   // console.log('businessId', businessId, 'date', date);
   const business = await Business.findOne({ businessId });
@@ -91,17 +107,20 @@ const getBusinessAvailableSlots = async (payload: any) => {
   if (!business) {
     throw new AppError(404, 'Business is Not Found!!');
   }
+let duration = 0;
 
-  const service: any = await Service.findById(serviceId);
 
-  if (!service) {
-    throw new AppError(404, 'service is Not Found!!');
+for (const serviceI of serviceIds) {
+  const ser: any = await Service.findById(serviceI); 
+
+  if (!ser) {
+    throw new AppError(404, 'Service not found!');
   }
+  duration += Number(ser.businessDuration || 0);
+}
 
-  // // console.log({ service });
 
   const dateDay = new Date(date).getDay();
-  // // console.log('=======dateDay', dateDay);
 
   const daysOfWeek = [
     'Sunday',
@@ -114,7 +133,6 @@ const getBusinessAvailableSlots = async (payload: any) => {
   ];
 
   const dayName = daysOfWeek[dateDay];
-  // Define start and end of the day
   const startOfDay = new Date(date);
   startOfDay.setUTCHours(0, 0, 0, 0);
 
@@ -129,11 +147,8 @@ const getBusinessAvailableSlots = async (payload: any) => {
     },
   }).select('bookingStartTime bookingEndTime bookingDate');
 
-  // // console.log('=====booking', bookings);
 
-  const durationNum = Number(service.businessDuration);
-  // // console.log('=========durationNum', durationNum);
-  // // console.log('=========dayName', dayName);
+  const durationNum = Number(duration);
 
   let availableSlots: any = [];
   if (business.specifigDate && business.specifigDate.includes(date)) {
@@ -182,7 +197,7 @@ const getBusinessAvailableSlots = async (payload: any) => {
   //   bookingBreak:business.bookingBreak
   // });
 
-  // // console.log({ availableSlots });
+  // console.log({ availableSlots });
 
   return availableSlots;
 };
@@ -477,6 +492,7 @@ const getAllFilterByBusinessService = async (
 
   let formattedAvailableDays = [];
   let formattedTimeSlots = [];
+  let subCategorys:any = [];
 
   try {
     formattedAvailableDays = JSON.parse(
@@ -486,20 +502,39 @@ const getAllFilterByBusinessService = async (
     console.error('Error parsing availableDays:', error);
   }
 
+  // try {
+  //   subCategorys = JSON.parse(subCategoryName.replace(/(\w+)/g, '"$1"'));
+  // } catch (error) {
+  //   console.error('Error parsing subCategoryName:', error);
+  // }
+
+
+  try {
+    subCategorys = JSON.parse(
+      subCategoryName
+        .replace(/^\[/, '["')
+        .replace(/]$/, '"]')
+        .replace(/, /g, '", "'),
+    );
+  } catch (error) {
+    console.error('Error parsing subCategoryName:', error);
+  }
+
   try {
     formattedTimeSlots = JSON.parse(
       timeSlots.replace(/^\[/, '["').replace(/]$/, '"]').replace(/, /g, '", "'),
     );
   } catch (error) {
-    console.error('Error parsing timeSlots:', error);
+  console.error('Error parsing timeSlots:', error);
   }
 
-  const formattedQuery = {
+  const formattedQuery:any= {
     categoryName,
-    subCategoryName,
+    subCategoryName: subCategorys,
     availableDays: formattedAvailableDays,
     timeSlots: formattedTimeSlots,
   };
+
 
   const skip = (page - 1) * limit;
 
@@ -679,6 +714,9 @@ const activeBusinessIds = activeSubscriptions.map((sub) => sub.businessUserId.to
   };
 
   return { meta, result: paginatedResult };
+
+// return " ";
+
 };
 
 
@@ -780,6 +818,7 @@ const getAppSingleBusinessService = async (id: string) => {
   return { ...result._doc, availableDays };
 };
 
+
 // const getBusinessByServiceService = async (businessId: string) => {
 //   const result = await Service.find({ businessId });
 //   // console.log({ result });
@@ -794,6 +833,16 @@ const getBusinessByServiceService = async (
   businessId: string,
 ) => {
   // console.log({ businessId });
+  console.log('query******************', query);
+  
+if (typeof query.subCategoryName === 'string') {
+  query.subCategoryName = (query.subCategoryName as string)
+    .replace(/^\[|\]$/g, '')
+    .split(',')
+    .map((s) => s.trim());
+}
+ console.log('query****************** down', query);
+
   const businessQuery = new QueryBuilder(Service.find({ businessId }), query)
     .search([''])
     .filter()
@@ -861,6 +910,8 @@ const updateAvailableBusinessTimeService = async (
   payload: any,
 ) => {
   const existingBusiness = await Business.findOne({ businessId });
+  console.log('existingBusiness==', existingBusiness);
+  console.log('payload==', payload);
   if (!existingBusiness) {
     throw new AppError(404, 'Business not found!');
   }
@@ -868,6 +919,7 @@ const updateAvailableBusinessTimeService = async (
   const result = await Business.findOneAndUpdate({ businessId }, payload, {
     new: true,
   });
+  console.log('result==*****', result);
 
   return result;
 };

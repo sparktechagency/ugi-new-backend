@@ -14,6 +14,7 @@ import { notificationService } from '../notification/notification.service';
 import { paymentService } from '../payment/payment.service';
 import Notification from '../notification/notification.model';
 import { User } from '../user/user.models';
+import CencelBooking from '../cencelBooking/cencelBooking.model';
 
 const createServiceBooking = async (
   payload: TServiceBooking,
@@ -35,16 +36,31 @@ const createServiceBooking = async (
     );
   }
 
-  // console.log({ payload });
+  console.log('console everything.............');
 
+  const isCancelBookingIn7days = await CencelBooking.findOne({
+    customerId: payload.customerId,
+    businessId: payload.businessId,
+    createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+  });
+
+  if (isCancelBookingIn7days) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You recently canceled a booking from this business. Therefore, you cannot book any service from this business again within 7 days from the cancellation date.',
+    );
+  }
+
+  // console.log({ payload });
+ console.log('console everything.............2');
   const business = await Business.findOne({ businessId });
   // console.log({ business });
 
   if (!business) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'Business not found');
+    throw new AppError(httpStatus.BAD_REQUEST, 'Business not found!!');
   }
 
-  // console.log('before existing booking');
+  console.log('before existing booking!!');
 
   const existingBooking = await ServiceBooking.findOne({
     businessId,
@@ -66,7 +82,7 @@ const createServiceBooking = async (
       },
     ],
   }).session(session);
-  // console.log('after existing booking');
+  console.log('after existing booking');
   // console.log({ existingBooking });
 
   if (existingBooking) {
@@ -79,7 +95,6 @@ const createServiceBooking = async (
   // console.log("before service create");
   // console.log({ payload });
   const result = await ServiceBooking.create([payload], { session }); // Use session if provided
-
 
   return result;
 };
@@ -94,7 +109,7 @@ const getAllServiceBookingByUserQuery = async (
     ServiceBooking.find({ customerId })
       .populate('customerId')
       .populate({
-        path: 'serviceId',
+        path: 'serviceIds',
         populate: [
           {
             path: 'businessUserId',
@@ -105,7 +120,8 @@ const getAllServiceBookingByUserQuery = async (
             select: 'businessLocation',
           },
         ],
-      }),
+      })
+      .populate('business_id'),
     query,
   )
     .search([''])
@@ -126,7 +142,8 @@ const getAllServiceBookingByBusinessQuery = async (
   const ServiceBookingQuery = new QueryBuilder(
     ServiceBooking.find({ businessId })
       .populate('customerId')
-      .populate('serviceId'),
+      .populate('serviceIds')
+      .populate('business_id'),
     query,
   )
     .search([''])
@@ -142,7 +159,7 @@ const getAllServiceBookingByBusinessQuery = async (
 
 const getSingleServiceBooking = async (id: string) => {
   const result = await ServiceBooking.findById(id).populate({
-    path: 'serviceId',
+    path: 'serviceIds',
     populate: {
       path: 'businessId',
       select: 'paymentMethod',
@@ -330,6 +347,14 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
       throw new AppError(500, 'Ugi token not created!!');
     }
 
+    const cancelData = {
+      businessId: serviceBooking.businessId,
+      customerId: serviceBooking.customerId
+    };
+
+    await CencelBooking.create([cancelData], { session });
+    
+
     // Create Notifications
     const notificationData: any = {
       userId: business.businessId,
@@ -387,6 +412,7 @@ const businessmanCancelBookingService = async (
   try {
     const serviceBooking: any =
       await ServiceBooking.findById(id).session(session);
+      // console.log('serviceBooking',serviceBooking);
 
     if (!serviceBooking) {
       throw new AppError(404, 'Booking Service not found!');
@@ -420,11 +446,14 @@ const businessmanCancelBookingService = async (
     serviceBooking.status = 'cencel'; // Fixed typo
     await serviceBooking.save({ session });
 
+    console.log('serviceBooking',serviceBooking);
+
     // Fetch the payment data
     const paymentData = await Payment.findOne({
       serviceBookingId: serviceBooking._id,
       status: 'paid',
     }).session(session);
+    console.log('paymentData',paymentData);
 
     if (!paymentData) {
       throw new AppError(404, 'Payment not found!');

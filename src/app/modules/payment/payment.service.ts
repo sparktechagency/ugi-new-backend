@@ -31,17 +31,41 @@ const addPaymentService = async (payload: any) => {
   const session = await mongoose.startSession(); // Start a session
   session.startTransaction();
 
-  // console.log('payment data', payload);
+  console.log('payment data***********************', payload);
+
+  try {
+    // Check if serviceIds is a string that looks like JSON
+    if (typeof payload.serviceIds === 'string') {
+      // If it's already a JSON string, parse it directly
+      if (
+        payload.serviceIds.trim().startsWith('[') &&
+        payload.serviceIds.trim().endsWith(']')
+      ) {
+        payload.serviceIds = JSON.parse(payload.serviceIds);
+      } else {
+        // If it's not JSON format, then apply your transformation logic
+        payload.serviceIds = JSON.parse(
+          payload.serviceIds
+            .replace(/^\[/, '["')
+            .replace(/]$/, '"]')
+            .replace(/, /g, '", "'),
+        );
+      }
+    }
+  } catch (error) {
+    console.error('Error parsing serviceIds:', error);
+    payload.serviceIds = [];
+  }
 
   try {
     // console.log('console.log-1');
     const {
       customerId,
-      serviceId,
+      serviceIds,
       businessId,
       bookingprice,
       depositAmount,
-      dipositParsentage,
+      // dipositParsentage,
       bookingDate,
       duration,
       bookingStartTime,
@@ -50,8 +74,13 @@ const addPaymentService = async (payload: any) => {
       applePayDetails,
       ugiTokenAmount,
       ugiTokenId,
-      businessType
+      businessType,
     } = payload;
+
+    console.log('serviceIds==', serviceIds);
+    console.log('payload==', payload);
+
+    // return;
 
     const user = await User.findById(customerId).session(session);
     if (!user) {
@@ -62,14 +91,16 @@ const addPaymentService = async (payload: any) => {
       throw new AppError(400, 'User is not authorized as a User!!');
     }
 
-    const buisness = await Business.findOne({ businessId }).session(session);
+    const buisness = await Business.findOne( {businessId} ).session(session);
     if (!buisness) {
       throw new AppError(400, 'Business is not found!');
     }
 
-    const service = await Service.findById(serviceId).session(session);
-    if (!service) {
-      throw new AppError(400, 'Service is not found!');
+    for (const serviceId of serviceIds) {
+      const service = await Service.findById(serviceId).session(session);
+      if (!service) {
+        throw new AppError(400, 'Service is not found!');
+      }
     }
 
     if (!depositAmount || depositAmount <= 0) {
@@ -85,12 +116,12 @@ const addPaymentService = async (payload: any) => {
       );
     }
 
-    if (!dipositParsentage || dipositParsentage <= 0) {
-      throw new AppError(
-        400,
-        'Invalid deposit percentage. It must be a positive number.',
-      );
-    }
+    // if (!dipositParsentage || dipositParsentage <= 0) {
+    //   throw new AppError(
+    //     400,
+    //     'Invalid deposit percentage. It must be a positive number.',
+    //   );
+    // }
 
     const validMethods = ['google_pay', 'apple_pay', 'stripe'];
     if (!method || !validMethods.includes(method)) {
@@ -120,11 +151,12 @@ const addPaymentService = async (payload: any) => {
 
     const bookingData: any = {
       customerId,
-      serviceId,
+      serviceIds,
       businessId,
+      business_id: buisness._id,
       bookingprice,
       depositAmount,
-      dipositParsentage,
+      // dipositParsentage,
       // status: 'booking',
       bookingDate,
       duration,
@@ -132,14 +164,14 @@ const addPaymentService = async (payload: any) => {
       bookingEndTime: endTime,
       ugiTokenAmount: ugiTokenAmount || null,
       ugiTokenId: ugiTokenId || null,
-      businessType
+      businessType,
     };
 
-    console.log('bookingData========================' );
+    console.log('bookingData========================');
     console.log(bookingData);
     const serviceBookingResult =
       await serviceBookingService.createServiceBooking(bookingData, session);
-    // console.log('bookingData ==2  ====',  serviceBookingResult );
+    console.log('bookingData ==2  ====',  serviceBookingResult );
     if (!serviceBookingResult) {
       throw new AppError(400, 'Failed to create service booking!');
     }
@@ -175,11 +207,11 @@ const addPaymentService = async (payload: any) => {
     } else {
       const paymentData: any = {
         customerId,
-        serviceId,
+        serviceIds,
         businessId,
         bookingprice,
         depositAmount,
-        dipositParsentage,
+        // dipositParsentage,
         method,
         transactionId: payload.transactionId,
         transactionDate: bookingDate,
@@ -271,7 +303,6 @@ const getAllPaymentByCustomerService = async (
   const result = await PaymentQuery.modelQuery;
   const meta = await PaymentQuery.countTotal();
   return { meta, result };
-
 };
 
 const singlePaymentService = async (id: string) => {
@@ -440,7 +471,8 @@ const createCheckout = async (userId: any, payload: any) => {
   const lineItems = [
     {
       price_data: {
-        currency: 'usd',
+        // currency: 'usd',
+        currency: 'GBP',
         product_data: {
           name: 'Amount',
         },
@@ -453,8 +485,8 @@ const createCheckout = async (userId: any, payload: any) => {
   const sessionData: any = {
     payment_method_types: ['card'],
     mode: 'payment',
-    success_url: `http://10.0.70.35:8020/api/v1/payment/success`,
-    cancel_url: `http://10.0.70.35:8020/api/v1/payment/cancel`,
+    success_url: `http://10.10.7.65:8075/api/v1/payment/success`,
+    cancel_url: `http://10.10.7.65:8075/api/v1/payment/cancel`,
     line_items: lineItems,
     metadata: {
       userId: String(userId), // Convert userId to string
@@ -481,12 +513,13 @@ const createCheckout = async (userId: any, payload: any) => {
 };
 
 const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
-  console.log('hit hise webhook controller servie')
+  console.log('hit hise webhook controller servie');
   try {
     switch (event.type) {
-    
       case 'checkout.session.completed': {
-        console.log('hit hise webhook controller servie checkout.session.completed');
+        console.log(
+          'hit hise webhook controller servie checkout.session.completed',
+        );
         const session = event.data.object as Stripe.Checkout.Session;
         const sessionId = session.id;
         const paymentIntentId = session.payment_intent as string;
@@ -521,11 +554,12 @@ const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
 
         const paymentData: any = {
           customerId,
-          serviceId: updateServiceBooking?.serviceId,
+          serviceId: updateServiceBooking?.serviceIds,
           businessId: updateServiceBooking?.businessId,
+          business_id: updateServiceBooking?.business_id,
           bookingprice: updateServiceBooking?.bookingprice,
           depositAmount: updateServiceBooking?.depositAmount,
-          dipositParsentage: updateServiceBooking?.dipositParsentage,
+          // dipositParsentage: updateServiceBooking?.dipositParsentage,
           method: 'stripe',
           transactionId: paymentIntentId,
           transactionDate: updateServiceBooking?.bookingDate,
@@ -620,9 +654,14 @@ const paymentRefundService = async (
     payment_intent,
   };
 
-  // Conditionally add the `amount` property if provided
-  if (amount) {
-    refundOptions.amount = Number(amount);
+  // // Conditionally add the `amount` property if provided
+  // if (amount) {
+  //   refundOptions.amount = Number(amount);
+  // }
+
+  if (amount !== null && amount > 0) {
+    // Convert to integer in the smallest currency unit
+    refundOptions.amount = Math.round(amount * 100);
   }
 
   // console.log('refaund options', refundOptions);
@@ -961,7 +1000,7 @@ cron.schedule('* * * * *', async () => {
 
   for (const user of businessUser) {
     // console.log('usr=====');
-    const isExiststripeAccount:any = await StripeAccount.findOne({
+    const isExiststripeAccount: any = await StripeAccount.findOne({
       userId: user._id,
       isCompleted: true,
     });
@@ -971,7 +1010,7 @@ cron.schedule('* * * * *', async () => {
       throw new AppError(httpStatus.BAD_REQUEST, 'Account not found');
     }
 
-     // console.log('=====1')
+    // console.log('=====1')
     await transferBalanceService(
       isExiststripeAccount.accountId,
       0,

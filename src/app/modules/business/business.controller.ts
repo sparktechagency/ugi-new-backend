@@ -200,13 +200,27 @@ const updateAvailableBusinessTime = catchAsync(
     // console.log('hit hoise');
     const businessId = req.user.userId; // business man _id
     const updateData = req.body;
-    // // console.log('=======updateData up', updateData);
+    // console.log('=======updateData up', updateData);
 
-    updateData.availableDaysTime = JSON.parse(updateData.availableDaysTime);
-    updateData.specifigDate = JSON.parse(updateData.specifigDate);
+    if(updateData?.availableDaysTime){
+      updateData.availableDaysTime = JSON.parse(updateData.availableDaysTime);
+    }
+    if (updateData?.specifigDate) {
+      updateData.specifigDate = JSON.parse(updateData.specifigDate);
+    }
+    // updateData.availableDaysTime = JSON.parse(updateData.availableDaysTime);
+    // updateData.specifigDate = JSON.parse(updateData.specifigDate);
 
     // console.log('=========updateData', updateData);
 
+    if (updateData?.holydays) {
+      if (typeof updateData.holydays === 'string') {
+        updateData.holydays = JSON.parse(updateData.holydays);
+      }
+      // console.log('updateData.holydays==', updateData.holydays);
+    }
+
+    // console.log('updateData==', updateData);
     const result = await businessService.updateAvailableBusinessTimeService(
       businessId,
       updateData,

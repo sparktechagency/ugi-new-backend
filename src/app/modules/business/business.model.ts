@@ -15,7 +15,7 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
       trim: true,
     },
     businessImage: {
-      type: String,
+      type: [String],
       required: true,
     },
     businessDescription: {
@@ -96,6 +96,12 @@ const BusinessSchema = new mongoose.Schema<TBusiness>(
       required: false,
       default: '',
     },
+    holydays: {
+      type: [String],
+      required: false,
+      default: [],
+    },
+    // ['02-10-2025', '03-10-2025'],
     reviewCount: {
       type: Number,
       required: true,

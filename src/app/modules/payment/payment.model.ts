@@ -5,19 +5,26 @@ import { TPayment } from './payment.interface';
 const paymentSchema = new Schema<TPayment>(
   {
     customerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    serviceId: {
+    serviceIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Service',
+        required: true,
+      },
+    ],
+    businessId: {
       type: Schema.Types.ObjectId,
-      ref: 'Service',
+      ref: 'User',
       required: true,
     },
-    businessId: {
+    business_id: {
       type: Schema.Types.ObjectId,
       ref: 'Business',
       required: true,
     },
     bookingprice: { type: Number, required: true },
     depositAmount: { type: Number, required: true },
-    dipositParsentage: { type: Number, required: true },
+    // dipositParsentage: { type: Number, required: true },
     method: {
       type: String,
       enum: ['stripe', 'google_pay', 'apple_pay'],

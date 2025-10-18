@@ -2,11 +2,12 @@ import { Date, Types } from 'mongoose';
 
 export type TServiceBooking = {
   customerId: Types.ObjectId;
-  serviceId: Types.ObjectId;
+  serviceIds: [Types.ObjectId];
   businessId: Types.ObjectId;
+  business_id: Types.ObjectId;
   bookingprice: number;
   depositAmount: number;
-  dipositParsentage: number;
+  // dipositParsentage: number;
   bookingDate: Date;
   duration: number;
   bookingStartTime: string;

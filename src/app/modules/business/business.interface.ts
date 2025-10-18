@@ -4,7 +4,7 @@ export type TBusiness = {
   businessId: Types.ObjectId;
 
   businessName: string;
-  businessImage: string;
+  businessImage: [string];
   businessDescription: string;
   businessLocation: string;
   businessType: string[];
@@ -22,6 +22,7 @@ export type TBusiness = {
   bookingBreak: string;
   launchbreakStartTime: string;
   launchbreakEndTime: string;
+  holydays?: string[];
   ratings: number;
   reviewCount: number;
   latitude: number;

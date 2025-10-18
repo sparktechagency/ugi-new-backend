@@ -532,6 +532,9 @@ export const successAccountTemplete = `<!DOCTYPE html>
   </body>
 </html>`;
 
+
+
+
 export const settingSupportTemplete = `<!doctype html>
 <html lang="en">
   <head>
