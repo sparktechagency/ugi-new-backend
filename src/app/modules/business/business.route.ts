@@ -15,7 +15,7 @@ businessRouter
     '/create-business',
     auth(USER_ROLE.BUSINESS),
     // upload.single('image'),
-    upload.fields([{ name: 'businessImage', maxCount: 1 }]),
+    upload.fields([{ name: 'businessImage', maxCount: 5 }]),
     // validateRequest(businessValidation.businessValidationSchema),
     businessController.createBusiness,
   )

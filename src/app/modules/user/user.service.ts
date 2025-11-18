@@ -88,7 +88,7 @@ const createUserToken = async (payload: TUserCreate) => {
   process.nextTick(async () => {
     await otpSendEmail({
       sentTo: email,
-      subject: 'Your one time otp for email  verification',
+      subject: 'Uogi Account Verification!',
       name: fullName,
       otp,
       expiredAt: expiredAt,
