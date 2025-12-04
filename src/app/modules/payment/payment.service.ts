@@ -195,7 +195,7 @@ const addPaymentService = async (payload: any) => {
     };
     let result;
 
-    if (method === 'stripe') {
+    if (method) {
       // console.log('======stripe payment');
       const checkoutResult: any = await createCheckout(customerId, paymentInfo);
 
@@ -204,47 +204,59 @@ const addPaymentService = async (payload: any) => {
       }
 
       result = checkoutResult;
-    } else {
-      const paymentData: any = {
-        customerId,
-        serviceIds,
-        businessId,
-        bookingprice,
-        depositAmount,
-        // dipositParsentage,
-        method,
-        transactionId: payload.transactionId,
-        transactionDate: bookingDate,
-        serviceBookingId: serviceBookingResult[0]._id,
-        status: 'paid',
-      };
+    } 
 
-      if (method === 'google_pay') {
-        paymentData.googlePayDetails = googlePayDetails;
-      } else if (method === 'apple_pay') {
-        paymentData.applePayDetails = applePayDetails;
-      }
 
-      const paymentResult = await Payment.create([paymentData], {
-        session,
-      });
+    // if (method === 'stripe') {
+    //   // console.log('======stripe payment');
+    //   const checkoutResult: any = await createCheckout(customerId, paymentInfo);
 
-      if (!paymentResult) {
-        throw new AppError(400, 'Payment is not created!');
-      }
+    //   if (!checkoutResult) {
+    //     throw new AppError(400, 'Failed to create checkout session!');
+    //   }
 
-      const serviceUpdate = await ServiceBooking.findByIdAndUpdate(
-        serviceBookingResult[0]._id,
-        { paymentStatus: 'upcoming', status: 'booking' },
-        { new: true, session },
-      );
+    //   result = checkoutResult;
+    // } else {
+    //   const paymentData: any = {
+    //     customerId,
+    //     serviceIds,
+    //     businessId,
+    //     bookingprice,
+    //     depositAmount,
+    //     // dipositParsentage,
+    //     method,
+    //     transactionId: payload.transactionId,
+    //     transactionDate: bookingDate,
+    //     serviceBookingId: serviceBookingResult[0]._id,
+    //     status: 'paid',
+    //   };
 
-      if (!serviceUpdate) {
-        throw new AppError(400, 'Failed to service Modal Update!');
-      }
+    //   if (method === 'google_pay') {
+    //     paymentData.googlePayDetails = googlePayDetails;
+    //   } else if (method === 'apple_pay') {
+    //     paymentData.applePayDetails = applePayDetails;
+    //   }
 
-      result = paymentResult[0];
-    }
+    //   const paymentResult = await Payment.create([paymentData], {
+    //     session,
+    //   });
+
+    //   if (!paymentResult) {
+    //     throw new AppError(400, 'Payment is not created!');
+    //   }
+
+    //   const serviceUpdate = await ServiceBooking.findByIdAndUpdate(
+    //     serviceBookingResult[0]._id,
+    //     { paymentStatus: 'upcoming', status: 'booking' },
+    //     { new: true, session },
+    //   );
+
+    //   if (!serviceUpdate) {
+    //     throw new AppError(400, 'Failed to service Modal Update!');
+    //   }
+
+    //   result = paymentResult[0];
+    // }
 
     // Commit transaction
     await session.commitTransaction();
@@ -257,6 +269,39 @@ const addPaymentService = async (payload: any) => {
     throw error;
   }
 };
+
+const googlePaymentService = async (payload: any) => {
+  const session = await mongoose.startSession(); // Start a session
+  session.startTransaction();
+
+  console.log('payment data***********************', payload);
+
+
+  try {
+   
+
+    const paymentInfo = {
+      serviceBookingId: '16547894563156849884wsda84',
+      depositAmount: 200,
+    };
+
+      const checkoutResult: any = await createCheckout('xdg232sgs1g56t5we6t5wgdsf', paymentInfo);
+      console.log('checkoutResult', checkoutResult);
+
+      
+    // Commit transaction
+    await session.commitTransaction();
+    session.endSession();
+    return checkoutResult.url;
+  } catch (error) {
+    console.error('Transaction Error:', error);
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
+};
+
+
 
 const getAllPaymentService = async (query: Record<string, unknown>) => {
   const PaymentQuery = new QueryBuilder(
@@ -453,21 +498,7 @@ const getAllIncomeRatiobyDays = async (days: string) => {
 };
 
 const createCheckout = async (userId: any, payload: any) => {
-  // console.log('stripe payment', payload);
   let session = {} as { id: string };
-
-  // const lineItems = products.map((product) => ({
-  //   price_data: {
-  //     currency: 'usd',
-  //     product_data: {
-  //       name: 'Order Payment',
-  //       description: 'Payment for user order',
-  //     },
-  //     unit_amount: Math.round(product.price * 100),
-  //   },
-  //   quantity: product.quantity,
-  // }));
-
   const lineItems = [
     {
       price_data: {
@@ -482,6 +513,7 @@ const createCheckout = async (userId: any, payload: any) => {
     },
   ];
 
+
   const sessionData: any = {
     payment_method_types: ['card'],
     mode: 'payment',
@@ -489,25 +521,18 @@ const createCheckout = async (userId: any, payload: any) => {
     cancel_url: `http://10.10.7.65:8075/api/v1/payment/cancel`,
     line_items: lineItems,
     metadata: {
-      userId: String(userId), // Convert userId to string
+      userId: String(userId),
       serviceBookingId: String(payload.serviceBookingId),
-      // products: payload,
     },
   };
 
   try {
     session = await stripe.checkout.sessions.create(sessionData);
 
-    // console.log('session', session.id);
   } catch (error) {
-    // console.log('Error', error);
+    console.log('Error', error);
   }
-
-  // // console.log({ session });
-  const { id: session_id, url }: any = session || {};
-
-  // console.log({ url });
-  // console.log({ url });
+  const { url }: any = session || {};
 
   return { url };
 };
@@ -537,8 +562,20 @@ const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
           );
         }
 
+    
+        console.log('session=>>>>>', session);
+
         const paymentIntent =
           await stripe.paymentIntents.retrieve(paymentIntentId);
+
+          console.log('paymentIntent**************', paymentIntent);
+
+          const paymentMethod =
+            await stripe.paymentMethods.retrieve(paymentIntent.payment_method as string);
+          console.log('paymentMethod', paymentMethod); 
+          console.log('paymentMethod.card', paymentMethod.card); // Card details
+          console.log('paymentMethod.card.wallet',paymentMethod.card && paymentMethod.card.wallet);
+          // console.log(paymentIntent.charges.data[0].payment_method_details);
 
         if (!paymentIntent || paymentIntent.amount_received === 0) {
           throw new AppError(httpStatus.BAD_REQUEST, 'Payment Not Successful');
@@ -552,6 +589,17 @@ const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
 
         console.log('===updateServiceBooking', updateServiceBooking);
 
+        let paymentType: string;
+        if (paymentMethod.card && paymentMethod.card.wallet?.type === 'apple_pay') {
+          paymentType = 'apple_pay';
+        } else if (
+          paymentMethod.card && paymentMethod.card.wallet?.type === 'google_pay'
+        ) {
+          paymentType = 'google_pay';
+        } else {
+          paymentType = 'card';
+        }
+
         const paymentData: any = {
           customerId,
           serviceId: updateServiceBooking?.serviceIds,
@@ -560,7 +608,7 @@ const automaticCompletePayment = async (event: Stripe.Event): Promise<void> => {
           bookingprice: updateServiceBooking?.bookingprice,
           depositAmount: updateServiceBooking?.depositAmount,
           // dipositParsentage: updateServiceBooking?.dipositParsentage,
-          method: 'stripe',
+          method: paymentType === 'card' ? 'stripe' : paymentType,
           transactionId: paymentIntentId,
           transactionDate: updateServiceBooking?.bookingDate,
           serviceBookingId: updateServiceBooking?._id,
@@ -1024,6 +1072,7 @@ cron.schedule('* * * * *', async () => {
 
 export const paymentService = {
   addPaymentService,
+  googlePaymentService,
   getAllPaymentService,
   singlePaymentService,
   deleteSinglePaymentService,

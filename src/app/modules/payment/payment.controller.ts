@@ -32,6 +32,29 @@ const addPayment = catchAsync(async (req, res, next) => {
   }
 });
 
+const googlePayment = catchAsync(async (req, res, next) => {
+  const paymentData = req.body;
+
+  const result = await paymentService.googlePaymentService(paymentData);
+  console.log('result', result.url);
+
+  if (result) {
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Payment Successfull!!',
+      data: result,
+    });
+  } else {
+    sendResponse(res, {
+      statusCode: httpStatus.BAD_REQUEST,
+      success: true,
+      message: 'Data is not found',
+      data: {},
+    });
+  }
+});
+
 const getAllPayment = catchAsync(async (req, res, next) => {
   const result = await paymentService.getAllPaymentService(req.query);
   // // console.log('result',result)
@@ -367,6 +390,7 @@ const transferBalance = catchAsync(async (req, res) => {
 
 export const paymentController = {
   addPayment,
+  googlePayment,
   getAllPayment,
   getSinglePayment,
   deleteSinglePayment,

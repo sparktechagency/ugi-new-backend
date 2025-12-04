@@ -15,9 +15,7 @@ const createCategoryService = async (files: any, payload: TCategory) => {
     // console.log('File path to delete:', imagePath);
 
     try {
-      await access(imagePath); // Check if the file exists
-      // console.log('File exists, proceeding to delete:', imagePath);
-
+      await access(imagePath);
       await unlink(imagePath);
       // console.log('File successfully deleted:', imagePath);
     } catch (error: any) {
@@ -162,11 +160,21 @@ const updateCategoryService = async (
     payload.image = categoryImage.path.replace(/^public[\\/]/, '');
   }
 
-  const result = await Category.findByIdAndUpdate(id, payload, {
+  const newPayload:any = {}
+  if(payload.name){
+    newPayload.name = payload.name;
+  }
+  if(payload.image){
+    newPayload.image = payload.image;
+  }
+
+  console.log('payload== edit payload===', payload);
+  console.log('newPayload== edit newPayload===', newPayload);
+  const result = await Category.findByIdAndUpdate(id, newPayload, {
     new: true,
   });
 
-  if (result) {
+  if (result && payload.image) {
     const imagePath = `public/${existingCategory.image}`;
     // console.log('File path to delete:', imagePath);
 

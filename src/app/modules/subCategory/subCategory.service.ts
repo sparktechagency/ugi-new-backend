@@ -1,10 +1,15 @@
 import QueryBuilder from '../../builder/QueryBuilder';
 import AppError from '../../error/AppError';
+import { Category } from '../category/category.model';
 import { TSubCategory } from './subCategory.interface';
 import SubCategory from './subCategory.model';
 
 
 const createSubCategoryService = async (payload: TSubCategory) => {
+  const categoryExists = await Category.findById(payload.categoryId);
+  if (!categoryExists) {
+    throw new AppError(400, 'Category not found!');
+  }
   const result = await SubCategory.create(payload);
   return result;
 };
@@ -43,6 +48,7 @@ const updateSubCategoryService = async (id: string, payload: TSubCategory) => {
   if (!existingSubCategory) {
     throw new AppError(404, 'Sub Category not found!');
   }
+  // console.log('payload======', payload);
   const result = await SubCategory.findByIdAndUpdate(id, payload, {
     new: true,
   });

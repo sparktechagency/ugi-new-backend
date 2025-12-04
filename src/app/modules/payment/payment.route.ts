@@ -9,6 +9,7 @@ const paymentRouter = express.Router();
 
 paymentRouter
   .post('/add-payment', auth(USER_ROLE.CUSTOMER), paymentController.addPayment)
+  .post('/google-payment',  paymentController.googlePayment)
   .post(
     '/create-stripe-account',
     auth(USER_ROLE.BUSINESS),
