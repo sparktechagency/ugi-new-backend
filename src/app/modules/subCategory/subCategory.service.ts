@@ -20,7 +20,7 @@ const getAllSubCategoryService = async (query: Record<string, unknown>) => {
     .search(['subCategoryname'])
     .filter()
     .sort()
-    .paginate()
+    // .paginate()
     .fields();
 
   const result = await subCategoryQuery.modelQuery;
