@@ -8,7 +8,7 @@ const TFetureListSchema = new Schema({
 const subscriptionSchema = new Schema({
   type: {
     type: String,
-    enum: ['monthly', 'yearly'],
+    enum: ['monthly', 'yearly', 'free'],
     required: true,
   },
   price: { type: Number, required: true },

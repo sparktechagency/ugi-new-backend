@@ -97,6 +97,8 @@ const getAllCategoryService = async (query: Record<string, unknown>) => {
     { $limit: limit },
   ]);
 
+  console.log('cateogry', categoryQuery);
+
   const totalDocuments = await Category.countDocuments({});
 
   const totalPage = Math.ceil(totalDocuments / limit);

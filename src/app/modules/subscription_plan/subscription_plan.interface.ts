@@ -5,7 +5,7 @@ export type TFetureList = {
 
 
 export type TSubscription = {
-  type: 'monthly' | 'yearly';
+  type: 'monthly' | 'yearly' | 'free';
   price: number;
   duration: number;
   fetureList: TFetureList[];
