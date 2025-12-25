@@ -8,13 +8,18 @@ const subscriptionPurchaseSchema = new Schema(
       ref: 'User',
       required: true,
     },
+    name:{
+      type: String,
+      required: true,
+      enum:['free','standard','premium','yearly']
+    },
     amount: {
       type: Number,
       required: true,
     },
     type: {
       type: String,
-      enum: ['monthly', 'yearly'],
+      enum: ['monthly', 'yearly', 'free'],
       required: true,
     },
     startDate: {

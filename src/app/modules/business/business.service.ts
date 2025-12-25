@@ -492,7 +492,7 @@ const getAllFilterByBusinessService = async (
 
   let formattedAvailableDays = [];
   let formattedTimeSlots = [];
-  let subCategorys:any = [];
+  let subCategorys: any = [];
 
   try {
     formattedAvailableDays = JSON.parse(
@@ -507,7 +507,6 @@ const getAllFilterByBusinessService = async (
   // } catch (error) {
   //   console.error('Error parsing subCategoryName:', error);
   // }
-
 
   try {
     subCategorys = JSON.parse(
@@ -525,16 +524,15 @@ const getAllFilterByBusinessService = async (
       timeSlots.replace(/^\[/, '["').replace(/]$/, '"]').replace(/, /g, '", "'),
     );
   } catch (error) {
-  console.error('Error parsing timeSlots:', error);
+    console.error('Error parsing timeSlots:', error);
   }
 
-  const formattedQuery:any= {
+  const formattedQuery: any = {
     categoryName,
     subCategoryName: subCategorys,
     availableDays: formattedAvailableDays,
     timeSlots: formattedTimeSlots,
   };
-
 
   const skip = (page - 1) * limit;
 
@@ -565,8 +563,10 @@ const getAllFilterByBusinessService = async (
 
   // console.log('activeSubscriptions', activeSubscriptions);
 
-const activeBusinessIds = activeSubscriptions.map((sub) => sub.businessUserId.toString());
-// console.log('activeBusinessIds', activeBusinessIds);
+  const activeBusinessIds = activeSubscriptions.map((sub) =>
+    sub.businessUserId.toString(),
+  );
+  // console.log('activeBusinessIds', activeBusinessIds);
 
   const businessesWithinRadius = await Business.find({
     _id: {
@@ -585,16 +585,11 @@ const activeBusinessIds = activeSubscriptions.map((sub) => sub.businessUserId.to
 
   // console.log('businessesWithinRadius', businessesWithinRadius);
 
-
   const subscriptionActiveBusiness = businessesWithinRadius.filter((business) =>
     activeBusinessIds.includes(business.businessId.toString()),
   );
 
-
-// console.log('subscriptionActiveBusiness', subscriptionActiveBusiness);
-
-
-  
+  // console.log('subscriptionActiveBusiness', subscriptionActiveBusiness);
 
   let filteredBusinesses: any = [];
   if (formattedQuery.availableDays) {
@@ -706,6 +701,30 @@ const activeBusinessIds = activeSubscriptions.map((sub) => sub.businessUserId.to
 
   const paginatedResult = sortedEnhancedResult2.slice(skip, skip + limit);
 
+  console.log('paginatedResult', paginatedResult);
+  
+
+  const finalResult = await Promise.all(
+    paginatedResult.map(async (business: any) => {
+      const subscription = await SubscriptionPurchase.findOne({
+        businessUserId: business.businessId,
+        endDate: { $gte: new Date() },
+      });
+      return {
+        ...business,
+        subscriptionName: subscription?.name,
+      };
+    })
+  )
+
+   
+
+   console.log('finalResult========', finalResult);
+
+
+
+  //businessId
+
   const meta = {
     page: Number(page),
     limit: Number(limit),
@@ -713,10 +732,9 @@ const activeBusinessIds = activeSubscriptions.map((sub) => sub.businessUserId.to
     totalPage,
   };
 
-  return { meta, result: paginatedResult };
+  return { meta, result: finalResult };
 
-// return " ";
-
+  // return " ";
 };
 
 

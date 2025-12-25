@@ -19,6 +19,8 @@ const subscriptionSchema = new Schema({
   stripe_product_id: { type: String, required: true },
 });
 
+
+
 const Subscription = mongoose.model<TSubscription>(
   'Subscription',
   subscriptionSchema,

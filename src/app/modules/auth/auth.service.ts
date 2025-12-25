@@ -49,10 +49,14 @@ const login = async (payload: TLogin) => {
     role: user?.role,
   };
   const result = await SubscriptionPurchase.find({ businessUserId: user._id , endDate: { $gte: new Date() }});
+  console.log('result =>>>', result);
+  const isFreeSubscriptionTaken = await SubscriptionPurchase.findOne({ businessUserId: user._id , name: 'free'});
+  console.log('isFreeSubscriptionTaken =>>>', isFreeSubscriptionTaken);
 
   const currentRunningSubscription = result.find(
     (item: any) => item.endDate >= new Date(),
   );
+  console.log('currentRunningSubscription =>>>', currentRunningSubscription);
 
   // console.log({ jwtPayload });
 
@@ -77,6 +81,8 @@ const login = async (payload: TLogin) => {
     ...(user.role === 'business'
       ? { isSubcriptionActive: currentRunningSubscription ? true : false }
       : {}),
+      subscriptionName: currentRunningSubscription ? currentRunningSubscription.name : '',
+      isFreeSubscriptionTaken: isFreeSubscriptionTaken ? true : false
   };
 };
 

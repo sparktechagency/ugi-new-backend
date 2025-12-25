@@ -3,9 +3,41 @@ import QueryBuilder from '../../builder/QueryBuilder';
 import { User } from '../user/user.models';
 import { TfavoriteBusiness } from './favorite.interface';
 import FavoriteBusiness from './favorite.model';
+import Business from '../business/business.model';
+import SubscriptionPurchase from '../purchestSubscription/purchestSubscription.model';
 
 const createOrDeleteFavoriteBusiness = async (payload: TfavoriteBusiness, customerId: string) => {
   const { businessId } = payload;
+
+  //  const result = await SubscriptionPurchase.find({
+  //    businessUserId: user._id,
+  //    endDate: { $gte: new Date() },
+  //  });
+
+  //  const currentRunningSubscription = result.find(
+  //    (item: any) => item.endDate >= new Date(),
+  //  );
+
+  const business = await Business.findById(businessId);
+  if (!business) {
+    throw new Error('Business not found!');
+  }
+
+  const businessMan = await User.findById(business.businessId);
+  if (!businessMan) {
+    throw new Error('Business person not found!');
+  }
+
+   const result = await SubscriptionPurchase.findOne({
+     businessUserId: business.businessId,
+     endDate: { $gte: new Date() },
+   });
+
+ if(result?.name === 'free' || result?.name === 'standard' ){
+   throw new Error('You can not favorite this business!');
+   
+ }
+   
 
   // Check if a FavoritecreateOrDeleteFavoriteBusiness with the same storyId and userId exists
   const existingFavoriteBusiness = await FavoriteBusiness.findOne({
@@ -24,7 +56,6 @@ const createOrDeleteFavoriteBusiness = async (payload: TfavoriteBusiness, custom
       message: 'Favorite Business deleted !!',
       data: favoriteBusiness,
     };
-
   } else {
     // If it does not exist, create a new one
     const newFavoriteBusiness = new FavoriteBusiness({
@@ -41,7 +72,6 @@ const createOrDeleteFavoriteBusiness = async (payload: TfavoriteBusiness, custom
       message: 'Favorite Business successful',
       data: favoriteBusiness,
     };
-
   }
 };
 

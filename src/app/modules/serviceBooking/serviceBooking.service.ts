@@ -15,6 +15,7 @@ import { paymentService } from '../payment/payment.service';
 import Notification from '../notification/notification.model';
 import { User } from '../user/user.models';
 import CencelBooking from '../cencelBooking/cencelBooking.model';
+import SubscriptionPurchase from '../purchestSubscription/purchestSubscription.model';
 
 const createServiceBooking = async (
   payload: TServiceBooking,
@@ -105,7 +106,7 @@ const getAllServiceBookingByUserQuery = async (
   customerId: string,
 ) => {
   // console.log('booking user id', customerId);
-  const ServiceBookingQuery = new QueryBuilder(
+  const serviceBookingQuery = new QueryBuilder(
     ServiceBooking.find({ customerId })
       .populate('customerId')
       .populate({
@@ -130,8 +131,35 @@ const getAllServiceBookingByUserQuery = async (
     .paginate()
     .fields();
 
-  const result = await ServiceBookingQuery.modelQuery;
-  const meta = await ServiceBookingQuery.countTotal();
+  const bookings = await serviceBookingQuery.modelQuery;
+   if (!bookings.length) {
+     const meta = await serviceBookingQuery.countTotal();
+     return { meta, result: [] };
+   }
+
+     const businessUserIds = bookings
+       .map((item) => item.businessId)
+       .filter(Boolean);
+  // console.log('businessUserIds=>>>>', businessUserIds);
+   const subscriptions = await SubscriptionPurchase.find({
+     businessUserId: { $in: businessUserIds },
+     endDate: { $gte: new Date() },
+   }).lean();
+
+    // console.log('subscriptions=>>>>', subscriptions);
+
+   const subscriptionMap = new Map(
+     subscriptions.map((sub) => [String(sub.businessUserId), sub.name]),
+   );
+
+  //  console.log('subscriptionMap=>>>>', subscriptionMap);
+
+   const result = bookings.map((item:any) => ({
+     ...item._doc,
+     subscriptionName: subscriptionMap.get(String(item.businessId)) || null,
+   }));
+  //  console.log('result=>>>>', result);
+  const meta = await serviceBookingQuery.countTotal();
   return { meta, result };
 };
 
@@ -180,7 +208,7 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
     // console.log({ serviceBooking });
 
     if (!serviceBooking) {
-      throw new AppError(404, 'Booking Service not found!');
+      throw new AppError(404, 'Booking Service not found!!');
     }
 
     // Validate business existence
@@ -209,34 +237,11 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
       );
     }
 
-    // console.log('step-3');
-
-    // // Calculate the time difference in hours
-    // const currentTime = new Date();
-    // currentTime.setUTCHours(0, 0, 0, 0);
-    // // console.log({ currentTime });
-    // const bookingTime = serviceBooking.bookingDate;
-    // // console.log({ bookingTime });
-    // const timeDifferenceInHours =
-    //   (currentTime.getTime() - bookingTime.getTime()) / (1000 * 60 * 60);
-    // // console.log({ timeDifferenceInHours });
-
-    // // console.log('step-4');
-
-    // let refundPercentage = 0;
-    // let ugiTokenParcentage = 0;
-
-    // // Apply refund policy
-    // if (timeDifferenceInHours <= 24) {
-    //   refundPercentage = 0; // No refund
-    //   ugiTokenParcentage = 100;
-    // } else if (timeDifferenceInHours <= 36) {
-    //   refundPercentage = 20; // Refund 20% of the deposit
-    //   ugiTokenParcentage = 80;
-    // } else if (timeDifferenceInHours <= 48) {
-    //   refundPercentage = 75; // Refund 75% of the deposit
-    //   ugiTokenParcentage = 25;
-    // }
+    const subscription = await SubscriptionPurchase.findOne({
+      businessUserId: business.businessId,
+      endDate: { $gte: new Date() },
+    });
+   
 
     const currentTime = new Date();
     currentTime.setUTCHours(0, 0, 0, 0); // Normalize current date to midnight
@@ -253,19 +258,30 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
     let refundPercentage = 0;
     let ugiTokenPercentage = 0;
 
-    if (timeDifferenceInHours <= 24) {
-      refundPercentage = 0; // No refund within 24 hours
-      ugiTokenPercentage = 100;
-    } else if (timeDifferenceInHours <= 36) {
-      refundPercentage = 20; // Refund 20% within 24-36 hours
-      ugiTokenPercentage = 80;
-    } else if (timeDifferenceInHours <= 48) {
-      refundPercentage = 75; // Refund 75% within 36-48 hours
-      ugiTokenPercentage = 25;
-    } else {
-      refundPercentage = 100; // No refund for bookings more than 48 hours ahead
+    if (
+      (subscription && subscription.name === 'premium') ||
+      (subscription && subscription.name === 'yearly')
+    ) {
+     if (timeDifferenceInHours <= 24) {
+       refundPercentage = 0; // No refund within 24 hours
+       ugiTokenPercentage = 100;
+     } else if (timeDifferenceInHours <= 36) {
+       refundPercentage = 20; // Refund 20% within 24-36 hours
+       ugiTokenPercentage = 80;
+     } else if (timeDifferenceInHours <= 48) {
+       refundPercentage = 75; // Refund 75% within 36-48 hours
+       ugiTokenPercentage = 25;
+     } else {
+       refundPercentage = 100; // No refund for bookings more than 48 hours ahead
+       ugiTokenPercentage = 0;
+     }
+    }else{
+      refundPercentage = 100;
       ugiTokenPercentage = 0;
     }
+
+ 
+
     // console.log('step-5');
     // console.log('refundPercentage', refundPercentage);
     // console.log('ugiTokenParcentage', ugiTokenParcentage);
@@ -331,6 +347,9 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
       await serviceBooking.save({ session });
     }
 
+
+
+  if (subscription?.name === 'premium' || subscription?.name === 'yearly') {
     // Create Ugi Token data
     const ugiTokenData: any = {
       businessId: serviceBooking.businessId,
@@ -347,15 +366,6 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
       throw new AppError(500, 'Ugi token not created!!');
     }
 
-    const cancelData = {
-      businessId: serviceBooking.businessId,
-      customerId: serviceBooking.customerId
-    };
-
-    await CencelBooking.create([cancelData], { session });
-    
-
-    // Create Notifications
     const notificationData: any = {
       userId: business.businessId,
       // message: `Booking Cancelled Successfully! Refund is ${refundPercentage}% of the deposit. Remaining ${uogiTokenAmount} converted to Uogi Tokens.`,
@@ -378,6 +388,20 @@ const cancelServiceBooking = async (id: string, customerId: string) => {
     if (!notification || !notification1) {
       throw new AppError(500, 'Notification not created');
     }
+  }
+
+   
+
+    const cancelData = {
+      businessId: serviceBooking.businessId,
+      customerId: serviceBooking.customerId
+    };
+
+    await CencelBooking.create([cancelData], { session });
+    
+
+    // Create Notifications
+    
 
     // Commit the transaction (All operations succeed)
     await session.commitTransaction();
@@ -741,7 +765,6 @@ const reSheduleRequestServiceBooking = async (id: string, payload: any) => {
 
   const notificationData = {
     userId: bookingService.businessId,
-    // message: `${customer?.fullName} has requested to schedule a booking from ${bookingService.bookingDate} & ${bookingService.bookingStartTime} to ${bookingService.reSheduleDate} & ${bookingService.reSheduleStartTime}. Please review and confirm the request`,
     message:`${customer?.fullName} has requested to schedule a booking from ${new Date(bookingService.bookingDate).toLocaleDateString()} at ${bookingService.bookingStartTime} to ${new Date(bookingService.reSheduleDate).toLocaleDateString()} at ${bookingService.reSheduleStartTime}. Please review and confirm the request`,
     status: 'pending',
     type: 'reshedule',
@@ -751,8 +774,10 @@ const reSheduleRequestServiceBooking = async (id: string, payload: any) => {
   const notification =
     await notificationService.createNotification(notificationData);
 
+    console.log('notification =!= ......', notification);
+
   if (!notification) {
-    throw new AppError(500, 'Notification not created');
+    throw new AppError(500, 'Notification not created!!');
   }
 
   return result;
@@ -809,7 +834,7 @@ const reSheduleCompleteCencelServiceBooking = async (
       // console.log('Notification updated: cancel');
     } 
 
-    http: return result;
+     return result;
   } else if (status == 'conform') {
     bookingService.reSheduleStatus = 'conform-re-shedule';
     // console.log('date date', bookingService.reSheduleDate);

@@ -15,6 +15,7 @@ import { createToken, verifyToken } from '../../utils/tokenManage';
 import mongoose from 'mongoose';
 import Business from '../business/business.model';
 import bcrypt from 'bcrypt';
+import SubscriptionPurchase from '../purchestSubscription/purchestSubscription.model';
 
 export type IFilter = {
   searchTerm?: string;
@@ -413,11 +414,36 @@ const getAllUserRatio = async (year: number) => {
 };
 
 const getUserById = async (id: string) => {
-  const result = await User.findById(id);
+  const result:any = await User.findById(id);
   if (!result) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found');
   }
-  return result;
+
+    const purchestSubscription = await SubscriptionPurchase.find({
+      businessUserId: result._id,
+      endDate: { $gte: new Date() },
+    });
+    console.log('result =>>>', result);
+    const isFreeSubscriptionTaken = await SubscriptionPurchase.findOne({
+      businessUserId: result._id,
+      name: 'free',
+    });
+    console.log('isFreeSubscriptionTaken =>>>', isFreeSubscriptionTaken);
+
+    const currentRunningSubscription = purchestSubscription.find(
+      (item: any) => item.endDate >= new Date(),
+    );
+    console.log('currentRunningSubscription =>>>', currentRunningSubscription);
+
+    const newResult = {
+      ...result._doc,
+      subscription: {
+        isSubcriptionActive: currentRunningSubscription ? true : false,
+        subscriptionName: currentRunningSubscription?.name || '',
+        isFreeSubscriptionTaken: isFreeSubscriptionTaken ? true : false,
+      },
+    };
+  return newResult;
 };
 
 const getUserByEmail = async (email: string) => {
