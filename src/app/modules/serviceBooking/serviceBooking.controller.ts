@@ -6,6 +6,7 @@ import httpStatus from 'http-status';
 import { serviceBookingService } from './serviceBooking.service';
 import moment from 'moment';
 import mongoose from 'mongoose';
+import AppError from '../../error/AppError';
 
 const createServiceBooking = catchAsync(async (req: Request, res: Response) => {
   const session = await mongoose.startSession();
@@ -158,8 +159,9 @@ const completeServiceBooking = catchAsync(
 const reScheduleRequestServiceBooking = catchAsync(
   async (req: Request, res: Response) => {
     // const userId = '64a1f32b3c9f536a2e9b1234';
+    
     const bodyData = req.body;
-    const { userId } = req.user;
+    const { userId } = req.user as any;
     bodyData.customerId = userId;
 
     const result = await serviceBookingService.reSheduleRequestServiceBooking(

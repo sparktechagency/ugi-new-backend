@@ -11,6 +11,8 @@ import router from './app/routes';
 import path from 'path';
 import { paymentController } from './app/modules/payment/payment.controller';
 import { serverRunningTemplete, successTemplete } from './templete/templete';
+import passport from 'passport';
+import session from 'express-session';
 
 const app: Application = express();
 
@@ -42,6 +44,20 @@ app.use(
 
 // Remove duplicate static middleware
 // app.use(app.static('public'));
+
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'secret',
+    resave: false,
+    saveUninitialized: false,
+  }),
+);
+
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // application routes
 app.use('/api/v1', router);

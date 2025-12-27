@@ -20,7 +20,7 @@ const auth = (...userRoles: string[]) => {
       access_secret: config.jwt_access_secret as string,
     });
 
-    const { role, userId } = decodeData;
+    const { role, userId, email } = decodeData;
     // // console.log('decodeData', decodeData);
     const isUserExist = await User.IsUserExistById(userId);
 
@@ -28,7 +28,16 @@ const auth = (...userRoles: string[]) => {
       throw new AppError(httpStatus.NOT_FOUND, 'user not found');
     }
 
-    if (userRoles && !userRoles.includes(role)) {
+    if (isUserExist.role !== role) {
+      throw new AppError(httpStatus.NOT_FOUND, 'user role not match');
+    }
+
+    const user = await User.isUserActive(email);
+    if (!user) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'User not found!!');
+    }
+
+    if (userRoles.length && !userRoles.includes(role)) {
       throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized');
     }
     req.user = decodeData;

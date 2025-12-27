@@ -86,6 +86,13 @@ const login = async (payload: TLogin) => {
   };
 };
 
+const appleLogin = async (appleUser: any) => {
+  const { appleId, email } = appleUser;
+
+  console.log('appleId', appleId);
+  console.log('email', email);
+};
+
 // forgot Password
 const forgotPassword = async (email: string) => {
   const user: TUser | null = await User.isUserActive(email);
@@ -324,6 +331,7 @@ const refreshToken = async (token: string) => {
 
 export const authServices = {
   login,
+  appleLogin,
   forgotPasswordOtpMatch,
   changePassword,
   forgotPassword,

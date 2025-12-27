@@ -19,6 +19,13 @@ const super_admin = {
   password: process.env.SUPER_ADMIN_PASSWORD,
 };
 
+const appleLogin_info = {
+  apple_client_id: process.env.APPLE_CLIENT_ID,
+  apple_team_id: process.env.APPLE_TEAM_ID,
+  apple_key_id: process.env.APPLE_KEY_ID,
+  apple_callback_url: process.env.APPLE_CALLBACK_URL,
+};
+
 export default {
   NODE_ENV: process.env.NODE_ENV,
   port: process.env.PORT,
@@ -47,5 +54,6 @@ export default {
   stripe,
   googleApiKey: process.env.GOOGLEAPI,
   super_admin,
+  appleLogin_info,
   // user_jwt_token: process.env.USER_JWT_TOKEN,
 };

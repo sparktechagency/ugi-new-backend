@@ -1,5 +1,7 @@
 {
-  "include": ["src"], // which files to compile
+  // "include": ["src/**/*"], // which files to compile
+  // "include": ["src"], // which files to compile
+  "include": ["src/**/*", "index.d.ts"],
   "exclude": ["node_modules"], // which files to skip
 
   "compilerOptions": {

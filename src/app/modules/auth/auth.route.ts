@@ -4,6 +4,7 @@ import auth from '../../middleware/auth';
 import validateRequest from '../../middleware/validateRequest';
 import { authValidation } from './auth.validation';
 import { USER_ROLE } from '../user/user.constants';
+import passport from 'passport';
 
 export const authRoutes = Router();
 
@@ -19,6 +20,15 @@ authRoutes
     validateRequest(authValidation.forgetPasswordValidationSchema),
     authControllers.forgotPassword,
   )
+  .get(
+    '/apple-login',
+    passport.authenticate('apple', {
+      scope: ['profile', 'email'],
+      state: 'true',
+    }),
+  )
+
+  .get('/apple/callback', passport.authenticate('apple', { session: false }), authControllers.appleLogin)
   .patch(
     '/change-password',
     auth(

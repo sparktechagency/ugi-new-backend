@@ -30,6 +30,7 @@ export interface OTPVerifyAndCreateUserProps {
 
 const createUserToken = async (payload: TUserCreate) => {
   const { role, email, fullName, password, asRole } = payload;
+  console.log('payload ====', payload);
 
   // user role check
   if (!(role === USER_ROLE.CUSTOMER || role === USER_ROLE.BUSINESS)) {
@@ -52,10 +53,12 @@ const createUserToken = async (payload: TUserCreate) => {
   // console.log({ expiredAt });
 
   let otpPurpose: TPurposeType = 'email-verification';
-
+console.log('-----------------1');
   if (isExist && !isExpireOtp) {
+    console.log('-----------------2');
     throw new AppError(httpStatus.BAD_REQUEST, 'otp-exist. Check your email.');
   } else if (isExist && isExpireOtp) {
+    console.log('-----------------3');
     const otpUpdateData = {
       otp,
       expiredAt,
@@ -64,6 +67,7 @@ const createUserToken = async (payload: TUserCreate) => {
 
     await otpServices.updateOtpByEmail(email, otpUpdateData);
   } else if (!isExist) {
+    console.log('-----------------3');
     await otpServices.createOtp({
       name: fullName,
       sentTo: email,
@@ -74,6 +78,7 @@ const createUserToken = async (payload: TUserCreate) => {
     });
   }
 
+  console.log('-----------------5');
   const otpBody: any = {
     email,
     fullName,
@@ -85,6 +90,7 @@ const createUserToken = async (payload: TUserCreate) => {
   console.log({ otpBody });
   console.log({ otp });
 
+  console.log('-----------------6');
   // send email
   process.nextTick(async () => {
     await otpSendEmail({

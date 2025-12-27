@@ -30,9 +30,27 @@ const login = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+
+const appleLogin = catchAsync(async (req: Request, res: Response) => {
+  const userData = req.user;
+  console.log('controller userData', userData);
+  const result = await authServices.appleLogin(userData);
+
+ 
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Logged in successfully',
+    data: result,
+  });
+});
+
+
+
 // change password
 const changePassword = catchAsync(async (req: Request, res: Response) => {
-  const { userId } = req?.user;
+  const { userId }:any = req?.user;
   const { newPassword, oldPassword } = req.body;
 
   const result = await authServices.changePassword({
@@ -119,6 +137,7 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 
 export const authControllers = {
   login,
+  appleLogin,
   changePassword,
   forgotPassword,
   forgotPasswordOtpMatch,
